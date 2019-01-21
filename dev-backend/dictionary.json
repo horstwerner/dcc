@@ -1,0 +1,22 @@
+{
+  "TypeDictionary": [
+    {
+      "uri": "jira:ticket",
+      "dataType": "ENTITY",
+      "name": "Ticket",
+      "isAssociation": false
+    },
+    {
+      "uri": "jira:ticket-type",
+      "dataType": "STRING",
+      "name": "Type",
+      "isAssociation": false
+    },
+    {
+      "uri": "jira:status",
+      "dataType": "STRING",
+      "name": "Status",
+      "isAssociation": false
+    }
+  ]
+}
