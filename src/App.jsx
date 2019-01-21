@@ -22,8 +22,9 @@ class App extends Component {
 
   componentDidMount() {
     this.getDictionaryFromDb()
-        .then(() =>
-        {this.getDataFromDb('jira:ticket');})
+        .then(() => Promise.all(Cache.getEntityTypes().map( type => this.getDataFromDb(type))))
+        .then(() => {
+            this.setState({dataLoaded: true})})
   };
 
   getDictionaryFromDb() {
@@ -39,7 +40,6 @@ class App extends Component {
         .then(handleResponse)
         .then(res => {
           Cache.importNodeTable(res.data.type, res.data.headerRow, res.data.valueRows );
-          this.setState({dataLoaded: true})
         })
         .catch(error => {
           this.setState({ error });

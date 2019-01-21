@@ -7,6 +7,12 @@
       "isAssociation": false
     },
     {
+      "uri": "jira:feature",
+      "dataType": "ENTITY",
+      "name": "Feature",
+      "isAssociation": false
+    },
+    {
       "uri": "jira:ticket-type",
       "dataType": "STRING",
       "name": "Type",
