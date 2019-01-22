@@ -92,7 +92,7 @@ class Cache {
       for (let colIdx = 0; colIdx < headerRow.length; colIdx ++) {
         const prop = headerRow[colIdx];
         const proptype = this.getType(prop);
-        if (proptype && proptype.isassociation) {
+        if (proptype && proptype.isAssociation) {
           newNode.addAssociation(proptype, row[colIdx]);
         }
         else {
@@ -117,7 +117,7 @@ class Cache {
       for (let prop in rawNode) {
         if (!rawNode.hasOwnProperty(prop) || prop === 'core:type') continue;
         const proptype = this.getType(prop);
-        if (proptype && proptype.isassociation) {
+        if (proptype && proptype.isAssociation) {
           newNode.addAssociation(proptype, rawNode[prop]);
         }
         else {
@@ -206,3 +206,4 @@ export const traverse = function(source, path) {
 
   return curSet;
 };
+

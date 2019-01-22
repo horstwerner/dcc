@@ -149,7 +149,7 @@ export default class GraphNode {
     for (let key in this) {
       if (!this.hasOwnProperty(key)) continue;
       const proptype = Cache.getType(key);
-      if (proptype && proptype.isassociation) {
+      if (proptype && proptype.isAssociation) {
         if (this.hasDirectAssociation(proptype, targetnode)) return true;
       }
     }

@@ -53,7 +53,7 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           {error && <span>An error occurred: {error.message}<br/></span>}
-          {dataLoaded && Cache.mapAllNodesOf('jira:ticket', node => node.displayName()).join(',')}
+          {dataLoaded && Cache.mapAllNodesOf('dcc:test', node => node['jira:ticket'].displayName()).join(',')}
         </header>
       </div>
     );

@@ -1,0 +1,5 @@
+dcc:test, jira:ticket, dcc:teststatus
+test-001, XYZ-209, passed
+test-002, XYZ-210, failed
+test-003, XYZ-211, passed
+test-004, XYZ-212, failed

@@ -18,7 +18,7 @@ const csv2array = function (csvString) {
   const lines = csvString.indexOf('\r\n') > -1 ?
       csvString.split('\r\n') :
       csvString.split('\n');
-  const rows = lines.map(line => line.split(','));
+  const rows = lines.map(line => line.split(',').map(cell => cell.trim()));
   const headerRow = rows.splice(0,1)[0];
   const type = headerRow[0];
   headerRow[0] = 'id';

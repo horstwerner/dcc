@@ -4,7 +4,7 @@
       "uri": "jira:ticket",
       "dataType": "ENTITY",
       "name": "Ticket",
-      "isAssociation": false
+      "isAssociation": true
     },
     {
       "uri": "dcc:test",
