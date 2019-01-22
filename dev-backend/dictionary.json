@@ -7,9 +7,9 @@
       "isAssociation": false
     },
     {
-      "uri": "jira:feature",
+      "uri": "dcc:test",
       "dataType": "ENTITY",
-      "name": "Feature",
+      "name": "Test",
       "isAssociation": false
     },
     {

@@ -3,7 +3,8 @@ const app = express();
 const API_PORT = 3001;
 const bodyParser = require('body-parser');
 const router = express.Router();
-let demoData = "no demo data loaded";
+let tickets;
+let tests;
 let dictionary;
 
 const fs = require('fs');
@@ -14,7 +15,9 @@ app.use(bodyParser.json());
 
 const csv2array = function (csvString) {
 
-  const lines = csvString.split('\n');
+  const lines = csvString.indexOf('\r\n') > -1 ?
+      csvString.split('\r\n') :
+      csvString.split('\n');
   const rows = lines.map(line => line.split(','));
   const headerRow = rows.splice(0,1)[0];
   const type = headerRow[0];
@@ -30,7 +33,14 @@ router.get("/getDictionary", (req, res) => {
 router.get("/getData", (req, res) => {
   const type = req.query && req.query.type;
   console.log(`requested: ${type}`);
-  return res.json({success: true, data: demoData});
+  switch (type) {
+    case 'jira:ticket':
+      return res.json({success: true, data: tickets});
+    case 'dcc:test':
+      return res.json({success: true, data: tests});
+    default:
+      return res.json({success: false, message: `unknown entity type: ${type}`});
+  }
 });
 
 app.use("/api", router);
@@ -44,10 +54,17 @@ fs.readFile(dicPath, {encoding: 'utf-8'}, function (err, data) {
   }
 });
 
-const dataPath = path.join(__dirname, 'data.csv');
-fs.readFile(dataPath, {encoding: 'utf-8'}, function(err,data){
+fs.readFile(path.join(__dirname, 'tickets.csv'), {encoding: 'utf-8'}, function(err, data){
   if (!err) {
-    demoData = csv2array(data);
+    tickets = csv2array(data);
+  } else {
+    throw new Error(`Couldn't load data: ${err}`);
+  }
+});
+
+fs.readFile(path.join(__dirname, 'tests.csv'), {encoding: 'utf-8'}, function(err, data){
+  if (!err) {
+    tests = csv2array(data);
   } else {
     throw new Error(`Couldn't load data: ${err}`);
   }
