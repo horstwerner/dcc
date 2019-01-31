@@ -1,6 +1,8 @@
 import Type from './Type';
 import GraphNode from './GraphNode';
 
+const TYPE_ENTITY = 'ENTITY';
+
 class Cache {
   
   typeDic = {};
@@ -9,7 +11,7 @@ class Cache {
   createType (descriptor) {
     let type = new Type(descriptor);
     this.typeDic[descriptor.uri] = type;
-    if (type.dataType === 'ENTITY' && !type.isAssociation) {
+    if (type.dataType === TYPE_ENTITY && !type.isAssociation) {
       this.rootNode[descriptor.uri] = {};
     }
     return type;
@@ -49,13 +51,10 @@ class Cache {
     return Object.keys(this.rootNode);
   }
   
-  forAllNodesOf (nodeType, callback) {
+  getAllNodesOf (nodeType) {
     const dictionary = this.rootNode[nodeType];
     if (dictionary) {
-      for (let uri in dictionary) {
-        if (!dictionary.hasOwnProperty(uri)) continue;
-        callback(dictionary[uri]);
-      }
+      return Object.keys(dictionary).map(key => dictionary[key]);
     }
   };
 
@@ -92,7 +91,7 @@ class Cache {
       for (let colIdx = 0; colIdx < headerRow.length; colIdx ++) {
         const prop = headerRow[colIdx];
         const proptype = this.getType(prop);
-        if (proptype && proptype.isAssociation) {
+        if (proptype && proptype.dataType === TYPE_ENTITY) {
           newNode.addAssociation(proptype, row[colIdx]);
         }
         else {
@@ -142,28 +141,6 @@ class Cache {
     request.send(null);
   };
 
-  loadGraph (wsname, callback) {
-    const request = new XMLHttpRequest();
-    request.onreadystatechange = () => {
-      if (request.readyState === 4 && (request.status === 200 || request.status === 0)) {
-        const response = JSON.parse(request.responseText);
-        const wsnode = response['Workspace'];
-        const nodearray = wsnode['nodes'];
-        this.importNodes(nodearray);
-        callback();
-      }
-    };
-    const url = 'data/workspace.json';//
-    // const url = 'http://localhost:8080/ws/workspace?uri=' + wsname + '&cql=/rock15:industry';
-    request.open("GET", url, true);
-    request.send(null);
-  };
-
-  loadWorkspace (wsname, callback) {
-    this.loadTypeDic(wsname, () => {
-      this.loadGraph(wsname, callback);
-    });
-  };
 }
 
 export default new Cache();
@@ -203,7 +180,32 @@ export const traverse = function(source, path) {
     );
     curSet = nextSet;
   }
-
   return curSet;
+};
+
+export const resolveAttribute = function (node, path) {
+  let result;
+
+  if (!path.includes('/')) {
+    result = node[path];
+  } else {
+    const segments = path.split('/');
+    let current = node;
+    for (let segIdx = 0; segIdx < segments.length; segIdx++) {
+      if (segIdx < segments.length - 1 && !current.constructor === GraphNode) {
+        throw new Error(`Element ${segments[segIdx - 1]} in psth ${path} is not a node`);
+      }
+      current = current[segments[segIdx]];
+      // simplistic disambiguation - if multiple, select first
+      if (Array.isArray(current)) {
+        current = current[0];
+      }
+    }
+    result = current;
+  }
+
+  return result.constructor === GraphNode ?
+      result.displayName() :
+      result;
 };
 

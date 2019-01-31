@@ -6,6 +6,7 @@ const router = express.Router();
 let tickets;
 let tests;
 let dictionary;
+let cards;
 
 const fs = require('fs');
 const path = require('path');
@@ -26,11 +27,11 @@ const csv2array = function (csvString) {
 
 };
 
-router.get("/getDictionary", (req, res) => {
+router.get("/dictionary", (req, res) => {
   return res.json({success: true, data: dictionary});
 });
 
-router.get("/getData", (req, res) => {
+router.get("/data", (req, res) => {
   const type = req.query && req.query.type;
   console.log(`requested: ${type}`);
   switch (type) {
@@ -41,6 +42,10 @@ router.get("/getData", (req, res) => {
     default:
       return res.json({success: false, message: `unknown entity type: ${type}`});
   }
+});
+
+router.get("/cards", (req, res) => {
+  return res.json({success: true, data: cards});
 });
 
 app.use("/api", router);
@@ -65,6 +70,14 @@ fs.readFile(path.join(__dirname, 'tickets.csv'), {encoding: 'utf-8'}, function(e
 fs.readFile(path.join(__dirname, 'tests.csv'), {encoding: 'utf-8'}, function(err, data){
   if (!err) {
     tests = csv2array(data);
+  } else {
+    throw new Error(`Couldn't load data: ${err}`);
+  }
+});
+
+fs.readFile(path.join(__dirname, 'cards.json'), {encoding: 'utf-8'}, function(err, data){
+  if (!err) {
+    cards = JSON.parse(data)['cards'];
   } else {
     throw new Error(`Couldn't load data: ${err}`);
   }

@@ -1,0 +1,10 @@
+{
+  "cards": [
+     {
+       "type": "jira:ticket",
+       "background": {"type": "rect", "color": "white", "width": 300, "height": 300},
+       "captions": [{"x": 10, "y": 10, "w": 100, "h": 16, "text": "Ticket"}],
+       "textfields": [{"x": 10, "y": 40, "w": 100, "h": 16, "attribute": "id"}]
+     }
+    ]
+}

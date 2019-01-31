@@ -1,6 +1,8 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import './App.css';
 import Cache from './graph/Cache';
+import TemplateRegistry from './templates/TemplateRegistry';
+import CardSet from "./components/CardSet";
 
 const handleResponse = function (response) {
   if (response.ok) {
@@ -22,21 +24,33 @@ class App extends Component {
 
   componentDidMount() {
     this.getDictionaryFromDb()
-        .then(() => Promise.all(Cache.getEntityTypes().map( type => this.getDataFromDb(type))))
+        .then(() => Promise.all([...Cache.getEntityTypes().map( type => this.getDataFromDb(type)), this.getCardDescriptorsFromDb()]))
         .then(() => {
             this.setState({dataLoaded: true})})
   };
 
   getDictionaryFromDb() {
-    return fetch('/api/getDictionary')
+    return fetch('/api/dictionary')
         .then(handleResponse)
         .then(result => {
           Cache.importTypes(result.data)})
         .catch(error => this.setState({error}));
   };
 
+  getCardDescriptorsFromDb() {
+    return fetch('/api/cards')
+        .then(handleResponse)
+        .then(result => {
+          result.data.forEach(descriptor => {
+            TemplateRegistry.registerTemplate(descriptor)
+          })
+        })
+        .catch(error => this.setState({error}));
+  };
+
   getDataFromDb(type) {
-    return fetch(`/api/getData?type=${encodeURI(type)}`, {})
+    console.log(`fetching data of type ${type}`);
+    return fetch(`/api/data?type=${encodeURI(type)}`, {})
         .then(handleResponse)
         .then(res => {
           Cache.importNodeTable(res.data.type, res.data.headerRow, res.data.valueRows );
@@ -53,7 +67,7 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           {error && <span>An error occurred: {error.message}<br/></span>}
-          {dataLoaded && Cache.mapAllNodesOf('dcc:test', node => node['jira:ticket'].displayName()).join(',')}
+          {dataLoaded && <CardSet nodes={Cache.getAllNodesOf('jira:ticket')} template={TemplateRegistry.getTemplate('jira:ticket')}/>}
         </header>
       </div>
     );

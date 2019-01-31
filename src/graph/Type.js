@@ -16,6 +16,7 @@ export default class Type {
   }
 
   getInverseType (fallbackTargettype) {
+    // noinspection JSUnresolvedVariable
     return this.inverseType || fallbackTargettype;
   }
 

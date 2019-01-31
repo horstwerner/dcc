@@ -1,4 +1,4 @@
-import Cache, { traverse } from './Cache';
+import Cache, {traverse} from './Cache';
 
 export default class GraphNode {
 
