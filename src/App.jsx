@@ -65,10 +65,8 @@ class App extends Component {
 
     return (
       <div className="App">
-        <header className="App-header">
           {error && <span>An error occurred: {error.message}<br/></span>}
           {dataLoaded && <CardSet nodes={Cache.getAllNodesOf('jira:ticket')} template={TemplateRegistry.getTemplate('jira:ticket')}/>}
-        </header>
       </div>
     );
   }

@@ -1,13 +1,18 @@
 import React from 'react';
 import P from 'prop-types';
-import { BACKGR_SHAPE } from "./Card";
-import Card from "./Card";
+import Card, {BACKGR_SHAPE} from "./Card";
 
 const CardSet = function CardSet(props) {
   const {nodes, template} = props;
-
-  return (<div style={{display:"flex"}}>
-    {nodes.map(node => <Card key={node.id} {...template} graphNode={node} />)}
+  let cursor = 20;
+  let lastWidth = 0;
+  return (<div style={{width: "100%", position: "relative", height: "100%", backgroundColor: "#c0e040"}}>
+    {nodes.map(node => {
+      cursor += 1.2 * lastWidth;
+      console.log(`cursor is ${cursor}`);
+      lastWidth = template.background.w;
+      return (<Card key={node.id} {...template} x={cursor} y={50} graphNode={node}/>);
+    })}
   </div>)
 };
 

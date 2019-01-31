@@ -45,6 +45,13 @@ router.get("/data", (req, res) => {
 });
 
 router.get("/cards", (req, res) => {
+  fs.readFile(path.join(__dirname, 'cards.json'), {encoding: 'utf-8'}, function (err, data) {
+    if (!err) {
+      cards = JSON.parse(data)['cards'];
+    } else {
+      throw new Error(`Couldn't load data: ${err}`);
+    }
+  });
   return res.json({success: true, data: cards});
 });
 
@@ -75,13 +82,6 @@ fs.readFile(path.join(__dirname, 'tests.csv'), {encoding: 'utf-8'}, function(err
   }
 });
 
-fs.readFile(path.join(__dirname, 'cards.json'), {encoding: 'utf-8'}, function(err, data){
-  if (!err) {
-    cards = JSON.parse(data)['cards'];
-  } else {
-    throw new Error(`Couldn't load data: ${err}`);
-  }
-});
 
 app.listen(API_PORT, function(){
   console.log('Development Control Center mock backend is running');
