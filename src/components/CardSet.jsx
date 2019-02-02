@@ -1,28 +1,58 @@
-import React from 'react';
+import React, {Component} from 'react';
 import P from 'prop-types';
 import Card, {BACKGR_SHAPE} from "./Card";
+import {Moveable} from "../arrangement/Moveable";
+import GridArrangement from "../arrangement/GridArrangement";
+import Tween from "../arrangement/Tween";
 
-const CardSet = function CardSet(props) {
-  const {nodes, template} = props;
-  let cursor = 20;
-  let lastWidth = 0;
-  return (<div style={{width: "100%", position: "relative", height: "100%", backgroundColor: "#c0e040"}}>
-    {nodes.map(node => {
-      cursor += 1.2 * lastWidth;
-      console.log(`cursor is ${cursor}`);
-      lastWidth = template.background.w;
-      return (<Card key={node.id} {...template} x={cursor} y={50} graphNode={node}/>);
-    })}
-  </div>)
-};
+class CardSet extends Component {
 
-CardSet.propTypes = {
-  nodes: P.array,
-  template: P.shape({
-    background: BACKGR_SHAPE,
-    captions: P.array,
-    textfields: P.array,
-  })
-};
+  static propTypes = {
+    nodes: P.array,
+    template: P.shape({
+      background: BACKGR_SHAPE,
+      captions: P.array,
+      textfields: P.array,
+    }),
+    width: P.number,
+    height: P.number
+  };
+
+  constructor() {
+    super();
+    this.arranged = false;
+    this.arrange = this.arrange.bind(this);
+  }
+
+  render() {
+    const {nodes, template} = this.props;
+
+    this.elements = [];
+
+    if (!this.arranged) {
+      setTimeout(this.arrange, 500);
+    }
+
+    return (<div style={{width: "100%", position: "relative", height: "100%", backgroundColor: "#c0e040"}}>
+      {nodes.map(node => {
+        return (
+            <Moveable width={template.background.h} height={template.background.h} key={node.getUniqueKey()}
+                      ref={(card) => this.elements.push({node, card})}>
+              <Card {...template} graphNode={node}/>
+            </Moveable>
+        );
+      })}
+    </div>);
+
+  };
+
+  arrange() {
+    const tween = new Tween(600);
+    const {width, height} = this.props;
+    new GridArrangement(0.3).setArea(width, height).arrange(this.elements.map(element => element.card), tween, false);
+    tween.start();
+  }
+
+}
 
 export default CardSet;

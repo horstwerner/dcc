@@ -6,6 +6,7 @@ export default class GraphNode {
     this.type = Cache.typeDic[typeuri];
     if (this.type === undefined) throw new Error("Can't find type " + typeuri);
     this.uri = uri;
+    this.uniqueKey = this.uri.startsWith(this.type.uri) ? this.uri : `${this.type.uri}/${this.uri}`;
   }
 
   getTypeUri() {
@@ -13,7 +14,7 @@ export default class GraphNode {
   };
 
   getUniqueKey () {
-    return this.uri.startsWith(this.type.uri) ? this.uri : `${this.type.uri}/${this.uri}`;
+    return this.uniqueKey;
   };
 
   getPropertyText(propertyname, separator) {

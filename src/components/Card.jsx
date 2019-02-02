@@ -53,12 +53,12 @@ function Caption(props) {
 Caption.propTypes = CAPTION_PROPS;
 
 const Card = function Card(props) {
-  const {x, y, background, captions, textfields, graphNode} = props;
+  const {background, captions, textfields, graphNode} = props;
 
   const hasCaptions = captions && captions.length > 0;
   const hasTextFields = textfields && textfields.length > 0;
 
-  return <div className={css.card} style={{left: x, top: y, width: background.width, height: background.height}}>
+  return <div className={css.card} style={{width: background.width, height: background.height}}>
     <Background {...background}/>
       {hasCaptions && captions.map(caption => <Caption key={caption.text}{...caption}/>)}
       {hasTextFields && textfields.map(textfield => <Caption key={textfield.attribute}{...omit(textfield, ['attribute'])} text={resolveAttribute(graphNode, textfield.attribute)} />)}
@@ -66,8 +66,6 @@ const Card = function Card(props) {
 };
 
 Card.propTypes = {
-  x: P.number,
-  y: P.number,
   background: BACKGR_SHAPE,
   captions: P.array,
   textfields: P.array,
