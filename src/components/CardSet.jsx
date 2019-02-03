@@ -27,17 +27,26 @@ class CardSet extends Component {
   render() {
     const {nodes, template} = this.props;
 
+    const start = performance.now();
     this.elements = [];
+    let end = 0;
 
     if (!this.arranged) {
-      setTimeout(this.arrange, 500);
+      setTimeout(this.arrange, 2);
     }
 
     return (<div style={{width: "100%", position: "relative", height: "100%", backgroundColor: "#c0e040"}}>
       {nodes.map(node => {
         return (
             <Moveable width={template.background.h} height={template.background.h} key={node.getUniqueKey()}
-                      ref={(card) => this.elements.push({node, card})}>
+                      ref={(card) => {
+                        this.elements.push({node, card});
+                        end++;
+                        if (end === 1000) {
+                          end = performance.now();
+                          console.log(`1000 took ${end - start} ms`);
+                        }
+                      }}>
               <Card {...template} graphNode={node}/>
             </Moveable>
         );

@@ -15,7 +15,7 @@ const POSITION_PROPS = {
 export const CAPTION_PROPS = {
     ...POSITION_PROPS,
   color: P.string,
-    text: P.string.isRequired
+  text: P.string
 };
 
 export const TEXT_PROPS = {

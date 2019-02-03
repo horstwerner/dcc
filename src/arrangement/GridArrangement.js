@@ -87,6 +87,8 @@ export default class GridArrangement {
       }
     }
 
+    console.log(`xoffset is ${this.xOffset} outerpadding is ${this.outerpadding}`);
+
     const xoffset = xstep / 2 + this.xOffset + this.outerpadding;
     const yoffset = ystep / 2 + this.yOffset + this.outerpadding;
 
@@ -104,11 +106,15 @@ export default class GridArrangement {
       const childscale = childAR >= spacear ?
           maxw / width :
           maxh / height;
-      const rasterpos = child.getPos2Center(centerx, centery, childscale);
+      // const rasterpos = child.getPos2Center(centerx, centery, childscale);
+      const rasterpos = {
+        x: centerx - 0.5 * childscale * width,
+        y: centery - 0.5 * childscale * height
+      };
 
       if (tween) {
-        if (!child.hasPosition) {
-          child.setPos(rasterpos.x, rasterpos.y, 0.000001);
+        if (!child.hasPosition()) {
+          child.updateTransform(centerx, centery, 0.000001);
         } else {
         }
         tween.addTransform(child, rasterpos.x, rasterpos.y, childscale);

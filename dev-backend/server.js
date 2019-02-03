@@ -24,7 +24,14 @@ const csv2array = function (csvString) {
   const type = headerRow[0];
   headerRow[0] = 'id';
   return {type, headerRow, valueRows: rows.filter(row => row.length > 1)}
+};
 
+const compressArray = function (jsonArray) {
+  const headerRow = Object.keys(jsonArray[0]);
+  const type = jsonArray[0].type;
+  return {
+    type, headerRow, valueRows: jsonArray.map(object => headerRow.map(key => object[key]))
+  }
 };
 
 router.get("/dictionary", (req, res) => {
@@ -45,43 +52,69 @@ router.get("/data", (req, res) => {
 });
 
 router.get("/cards", (req, res) => {
-  fs.readFile(path.join(__dirname, 'cards.json'), {encoding: 'utf-8'}, function (err, data) {
-    if (!err) {
-      cards = JSON.parse(data)['cards'];
-    } else {
-      throw new Error(`Couldn't load data: ${err}`);
-    }
-  });
+  try {
+    const data = fs.readFileSync(path.join(__dirname, 'cards.json'), {encoding: 'utf-8'});
+    cards = JSON.parse(data)['cards'];
+    console.log(`loeded cards`);
+  } catch (err) {
+    throw new Error(`Couldn't load data: ${err}`);
+  }
+  console.log(`serving cards`);
   return res.json({success: true, data: cards});
 });
 
 app.use("/api", router);
 
+const parentDir = __dirname.substring(0, __dirname.lastIndexOf(path.sep));
+console.log(`parent dir is ${parentDir}`);
+
+app.use(express.static(path.join(parentDir, 'build')));
+
+app.get('/', function (req, res) {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
 const dicPath = path.join(__dirname, 'dictionary.json');
-fs.readFile(dicPath, {encoding: 'utf-8'}, function (err, data) {
-  if (!err) {
-    dictionary = JSON.parse(data)['TypeDictionary'];
-  } else {
-    throw new Error(`Couldn't load dictionary: ${err}`);
-  }
-});
+try {
+  const dicdata = fs.readFileSync(dicPath, {encoding: 'utf-8'});
+  dictionary = JSON.parse(dicdata)['TypeDictionary'];
+} catch (err) {
+  throw new Error(`Couldn't load dictionary: ${err}`);
+}
 
-fs.readFile(path.join(__dirname, 'tickets.csv'), {encoding: 'utf-8'}, function(err, data){
-  if (!err) {
-    tickets = csv2array(data);
-  } else {
-    throw new Error(`Couldn't load data: ${err}`);
-  }
-});
+const randomNum = function (maxVal) {
+  return Math.floor(Math.random() * maxVal);
+};
 
-fs.readFile(path.join(__dirname, 'tests.csv'), {encoding: 'utf-8'}, function(err, data){
-  if (!err) {
-    tests = csv2array(data);
-  } else {
-    throw new Error(`Couldn't load data: ${err}`);
-  }
-});
+const randomVal = function (array) {
+  return array[randomNum(array.length)];
+};
 
+const ticketArray = [];
+for (let i = 0; i < 1000; i++) {
+  ticketArray.push({
+    id: `JRA-${i}`,
+    type: `jira:ticket`,
+    'jira:ticket-type': randomVal(['bug', 'story']),
+    'jira:status': randomVal(['unassigned', 'open', 'in progress', 'in review', 'validate', 'closed'])
+  });
+}
+
+tickets = compressArray(ticketArray);
+
+// try {
+//   const ticketdata = fs.readFileSync(path.join(__dirname, 'tickets.csv'), {encoding: 'utf-8'});
+//   tickets = csv2array(ticketdata);
+// } catch(err) {
+//   throw new Error(`Couldn't load tickets: ${err}`);
+// }
+
+try {
+  const testdata = fs.readFileSync(path.join(__dirname, 'tests.csv'), {encoding: 'utf-8'});
+  tests = csv2array(testdata);
+} catch (err) {
+  throw new Error(`Couldn't load tests: ${err}`);
+}
 
 app.listen(API_PORT, function(){
   console.log('Development Control Center mock backend is running');

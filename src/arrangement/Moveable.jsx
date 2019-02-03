@@ -14,11 +14,17 @@ export class Moveable extends Component {
 
   constructor() {
     super();
-    this.state = {x: 0, y: 0, scale: 1, alpha: 1};
+    this.state = {hasPosition: false, x: 0, y: 0, scale: 1, alpha: 1};
   }
 
   updateTransform(x, y, scale) {
-    this.setState({x, y, scale});
+
+    if (!this.hasPosition()) {
+      this.setState({hasPosition: true, x, y, scale});
+    } else {
+      Object.assign(this.state, {x, y, scale});
+      this.div.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+    }
   }
 
   updateAlpha(alpha) {
@@ -44,7 +50,7 @@ export class Moveable extends Component {
   }
 
   hasPosition() {
-    return true;
+    return this.state.hasPosition;
   }
 
   /**
@@ -71,6 +77,7 @@ export class Moveable extends Component {
    */
   getPos2TopLeft(x, y, scale) {
     const {xAnchor, yAnchor, width, height} = this.props;
+    console.log(`${x},${y},${scale} -> `);
     return {
       x: x + (xAnchor || 0) * scale * (width || 0),
       y: y + (yAnchor || 0) * scale * (height || 0)
@@ -78,12 +85,22 @@ export class Moveable extends Component {
   };
 
   render() {
-    const {children} = this.props;
-    const {x, y, scale, alpha} = this.state;
+    const {children, xAnchor, yAnchor, width, height} = this.props;
+    const {x, y, scale, alpha, hasPosition} = this.state;
+
+    if (!hasPosition) {
+      return null;
+    }
 
     return (
-        <div className={css.moveable}
-             style={{transform: `translate(${x}px, ${y}px) scale(${scale})`, opacity: {alpha}}}>
+        <div className={css.moveable} ref={(div) => {
+          this.div = div;
+        }}
+             style={{
+               width, height,
+               transformOrigin: `${xAnchor * 100}% ${yAnchor * 100}%`,
+               transform: `translate(${x}px, ${y}px) scale(${scale})`, opacity: {alpha}
+             }}>
           {children}
         </div>
     );

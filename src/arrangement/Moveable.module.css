@@ -1,3 +1,4 @@
 .moveable {
   position: absolute;
+  transform-origin: 0 0;
 }

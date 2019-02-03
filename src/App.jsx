@@ -42,14 +42,13 @@ class App extends Component {
         .then(handleResponse)
         .then(result => {
           result.data.forEach(descriptor => {
-            TemplateRegistry.registerTemplate(descriptor)
+            TemplateRegistry.registerTemplate(descriptor);
           })
         })
         .catch(error => this.setState({error}));
   };
 
   getDataFromDb(type) {
-    console.log(`fetching data of type ${type}`);
     return fetch(`/api/data?type=${encodeURI(type)}`, {})
         .then(handleResponse)
         .then(res => {

@@ -204,7 +204,7 @@ export const resolveAttribute = function (node, path) {
     result = current;
   }
 
-  return result.constructor === GraphNode ?
+  return (result && result.constructor === GraphNode) ?
       result.displayName() :
       result;
 };
