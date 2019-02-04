@@ -48,13 +48,17 @@ export default class GridArrangement {
     return this;
   };
 
-  arrange = function (elements, tween, generateUndo) {
+  /**
+   *
+   * @param {Array} elements
+   * @param {{width, height}} childSize
+   * @param {function} callback
+   */
+  forEachRasterpos = function (elements, childSize, callback) {
 
     if (!elements || elements.length === 0) return;
-    const undoMovements = generateUndo ? [] : null;
 
-
-    const childaspectratio = this.childAspectRatio || elements[0].getAspectRatio();
+    const childaspectratio = this.childAspectRatio || childSize.width / childSize.height;
     let childcount = elements.length;
 
 
@@ -87,20 +91,18 @@ export default class GridArrangement {
       }
     }
 
-    console.log(`xoffset is ${this.xOffset} outerpadding is ${this.outerpadding}`);
-
     const xoffset = xstep / 2 + this.xOffset + this.outerpadding;
     const yoffset = ystep / 2 + this.yOffset + this.outerpadding;
 
     let index = 0;
     for (let i = 0; i < elements.length; i++) {
-      const child = elements[i];
+      const element = elements[i];
       const row = Math.floor(index / cols);
       const col = index % cols;
       const centery = yoffset + row * ystep;
       const centerx = xoffset + col * xstep;
 
-      const {width, height} = child.getSize();
+      const {width, height} = childSize;
 
       const childAR = width / height;
       const childscale = childAR >= spacear ?
@@ -109,30 +111,24 @@ export default class GridArrangement {
       // const rasterpos = child.getPos2Center(centerx, centery, childscale);
       const rasterpos = {
         x: centerx - 0.5 * childscale * width,
-        y: centery - 0.5 * childscale * height
+        y: centery - 0.5 * childscale * height,
+        scale: childscale
       };
 
-      if (tween) {
-        if (!child.hasPosition()) {
-          child.updateTransform(centerx, centery, 0.000001);
-        } else {
-        }
-        tween.addTransform(child, rasterpos.x, rasterpos.y, childscale);
-        if (generateUndo) {
-          undoMovements.push({
-            action: 'move',
-            actor: child.getId(),
-            x: child.x,
-            y: child.y,
-            scale: child.scale
-          })
-        }
-      } else {
-        child.updateTransform(rasterpos.x, rasterpos.y, childscale);
-      }
+      callback(element, rasterpos);
+
       index++;
     }
-
-    return undoMovements;
   };
+
+  arrange(elements, childSize, tween) {
+    this.forEachRasterpos(elements, childSize, (moveable, rasterPos) => {
+      if (tween) {
+        tween.addTransform(moveable, rasterPos.x, rasterPos.y, rasterPos.scale);
+      } else {
+        moveable.updateTransform(rasterPos.x, rasterPos.y, rasterPos.scale);
+      }
+    });
+  }
+
 }

@@ -91,7 +91,7 @@ const randomVal = function (array) {
 };
 
 const ticketArray = [];
-for (let i = 0; i < 1000; i++) {
+for (let i = 0; i < 100; i++) {
   ticketArray.push({
     id: `JRA-${i}`,
     type: `jira:ticket`,

@@ -5,6 +5,8 @@ import {Moveable} from "../arrangement/Moveable";
 import GridArrangement from "../arrangement/GridArrangement";
 import Tween from "../arrangement/Tween";
 
+const PADDING = 0.2;
+
 class CardSet extends Component {
 
   static propTypes = {
@@ -20,40 +22,47 @@ class CardSet extends Component {
 
   constructor() {
     super();
-    this.arranged = false;
     this.arrange = this.arrange.bind(this);
+    this.arrangement = new GridArrangement(PADDING);
   }
 
   render() {
-    const {nodes, template} = this.props;
+    const {nodes, template, width, height} = this.props;
 
-    const start = performance.now();
     this.elements = [];
-    let end = 0;
+    this.childSize = {width: template.background.w, height: template.background.h};
 
-    if (!this.arranged) {
-      setTimeout(this.arrange, 2);
-    }
+    console.log(`rendering cardset with ${width}/${height}`);
+    const moveableNodes = [];
+    new GridArrangement(PADDING).setArea(width, height).forEachRasterpos(nodes, this.childSize, (node, rasterPos) => {
+      console.log(`scale=${rasterPos.scale}`);
+      moveableNodes.push(<Moveable {...this.childSize}
+                                   key={node.getUniqueKey()}
+                                   initialX={rasterPos.x}
+                                   initialY={rasterPos.y}
+                                   initialScale={rasterPos.scale}
+                                   ref={(card) => {
+                                     this.elements.push({node, card});
+                                   }}>
+        <Card {...template} graphNode={node}/>
+      </Moveable>)
+    });
 
     return (<div style={{width: "100%", position: "relative", height: "100%", backgroundColor: "#c0e040"}}>
-      {nodes.map(node => {
-        return (
-            <Moveable width={template.background.h} height={template.background.h} key={node.getUniqueKey()}
-                      ref={(card) => {
-                        this.elements.push({node, card});
-                        end++;
-                        if (end === 1000) {
-                          end = performance.now();
-                          console.log(`1000 took ${end - start} ms`);
-                        }
-                      }}>
-              <Card {...template} graphNode={node}/>
-            </Moveable>
-        );
-      })}
+      {moveableNodes}
     </div>);
-
   };
+
+  onResize(width, height) {
+    if (this.resizeTween) {
+      this.resizeTween.stop();
+    }
+    // this.resizeTween= new Tween(500, noEase);
+    const cards = this.elements.map(element => element.card);
+
+    new GridArrangement(PADDING).setArea(width, height).arrange(cards, this.childSize);
+    // this.resizeTween.start();
+  }
 
   arrange() {
     const tween = new Tween(600);
