@@ -1,9 +1,10 @@
-import React from 'react';
 import P from 'prop-types';
 import {omit} from 'lodash';
-import css from './Card.module.css';
+import Component from '@ssymb/Component';
+import css from './Card.css';
 import GraphNode from "../graph/GraphNode";
 import {resolveAttribute} from "../graph/Cache";
+import {Div_} from "@symb/Div";
 
 const POSITION_PROPS = {
   x: P.number.isRequired,
@@ -31,45 +32,45 @@ function Background(props) {
   const {type, color, w, h} = props;
   switch (type) {
     case BACKGR_RECT:
-      return (<div className={css.background} style={{backgroundColor: color, width: w, height: h}}/>);
+      return Div_({className: css.background, style:{backgroundColor: color, width: w, height: h}})._Div;
     default:
       throw new Error(`Unknown background type: ${type}`);
   }
 }
 
-Background.propTypes = {
-  type: P.string,
-  color: P.string,
-  w: P.number,
-  h: P.number
-};
-
 function Caption(props) {
   const {x, y, w, h, text, color} = props;
-  return (<div className={css.caption}
-               style={{width: w, height: h, left: x, top: y, color: color, fontSize: h}}>{text}</div>);
+  return Div_({className: css.caption, style:{width: w, height: h, left: x, top: y, color: color, fontSize: h}}, text)._Div
 }
 
 Caption.propTypes = CAPTION_PROPS;
 
-const Card = function Card(props) {
+export default class Card extends Component{
+
+  static baseTag = 'div';
+  static className = 'css.card';
+  static propTypes = {
+    background: BACKGR_SHAPE,
+    captions: P.array,
+    textfields: P.array,
+    graphNode: P.instanceOf(GraphNode)
+  };
+
+  update(props) {
   const {background, captions, textfields, graphNode} = props;
 
   const hasCaptions = captions && captions.length > 0;
   const hasTextFields = textfields && textfields.length > 0;
 
-  return <div className={css.card} style={{width: background.width, height: background.height}}>
-    <Background {...background}/>
-      {hasCaptions && captions.map(caption => <Caption key={caption.text}{...caption}/>)}
-      {hasTextFields && textfields.map(textfield => <Caption key={textfield.attribute}{...omit(textfield, ['attribute'])} text={resolveAttribute(graphNode, textfield.attribute)} />)}
-  </div>
+  const children = [
+      Background(background),
+      hasCaptions && captions.map(caption => Caption({key:caption.text,...caption})),
+      hasTextFields && textfields.map(textfield =>
+          Caption({key: textfield.attribute, ...omit(textfield, ['attribute']),
+            text: resolveAttribute(graphNode, textfield.attribute)}))
+  ].filter(Boolean);
+
+  super.update({...props, style: {width: background.width, height: background.height}, children});
+
 };
 
-Card.propTypes = {
-  background: BACKGR_SHAPE,
-  captions: P.array,
-  textfields: P.array,
-  graphNode: P.instanceOf(GraphNode)
-};
-
-export default Card;

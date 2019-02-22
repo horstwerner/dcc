@@ -1,29 +1,35 @@
 import React, {Component} from 'react';
 import P from 'prop-types';
 import css from './Moveable.module.css';
+import {getTransformString} from './util.js'
 
-export class Moveable extends Component {
+export default class Moveable extends Component {
 
   static propTypes = {
-    width: P.number.isRequired,
-    height: P.number.isRequired,
     xAnchor: P.number,
     yAnchor: P.number,
-    children: P.node.isRequired
+    initialX: P.number.isRequired,
+    initialY: P.number.isRequired,
+    initialScale: P.number.isRequired,
+    initialAlpha: P.number,
+    children: P.node.isRequired,
+    onClick: P.func
   };
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {};
   }
 
   updateTransform(x, y, scale) {
-
+    if (isNaN(x) || isNaN(y) || isNaN(scale)) {
+      throw new Error(`${x} ${y} ${scale}`);
+    }
     if (!this.hasPosition()) {
       this.setState({hasPosition: true, x, y, scale});
     } else {
       Object.assign(this.state, {x, y, scale});
-      this.div.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+      this.div.style.transform = getTransformString(x, y, scale);
     }
   }
 
@@ -37,68 +43,30 @@ export class Moveable extends Component {
     return {x, y, scale};
   }
 
-  getSize() {
-    const {width, height} = this.props;
-    return {width, height};
-  }
-
-  getAspectRatio() {
-    return this.props.width / this.props.height;
-  }
-
   getAlpha() {
-    return this.state.alpha;
+    return this.state.alpha || this.props.initialAlpha;
   }
 
   hasPosition() {
     return this.state.hasPosition;
   }
 
-  /**
-   * @param {number} x - center x coordinate
-   * @param {number} y - center y coordinate
-   * @param scale
-   * @return {{x: *, y: *}} position for this moveable so that the center is at the specified position
-   */
-  getPos2Center(x, y, scale) {
-
-    const {xAnchor, yAnchor, width, height} = this.props;
-
-    return {
-      x: x + ((xAnchor || 0) - 0.5) * scale * width,
-      y: y + ((yAnchor || 0) - 0.5) * scale * height
-    }
-  };
-
-  /**
-   * @param {number} x - center x coordinate
-   * @param {number} y - center y coordinate
-   * @param scale
-   * @return {{x: *, y: *}} position for this moveable so that the top left corner is at the specified position
-   */
-  getPos2TopLeft(x, y, scale) {
-    const {xAnchor, yAnchor, width, height} = this.props;
-    console.log(`${x},${y},${scale} -> `);
-    return {
-      x: x + (xAnchor || 0) * scale * (width || 0),
-      y: y + (yAnchor || 0) * scale * (height || 0)
-    }
-  };
-
   render() {
-    const {children, xAnchor, yAnchor, width, height, initialX, initialY, initialScale} = this.props;
+    const {children, xAnchor, yAnchor, width, height, initialX, initialY, initialScale, initialAlpha, onClick} = this.props;
 
-    const {x, y, scale, alpha} = this.state;
+    const params = {x: initialX, y: initialY, scale: initialScale, alpha: initialAlpha, ...this.state};
+    const {x, y, scale, alpha} = params;
 
     return (
         <div className={css.moveable} ref={(div) => {
           this.div = div;
         }}
+             onClick={onClick}
              style={{
                width, height,
                transformOrigin: `${xAnchor * 100}% ${yAnchor * 100}%`,
-               transform: `translate(${x || initialX }px, ${y || initialY}px) scale(${scale || initialScale})`,
-               opacity: {alpha}
+               transform: `translate(${x}px, ${y}px) scale(${scale})`,
+               opacity: (alpha)
              }}>
           {children}
         </div>

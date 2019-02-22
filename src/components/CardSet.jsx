@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import P from 'prop-types';
 import Card, {BACKGR_SHAPE} from "./Card";
-import {Moveable} from "../arrangement/Moveable";
+import Moveable from "../arrangement/Moveable";
 import GridArrangement from "../arrangement/GridArrangement";
 import Tween from "../arrangement/Tween";
 
@@ -17,7 +17,8 @@ class CardSet extends Component {
       textfields: P.array,
     }),
     width: P.number,
-    height: P.number
+    height: P.number,
+    onClick: P.func,
   };
 
   constructor() {
@@ -27,20 +28,21 @@ class CardSet extends Component {
   }
 
   render() {
-    const {nodes, template, width, height} = this.props;
+    const {nodes, template, x, y, width, height, onClick} = this.props;
 
     this.elements = [];
     this.childSize = {width: template.background.w, height: template.background.h};
 
     console.log(`rendering cardset with ${width}/${height}`);
     const moveableNodes = [];
-    new GridArrangement(PADDING).setArea(width, height).forEachRasterpos(nodes, this.childSize, (node, rasterPos) => {
+    new GridArrangement(PADDING).setArea(width, height).setOffset(x, y).forEachRasterpos(nodes, this.childSize, (node, rasterPos) => {
       console.log(`scale=${rasterPos.scale}`);
       moveableNodes.push(<Moveable {...this.childSize}
                                    key={node.getUniqueKey()}
                                    initialX={rasterPos.x}
                                    initialY={rasterPos.y}
                                    initialScale={rasterPos.scale}
+                                   onClick={onClick}
                                    ref={(card) => {
                                      this.elements.push({node, card});
                                    }}>
@@ -48,7 +50,7 @@ class CardSet extends Component {
       </Moveable>)
     });
 
-    return (<div style={{width: "100%", position: "relative", height: "100%", backgroundColor: "#c0e040"}}>
+    return (<div style={{width: "100%", position: "absolute", left: 0, top: 0, height: "100%"}}>
       {moveableNodes}
     </div>);
   };

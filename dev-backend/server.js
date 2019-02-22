@@ -6,7 +6,6 @@ const router = express.Router();
 let tickets;
 let tests;
 let dictionary;
-let cards;
 
 const fs = require('fs');
 const path = require('path');
@@ -52,10 +51,10 @@ router.get("/data", (req, res) => {
 });
 
 router.get("/cards", (req, res) => {
+  let cards;
   try {
     const data = fs.readFileSync(path.join(__dirname, 'cards.json'), {encoding: 'utf-8'});
     cards = JSON.parse(data)['cards'];
-    console.log(`loeded cards`);
   } catch (err) {
     throw new Error(`Couldn't load data: ${err}`);
   }
@@ -63,10 +62,23 @@ router.get("/cards", (req, res) => {
   return res.json({success: true, data: cards});
 });
 
+router.get("/navigation", (req, res) => {
+  let navigation;
+  try {
+    const data = fs.readFileSync(path.join(__dirname, 'navigation.json'), {encoding: 'utf-8'});
+    navigation = JSON.parse(data);
+  } catch (err) {
+    throw new Error(`Couldn't load data: ${err}`);
+  }
+  console.log(`serving navigation`);
+  return res.json({success: true, data: navigation});
+});
+
+app.use(express.static('static'));
+
 app.use("/api", router);
 
 const parentDir = __dirname.substring(0, __dirname.lastIndexOf(path.sep));
-console.log(`parent dir is ${parentDir}`);
 
 app.use(express.static(path.join(parentDir, 'build')));
 

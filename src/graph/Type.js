@@ -1,19 +1,15 @@
 import P from 'prop-types';
+import CheckedObject from "../CheckedObject";
 
-const typeProps = {
-  uri: P.string.isRequired,
-  name: P.string.isRequired,
-  dataType: P.oneOf(['INTEGER','STRING','FLOAT','BOOLEAN', 'ENTITY']).isRequired,
-  isAssociation: P.bool.isRequired,
-  inverseType: P.string
-};
+export default class Type extends CheckedObject{
 
-export default class Type {
-
-  constructor (descriptor) {
-    P.checkPropTypes(typeProps, descriptor, 'parameter', 'Type constructor');
-    Object.keys(typeProps).forEach(prop => this[prop] = descriptor[prop]);
-  }
+  static propertyTypes = {
+    uri: P.string.isRequired,
+    name: P.string.isRequired,
+    dataType: P.oneOf(['INTEGER','STRING','FLOAT','BOOLEAN', 'ENTITY']).isRequired,
+    isAssociation: P.bool.isRequired,
+    inverseType: P.string
+  };
 
   getInverseType (fallbackTargettype) {
     // noinspection JSUnresolvedVariable

@@ -1,0 +1,50 @@
+{
+  "startmap": "start",
+  "maps": {
+    "start": {
+      "width": 1200,
+      "height": 700,
+      "backColor": "#E3EDEE",
+      "backdrop": "/images/Toplevelmap.svg",
+      "elements": [
+        {
+          "key": "tickets",
+          "type": "grid",
+          "source": "jira:ticket",
+          "x": 72,
+          "y": 72,
+          "width": 120,
+          "height": 120,
+          "onClick": {
+            "type": "rearrange",
+            "elements": [
+              {
+                "key": "tickets",
+                "x": 20,
+                "y": 20,
+                "width": 1000,
+                "height": 600
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "map2": {
+      "width": 1200,
+      "height": 700,
+      "backColor": "#E3EDEE",
+      "input": "tickets",
+      "elements": [
+        {
+          "type": "grid",
+          "source": "tickets",
+          "x": 100,
+          "y": 300,
+          "width": 1000,
+          "height": 300
+        }
+      ]
+    }
+  }
+}

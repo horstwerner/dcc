@@ -3,18 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/preset-env": "^7.3.1",
     "concurrently": "^4.1.0",
+    "lodash": "^4.17.11",
+    "npm": "^6.8.0",
     "prop-types": "^15.6.2",
-    "react": "^16.7.0",
-    "react-dom": "^16.7.0",
-    "react-scripts": "^2.1.3"
+    "webpack": "^4.29.5"
   },
   "scripts": {
-    "start": "concurrently \"cd dev-backend && node server.js\" \"react-scripts start\"",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "concurrently \"cd dev-backend && node server.js\" \"webpack-dev-server -d --open --env.development\"",
+    "build": "webpack --mode production --env.production"
   },
+  "eslint": "5.12.0",
+  "eslint-loader": "2.1.1",
   "eslintConfig": {
     "extends": "react-app"
   },
@@ -27,7 +28,19 @@
   "proxy": "http://localhost:3001",
   "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
   "main": "index.js",
-  "devDependencies": {},
+  "devDependencies": {
+    "@babel/core": "^7.3.3",
+    "@babel/plugin-proposal-class-properties": "^7.3.3",
+    "babel-loader": "^8.0.5",
+    "babel-preset-env": "^1.7.0",
+    "css-loader": "0.28.11",
+    "html-webpack-plugin": "^3.2.0",
+    "mini-css-extract-plugin": "^0.5.0",
+    "style-loader": "^0.23.1",
+    "webpack-cli": "^3.2.3",
+    "webpack-combine-loaders": "^2.0.4",
+    "webpack-dev-server": "^3.1.14"
+  },
   "repository": {
     "type": "git",
     "url": "https://mabuse.xp-dev.com/git/dcc-git"

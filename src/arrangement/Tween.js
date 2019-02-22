@@ -36,6 +36,9 @@ class Phase {
    */
   addTransform(card, newX, newY, newScale) {
     const {x, y, scale} = card.getPos();
+    if (newX === x || newY === y || newScale === scale) {
+      return;
+    }
     this.particles.push({
       element: card,
       startX: x,
@@ -51,14 +54,17 @@ class Phase {
   /**
    *
    * @param {Moveable} card
-   * @param {number} targetOpacity
+   * @param {number} targetAlpha
    */
-  addFade(card, targetOpacity) {
+  addFade(card, targetAlpha) {
     const startAlpha = card.getAlpha();
+    if (startAlpha === targetAlpha) {
+      return;
+    }
     this.alphaChanges.push({
       element: card,
       startAlpha: startAlpha,
-      deltaAlpha: targetOpacity - startAlpha
+      deltaAlpha: targetAlpha - startAlpha
     });
   };
 
@@ -216,14 +222,13 @@ export default class Tween {
     if (this.onEndCallback) {
       if (this.onEndCallback.constructor === Array) {
         for (let i = 0; i < this.onEndCallback.length; i++) {
-          this.onEndCallback[i]();
+          this.onEndCallback[i](this);
         }
       } else {
-        this.onEndCallback();
+        this.onEndCallback(this);
       }
     }
     this.nextAnimationframe = null;
-    console.log(`${this.phases[0].particles.length} elements ${this.frames / this.duration * 1000} fps`);
     activeTweens.splice(activeTweens.indexOf(this));
   };
 
