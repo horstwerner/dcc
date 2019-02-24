@@ -36,15 +36,15 @@ function Background(props) {
   const {type, color, w, h} = props;
   switch (type) {
     case BACKGR_RECT:
-      return Div_({className: css.background, style:{backgroundColor: color, width: w, height: h}})._Div;
+      return Div_({key: 'background', className: css.background, style:{backgroundColor: color, width: w, height: h}})._Div;
     default:
       throw new Error(`Unknown background type: ${type}`);
   }
 }
 
 function Caption(props) {
-  const {x, y, w, h, text, color} = props;
-  return Div_({className: css.caption, style:{width: w, height: h, left: x, top: y, color: color, fontSize: h}}, text)._Div
+  const {key, x, y, w, h, text, color} = props;
+  return Div_({key, className: css.caption, style:{width: w, height: h, left: x, top: y, color: color, fontSize: h}}, text)._Div
 }
 
 Caption.propTypes = CAPTION_PROPS;
@@ -53,12 +53,13 @@ export default class Card extends Component {
 
   static type = CARD;
   static baseTag = 'div';
-  static className = 'css.card';
+  static className = css.card;
 
   static propTypes = {
-    background: BACKGR_SHAPE,
-    captions: P.array,
-    textfields: P.array,
+    template: P.shape({
+      background: BACKGR_SHAPE,
+      captions: P.array,
+      textfields: P.array}),
     graphNode: P.instanceOf(GraphNode)
   };
 
@@ -68,7 +69,8 @@ export default class Card extends Component {
     }
     this.innerProps = props;
 
-    const {background, captions, textfields, graphNode} = props;
+    const {template, graphNode} = props;
+    const {background, captions, textfields} = template;
 
     const hasCaptions = captions && captions.length > 0;
     const hasTextFields = textfields && textfields.length > 0;
@@ -89,7 +91,7 @@ export default class Card extends Component {
       });
     }
     this.createChildren(children);
-    this.updateStyle({...this.style, width: background.width, height: background.height});
+    this.updateStyle({...this.style, width: background.w, height: background.h});
   };
 }
 

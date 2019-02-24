@@ -6,7 +6,7 @@ import ComponentFactory from "@symb/ComponentFactory";
 import omit from 'lodash/omit';
 import Cache from './graph/Cache';
 import TemplateRegistry from './templates/TemplateRegistry';
-
+import {Div_} from '@symb/Div';
 const APP = 'app';
 
 const handleResponse = function (response) {
@@ -31,21 +31,20 @@ export default class App extends Component {
     this.state = {
       dataLoaded: false,
       error: null,
-      width: window.innerWidth,
-      height: window.innerHeight,
+      windowWidth: window.innerWidth,
+      windowHeight: window.innerHeight,
       focusMap: null,
       trsnsitions: []
     };
     this.getDictionaryFromDb()
         .then(() => Promise.all([...Cache.getEntityTypes().map(type => this.getDataFromDb(type)), this.getCardDescriptorsFromDb(), this.getNavigationFromDb()]))
         .then(() => {
-          this.setState({
-            dataLoaded: true,
-            actors: [
-              this.mapActorFocused('root', TemplateRegistry.getStartMap())
-            ],
-            focusActorKey: 'root'
-          })
+          if (!this.state.error) {
+            this.setState({
+              dataLoaded: true,
+              focusActorKey: 'root'
+            })
+          }
         });
     // this.navigateTo = this.navigateTo.bind(this);
   }
@@ -104,7 +103,6 @@ export default class App extends Component {
         });
   }
 
-
   updateContents(props) {
     const {dataLoaded, error, focusMap, windowWidth, windowHeight} = this.state;
     // const backgroundColor = (map && map.backColor) || '#ffffff';
@@ -116,6 +114,7 @@ export default class App extends Component {
       error && Div_({}, `An error occurred: ${error.message}`)._Div,
 
       dataLoaded && CardSet_({
+        key: 'rootset',
         nodes: Cache.getAllNodesOf('jira:ticket'),
         template: TemplateRegistry.getTemplate('jira:ticket'),
         width: windowWidth,
@@ -124,22 +123,26 @@ export default class App extends Component {
     ]);
   }
 
-  mapActorFocused(key, map) {
-    const {width, height} = this.state;
-    const scale = Math.min(width / map.width, height / map.height);
-    const xOffset = Math.floor((width - scale * map.width) / 2);
-    const yOffset = Math.floor((height - scale * map.height) / 2);
+  onResize(width, height) {
+    this.setState({windowWidth: width, windowHeight: height});
+  }
 
-    return new Actor({
-      key,
-      x: xOffset,
-      y: yOffset,
-      scale,
-      node: (<NavigationMap {...map} dataSource={Cache} onElementClick={(key, description) => {
-      this.createTransition(key, description);
-    }}/>)
-  });
-  };
+  // mapActorFocused(key, map) {
+  //   const {width, height} = this.state;
+  //   const scale = Math.min(width / map.width, height / map.height);
+  //   const xOffset = Math.floor((width - scale * map.width) / 2);
+  //   const yOffset = Math.floor((height - scale * map.height) / 2);
+  //
+  //   return new Actor({
+  //     key,
+  //     x: xOffset,
+  //     y: yOffset,
+  //     scale,
+  //     node: (<NavigationMap {...map} dataSource={Cache} onElementClick={(key, description) => {
+  //     this.createTransition(key, description);
+  //   }}/>)
+  // });
+  // };
 
 };
 

@@ -30,6 +30,7 @@ export default class Component {
       this.dom = document.createElement(this.constructor.elementType || this.constructor.baseTag);
     }
     this.className = props.className || this.constructor.className;
+    this.dom.className = this.className;
     this.key = props.key;
     this.alpha = 1;
   }
@@ -176,8 +177,13 @@ export default class Component {
 
   updateStyle(style) {
     if (!isEqual(style, this.style)) {
-       this.dom.style = omit(style,['transform','left','top']);
-       this.style = style;
+      Object.keys(style).forEach(key => {
+        let value = style[key];
+        if (['width','height','left','top'].includes(key) && typeof(value) === 'number') {
+          value = `${value}px`;
+        }
+        this.dom.style[key] = value});
+      this.style = style;
     }
   }
 
@@ -196,6 +202,7 @@ export default class Component {
 
   updateClassName(className) {
     if (className !== this.className) {
+      debugger
       this.dom.className = className;
       this.className = className;
     }

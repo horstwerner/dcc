@@ -7,6 +7,7 @@ class TemplateRegistry {
   }
 
   registerTemplate(descriptor) {
+    console.log(`registered template for '${descriptor.type}'`);
     this.templateByType[descriptor.type] = descriptor;
   }
 

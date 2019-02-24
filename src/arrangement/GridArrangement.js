@@ -13,8 +13,8 @@ export default class GridArrangement {
   };
 
   setOffset(xOffset, yOffset) {
-    this.xOffset = xOffset;
-    this.yOffset = yOffset;
+    this.xOffset = xOffset || 0;
+    this.yOffset = yOffset || 0;
     return this;
   };
 

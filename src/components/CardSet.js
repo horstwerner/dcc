@@ -1,11 +1,6 @@
-<<<<<<< Updated upstream
-import React, {Component} from 'react';
-import P from 'prop-types';
-=======
 import P from 'prop-types';
 import Component from '@symb/Component';
 import css from './CardSet.css';
->>>>>>> Stashed changes
 import {Card_, BACKGR_SHAPE} from "./Card";
 import GridArrangement from "../arrangement/GridArrangement";
 import Tween from "../arrangement/Tween";
@@ -33,8 +28,8 @@ class CardSet extends Component {
     onClick: P.func,
   };
 
-  constructor() {
-    super();
+  constructor(props, div) {
+    super(props, div  );
     this.arrange = this.arrange.bind(this);
     this.arrangement = new GridArrangement(PADDING);
   }
@@ -42,6 +37,10 @@ class CardSet extends Component {
   updateContents(props) {
     this.innerProps = props;
     const {nodes, template, x, y, width, height, onClick} = props;
+
+    if (isNaN(width) || isNaN(height)) {
+      throw new Error('non-number passed as width or height');
+    }
 
     this.elements = [];
     this.childSize = {width: template.background.w, height: template.background.h};
@@ -54,7 +53,7 @@ class CardSet extends Component {
         .setOffset(x, y)
         .forEachRasterpos(nodes, (node, rasterPos) => {
           childDescriptors.push(
-              Card_({key: node.getUniqueKey(), spatial: rasterPos, graphNode: node, onClick, ...template})._Card
+              Card_({key: node.getUniqueKey(), spatial: rasterPos, graphNode: node, onClick, template})._Card
           );
     });
 

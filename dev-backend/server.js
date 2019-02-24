@@ -7,8 +7,16 @@ let tickets;
 let tests;
 let dictionary;
 
+const NUM_CARDS = 4;
+
 const fs = require('fs');
 const path = require('path');
+
+// app.use(function(req, res, next) {
+//   console.log('%s %s %s', req.method, req.url, req.path);
+//   next();
+// });
+
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
@@ -103,7 +111,7 @@ const randomVal = function (array) {
 };
 
 const ticketArray = [];
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < NUM_CARDS; i++) {
   ticketArray.push({
     id: `JRA-${i}`,
     type: `jira:ticket`,
