@@ -10,6 +10,9 @@ class ComponentFactory {
   }
 
   registerType(constructor) {
+    if (!constructor.type) {
+      throw new Error(`Can't register class without static field 'type'`);
+    }
     this.constructorByType[constructor.type] = constructor;
   }
 
@@ -18,13 +21,18 @@ class ComponentFactory {
   }
 
 
-  create( type, props ) {
+  create( descriptor, div ) {
+    const {type, ...props} = descriptor;
     const constructor = this.constructorByType[type];
     if (!constructor) {
       throw new Error(`No component registered for type ${[type]}`);
     }
-    return new constructor(props);
+    const result = new constructor(props, div);
+    result.update(props);
+    return result;
   }
+
+
 }
 
 const instance = new ComponentFactory();

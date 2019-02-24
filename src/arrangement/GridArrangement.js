@@ -1,6 +1,6 @@
 export default class GridArrangement {
 
-  constructor(padding) {
+  constructor(padding, childSize) {
     this.xOffset = 0;
     this.yOffset = 0;
     this.areaw = 0;
@@ -8,6 +8,7 @@ export default class GridArrangement {
     this.padding = padding;
     this.outerpadding = 0;
     this.maxChildsize = undefined;
+    this.childSize = childSize;
     this.compact = false;
   };
 

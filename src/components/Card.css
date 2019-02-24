@@ -5,8 +5,10 @@
 
 .card {
   position: absolute;
+  transform-origin: 0 0;
 }
 
 .caption {
   position: absolute;
+  transform-origin: 0 0;
 }

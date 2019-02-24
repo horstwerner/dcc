@@ -3,9 +3,7 @@ import P from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
 import get from 'lodash/get';
 import css from './Stage.module.css'
-import Moveable from "../arrangement/Moveable";
 import Tween from "../arrangement/Tween";
-import Actor from "../Actor";
 
 const actorProps = Actor.propertyTypes;
 
@@ -56,7 +54,7 @@ export default class Stage extends Component {
     if (transition.x !== undefined && transition.y !== undefined && transition.scale !== undefined) {
       this.pendingTween.addTransform(moveable, transition.x, transition.y, transition.scale);
     }
-    if (transition.alpha !== undefined) {
+    if (transition.alpha != null) {
       this.pendingTween.addFade(moveable, transition.alpha);
     }
   }

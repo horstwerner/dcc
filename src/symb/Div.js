@@ -5,9 +5,10 @@ import ComponentFactory from "./ComponentFactory"
 const DIV = 'div';
 
 export class Div extends Component {
+  static type = DIV;
 }
 
-ComponentFactory.registerType(DIV, Div);
+ComponentFactory.registerType(Div);
 
 // Syntactical sugar makes for better readability
 

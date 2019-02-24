@@ -165,7 +165,7 @@ export const traverse = function(source, path) {
 
     curSet.forEach(node => {
           const related = node[step];
-          if (related !== undefined) {
+          if (related != null) {
             if (related.constructor === Array) {
               for (let j = 0; j < related.length; j++) {
                 let node = related[j];

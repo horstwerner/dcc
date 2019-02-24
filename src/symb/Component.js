@@ -32,11 +32,10 @@ export default class Component {
     this.className = props.className || this.constructor.className;
     this.key = props.key;
     this.alpha = 1;
-    this.update(props);
   }
 
   checkProps(props) {
-    if (props.key !== this.key) {
+    if (props.key && (props.key  !== this.key)) {
       throw new Error(`Attempt to update component with key ${this.key} with descriptor ${props.key}`);
     }
     if (DEBUG_MODE) {
@@ -75,7 +74,7 @@ export default class Component {
       if (existing) {
         existing.destroy();
       }
-      return this.addChild(ComponentFactory.create(type, netProps));
+      return this.addChild(ComponentFactory.create(childDescriptor));
     } else if (!isEqual(netProps, existing.props)) {
         existing.update(netProps);
     }
@@ -96,20 +95,22 @@ export default class Component {
     this.addChild(child);
   }
 
-  createChildren(children) {
+  createChildren(descriptor) {
     const updatedChildren = {};
     let count = 0;
     let result;
     if (!this.childByKey) {
       this.childByKey = {};
     }
-    if (Array.isArray(children)) {
-      result = children.map(child => {
-        const childComponent = this.createChild(`surrogate_key${count++}`, child);
+    if (Array.isArray(descriptor)) {
+      result = descriptor
+          .filter(Boolean)
+          .map(childDescriptor => {
+        const childComponent = this.createChild(`surrogate_key${count++}`, childDescriptor);
         updatedChildren[childComponent.key] = childComponent;
       })
     } else {
-      result = this.createChild(`surrogate_key${count}`, children);
+      result = this.createChild(`surrogate_key${count}`, descriptor);
       updatedChildren[result.key] = result;
     }
     // remove old children that aren't part of children list
@@ -130,16 +131,18 @@ export default class Component {
    * @param props
    */
   update(props) {
-    this.checkProps(props);
+    if (props) {
+      this.checkProps(props);
+    }
     const {key, className, style, alpha, spatial, children, ...innerProps} = props;
-    if (key !== this.key) {
+    if (key && (key !== this.key)) {
       throw new Error(`Attempt to update object ${this.key} with props for ${key}`);
     }
 
     // each of the top-level properties can be updated independently without requiring
     // a full update
 
-    if (alpha !== null) {
+    if (alpha != null) {
       this.updateAlpha(alpha);
     }
 
@@ -155,8 +158,8 @@ export default class Component {
       this.updateClassName(className);
     }
 
-    if (!isEmpty(innerProps)) {
-      this.updateInnerProps(innerProps);
+    if (innerProps && !isEmpty(innerProps)) {
+      this.updateContents(innerProps);
     }
 
     if (children) {
@@ -164,7 +167,7 @@ export default class Component {
     }
   }
 
-  updateInnerProps(props) {
+  updateContents(props) {
     if (!isEqual(this.innerProps, props)) {
       this.dom.innerHTML = this.fillTemplate(props);
       this.innerProps = props;
@@ -207,6 +210,11 @@ export default class Component {
   onResize(width, height) {
     this.dom.style.width = `${width}px`;
     this.dom.style.height = `${height}px`;
+  }
+
+  setState(partialState) {
+    this.state = {...this.state, ...partialState};
+    this.updateContents({...this.innerProps});
   }
 
   destroy() {

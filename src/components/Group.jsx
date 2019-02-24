@@ -1,8 +1,7 @@
-import Component from '@ssymb/Component';
+import Component from '@symb/Component';
 import P from 'prop-types';
 import get from 'lodash/get';
 import isEmpty from 'lodash/isEmpty';
-import Moveable from '../arrangement/Moveable';
 import Tween from "../arrangement/Tween";
 import css from './Group.module.css';
 

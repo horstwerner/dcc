@@ -1,11 +1,14 @@
 import P from 'prop-types';
-import {omit} from 'lodash';
-import Component from '@ssymb/Component';
+import flatten from 'lodash/flatten';
+import Component from '@symb/Component';
 import css from './Card.css';
 import GraphNode from "../graph/GraphNode";
 import {resolveAttribute} from "../graph/Cache";
 import {Div_} from "@symb/Div";
 import isEqual from "lodash/isEqual";
+import ComponentFactory from "@symb/ComponentFactory";
+
+const CARD = 'card';
 
 const POSITION_PROPS = {
   x: P.number.isRequired,
@@ -46,8 +49,9 @@ function Caption(props) {
 
 Caption.propTypes = CAPTION_PROPS;
 
-export default class Card extends Component{
+export default class Card extends Component {
 
+  static type = CARD;
   static baseTag = 'div';
   static className = 'css.card';
 
@@ -58,7 +62,7 @@ export default class Card extends Component{
     graphNode: P.instanceOf(GraphNode)
   };
 
-  updateInnerProps(props) {
+  updateContents(props) {
     if (isEqual(this.innerProps, props)) {
       return;
     }
@@ -69,21 +73,27 @@ export default class Card extends Component{
     const hasCaptions = captions && captions.length > 0;
     const hasTextFields = textfields && textfields.length > 0;
 
-    const children = [
-      Background(background),
-      hasCaptions && captions.map(caption => Caption({key: caption.text, ...caption})),
-      hasTextFields && textfields.map(textfield => {
-          const {attribute, ...rest} = textfield;
-          return Caption({
-            key: attribute,
-            text: resolveAttribute(graphNode, textfield.attribute),
-            ...rest
-          })
-      })
-    ].filter(Boolean);
+    const children = [Background(background)];
+    if (hasCaptions) {
+      captions.forEach(caption => children.push(Caption({key: caption.text, ...caption})));
+    }
+    if (hasTextFields) {
+      textfields.forEach(textfield => {
+        const {attribute, ...rest} = textfield;
+        children.push(Caption({
+              key: attribute,
+              text: resolveAttribute(graphNode, textfield.attribute),
+              ...rest
+            })
+        );
+      });
+    }
+    this.createChildren(children);
+    this.updateStyle({...this.style, width: background.width, height: background.height});
+  };
+}
 
-    super.update({...props, style: {width: background.width, height: background.height}, children});
-  }
-};
+ComponentFactory.registerType(Card);
 
+export const Card_ = (props) => ({_Card: {type: CARD, ...props}});
 
