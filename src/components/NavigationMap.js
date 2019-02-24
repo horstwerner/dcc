@@ -1,8 +1,14 @@
 import P from 'prop-types';
+import isEqual from 'lodash/isEqual';
+import Component from '@symb/Component';
+import ComponentFactory from '@symb/ComponentFactory';
 import css from './NavigationMap.css';
 import TemplateRegistry from '../templates/TemplateRegistry';
-import CardSet from "./CardSet";
+import {CardSet_} from "./CardSet";
+import {Image_} from "@symb/Image";
 import {ELEMENT_GRID, transitionPropTypes} from "../Map";
+
+const NAVIGATIONMAP = 'navigationmap';
 
 const elementShape = {
   type: P.oneOf(['grid', 'card', 'label', 'donut', 'bar']),
@@ -12,17 +18,23 @@ const elementShape = {
 const createElement = function (descriptor, dataSource, onClick) {
   switch (descriptor.type) {
     case ELEMENT_GRID:
-      const {source, x, y, width, height} = descriptor;
+      const {key, source, x, y, width, height} = descriptor;
       const nodes = dataSource.getAllNodesOf(source);
       const template = TemplateRegistry.getTemplate(source);
-      const cardSetProps = {spatial:{x, y, scale: 1}, width, height, template, nodes};
+      const cardSetProps = {key, spatial:{x, y, scale: 1}, width, height, template, nodes};
+
       return CardSet_({key:descriptor.type, ...cardSetProps, onClick})._CardSet;
     default:
       throw new Error(`Unknown element type ${descriptor.type}`);
   }
 };
 
-export default class NavigationMap extends Component {
+class NavigationMap extends Component {
+
+  static type = NAVIGATIONMAP;
+  // noinspection JSUnusedGlobalSymbols
+  static baseTag = 'div';
+  static className = css.map;
 
   static propTypes = {
     dataSource: P.shape({
@@ -34,13 +46,26 @@ export default class NavigationMap extends Component {
     onElementClick: P.func.isRequired
   };
 
-  render() {
-    const {dataSource, width, height, elements, background, onElementClick} = this.props;
+  updateContents(props) {
+    if (isEqual(this.innerProps, props)) {
+      return;
+    }
+    this.innerProps = props;
+    const {dataSource, width, height, elements, backdrop, onElementClick} = props;
 
-    return (<div className={css.map} style={{width, height}}>
-      {elements.map(descriptor => createElement(descriptor, dataSource, ()=>{onElementClick(descriptor.key, descriptor.onClick)}))}
-    </div>);
-
+    const childDescriptors = [];
+    if (backdrop) {
+      childDescriptors.push(Image_({source: backdrop, width, height})._Image);
+    }
+    elements.forEach(descriptor =>
+        childDescriptors.push(
+            createElement(descriptor, dataSource, ()=>{onElementClick(descriptor.key, descriptor.onClick)}))
+    );
+    this.updateStyle({width, height});
+    this.createChildren(childDescriptors);
   }
-
 }
+
+ComponentFactory.registerType(NavigationMap);
+
+export const NavigationMap_ = (props) => ({_NavigationMap: {type: NAVIGATIONMAP, ...props}});

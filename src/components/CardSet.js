@@ -1,4 +1,5 @@
 import P from 'prop-types';
+import isEqual from 'lodash/isEqual';
 import Component from '@symb/Component';
 import css from './CardSet.css';
 import {Card_, BACKGR_SHAPE} from "./Card";
@@ -35,6 +36,9 @@ class CardSet extends Component {
   }
 
   updateContents(props) {
+    if (isEqual(this.innerProps, props)) {
+      return;
+    }
     this.innerProps = props;
     const {nodes, template, x, y, width, height, onClick} = props;
 

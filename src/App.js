@@ -7,6 +7,7 @@ import omit from 'lodash/omit';
 import Cache from './graph/Cache';
 import TemplateRegistry from './templates/TemplateRegistry';
 import {Div_} from '@symb/Div';
+import {NavigationMap_} from "@/components/NavigationMap";
 const APP = 'app';
 
 const handleResponse = function (response) {
@@ -36,6 +37,7 @@ export default class App extends Component {
       focusMap: null,
       trsnsitions: []
     };
+
     this.getDictionaryFromDb()
         .then(() => Promise.all([...Cache.getEntityTypes().map(type => this.getDataFromDb(type)), this.getCardDescriptorsFromDb(), this.getNavigationFromDb()]))
         .then(() => {
@@ -46,7 +48,12 @@ export default class App extends Component {
             })
           }
         });
-    // this.navigateTo = this.navigateTo.bind(this);
+    this.onElementClick = this.onElementClick.bind(this);
+
+  }
+
+  onElementClick(e, element) {
+    debugger
   }
 
   getDictionaryFromDb() {
@@ -113,13 +120,12 @@ export default class App extends Component {
     this.createChildren([
       error && Div_({}, `An error occurred: ${error.message}`)._Div,
 
-      dataLoaded && CardSet_({
-        key: 'rootset',
-        nodes: Cache.getAllNodesOf('jira:ticket'),
-        template: TemplateRegistry.getTemplate('jira:ticket'),
-        width: windowWidth,
-        height: windowHeight
-      })._CardSet
+      dataLoaded && NavigationMap_({
+          key: 'navigation',
+          dataSource: Cache,
+          onElementClick: this.onElementClick,
+            ...TemplateRegistry.getStartMap()
+        })._NavigationMap
     ]);
   }
 
