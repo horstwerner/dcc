@@ -67,7 +67,9 @@ module.exports = function(webpackEnv) {
     devtool: 'inline-source-map',
     devServer: {
       proxy: {
-            '/api': 'http://localhost:3001'
+            '/api': 'http://localhost:3001',
+            '/images': 'http://localhost:3001'
+
       }
     }
   });

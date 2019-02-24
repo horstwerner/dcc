@@ -1,4 +1,5 @@
-.map {
+.map, .background {
   position: absolute;
   transform-origin: 0 0;
 }
+

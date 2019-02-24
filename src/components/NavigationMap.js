@@ -55,7 +55,7 @@ class NavigationMap extends Component {
 
     const childDescriptors = [];
     if (backdrop) {
-      childDescriptors.push(Image_({source: backdrop, width, height})._Image);
+      childDescriptors.push(Image_({key: 'background', className: css.background, source: backdrop, width, height})._Image);
     }
     elements.forEach(descriptor =>
         childDescriptors.push(

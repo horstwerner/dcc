@@ -43,7 +43,7 @@ export default class Component {
       if (!this.constructor.propTypes) {
         throw new Error(`Missing static member propTypes in Component ${this.constructor.name}`);
       }
-      P.checkPropTypes(Component.propTypes, props, 'prop', 'Component');
+      P.checkPropTypes(Component.propTypes, props, 'prop', this.constructor.name);
       P.checkPropTypes(this.constructor.propTypes, props, 'prop', this.constructor.name);
     }
   }

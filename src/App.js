@@ -8,6 +8,7 @@ import Cache from './graph/Cache';
 import TemplateRegistry from './templates/TemplateRegistry';
 import {Div_} from '@symb/Div';
 import {NavigationMap_} from "@/components/NavigationMap";
+import {fit} from "@symb/util";
 const APP = 'app';
 
 const handleResponse = function (response) {
@@ -44,7 +45,7 @@ export default class App extends Component {
           if (!this.state.error) {
             this.setState({
               dataLoaded: true,
-              focusActorKey: 'root'
+              currentMap: TemplateRegistry.getStartMap()
             })
           }
         });
@@ -113,18 +114,17 @@ export default class App extends Component {
   updateContents(props) {
     const {dataLoaded, error, focusMap, windowWidth, windowHeight} = this.state;
     // const backgroundColor = (map && map.backColor) || '#ffffff';
-    const {width, height, transitions} = this.state;
-    // once renderer, transitions are spent - don't rerender because of state change
-    this.state = omit(this.state, transitions);
+    const {width, height, currentMap} = this.state;
 
     this.createChildren([
       error && Div_({}, `An error occurred: ${error.message}`)._Div,
 
       dataLoaded && NavigationMap_({
           key: 'navigation',
+          spatial: fit(windowWidth, windowHeight, currentMap.width, currentMap.height),
           dataSource: Cache,
           onElementClick: this.onElementClick,
-            ...TemplateRegistry.getStartMap()
+          ...currentMap
         })._NavigationMap
     ]);
   }
