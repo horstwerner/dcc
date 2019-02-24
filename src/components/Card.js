@@ -5,6 +5,7 @@ import css from './Card.css';
 import GraphNode from "../graph/GraphNode";
 import {resolveAttribute} from "../graph/Cache";
 import {Div_} from "@symb/Div";
+import isEqual from "lodash/isEqual";
 
 const POSITION_PROPS = {
   x: P.number.isRequired,
@@ -14,7 +15,7 @@ const POSITION_PROPS = {
 };
 
 export const CAPTION_PROPS = {
-    ...POSITION_PROPS,
+  ...POSITION_PROPS,
   color: P.string,
   text: P.string
 };
@@ -49,6 +50,7 @@ export default class Card extends Component{
 
   static baseTag = 'div';
   static className = 'css.card';
+
   static propTypes = {
     background: BACKGR_SHAPE,
     captions: P.array,
@@ -56,21 +58,32 @@ export default class Card extends Component{
     graphNode: P.instanceOf(GraphNode)
   };
 
-  update(props) {
-  const {background, captions, textfields, graphNode} = props;
+  updateInnerProps(props) {
+    if (isEqual(this.innerProps, props)) {
+      return;
+    }
+    this.innerProps = props;
 
-  const hasCaptions = captions && captions.length > 0;
-  const hasTextFields = textfields && textfields.length > 0;
+    const {background, captions, textfields, graphNode} = props;
 
-  const children = [
+    const hasCaptions = captions && captions.length > 0;
+    const hasTextFields = textfields && textfields.length > 0;
+
+    const children = [
       Background(background),
-      hasCaptions && captions.map(caption => Caption({key:caption.text,...caption})),
-      hasTextFields && textfields.map(textfield =>
-          Caption({key: textfield.attribute, ...omit(textfield, ['attribute']),
-            text: resolveAttribute(graphNode, textfield.attribute)}))
-  ].filter(Boolean);
+      hasCaptions && captions.map(caption => Caption({key: caption.text, ...caption})),
+      hasTextFields && textfields.map(textfield => {
+          const {attribute, ...rest} = textfield;
+          return Caption({
+            key: attribute,
+            text: resolveAttribute(graphNode, textfield.attribute),
+            ...rest
+          })
+      })
+    ].filter(Boolean);
 
-  super.update({...props, style: {width: background.width, height: background.height}, children});
-
+    super.update({...props, style: {width: background.width, height: background.height}, children});
+  }
 };
+
 

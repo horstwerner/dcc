@@ -23,6 +23,10 @@ export default class GridArrangement {
     return this;
   };
 
+  setChildSize(childSize) {
+    this.childSize = childSize;
+  }
+
   setOuterPadding = function (value) {
     this.outerpadding = value;
     return this;
@@ -51,14 +55,13 @@ export default class GridArrangement {
   /**
    *
    * @param {Array} elements
-   * @param {{width, height}} childSize
    * @param {function} callback
    */
-  forEachRasterpos = function (elements, childSize, callback) {
+  forEachRasterpos = function (elements, callback) {
 
     if (!elements || elements.length === 0) return;
 
-    const childaspectratio = this.childAspectRatio || childSize.width / childSize.height;
+    const childaspectratio = this.childAspectRatio || this.childSize.width / this.childSize.height;
     let childcount = elements.length;
 
 
@@ -102,7 +105,7 @@ export default class GridArrangement {
       const centery = yoffset + row * ystep;
       const centerx = xoffset + col * xstep;
 
-      const {width, height} = childSize;
+      const {width, height} = this.childSize;
 
       const childAR = width / height;
       const childscale = childAR >= spacear ?
@@ -114,19 +117,17 @@ export default class GridArrangement {
         y: centery - 0.5 * childscale * height,
         scale: childscale
       };
-
       callback(element, rasterpos);
-
       index++;
     }
   };
 
-  arrange(elements, childSize, tween) {
-    this.forEachRasterpos(elements, childSize, (moveable, rasterPos) => {
+  arrange(elements, tween) {
+    this.forEachRasterpos(elements, (element, rasterPos) => {
       if (tween) {
-        tween.addTransform(moveable, rasterPos.x, rasterPos.y, rasterPos.scale);
+        tween.addTransform(element, rasterPos.x, rasterPos.y, rasterPos.scale);
       } else {
-        moveable.updateTransform(rasterPos.x, rasterPos.y, rasterPos.scale);
+        element.updateSpatial(rasterPos);
       }
     });
   }

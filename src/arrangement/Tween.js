@@ -6,6 +6,7 @@ const easeInOut = function (t) {
   return t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1
 };
 
+// noinspection JSUnusedGlobalSymbols
 export const noEase = function (t) {
   return t;
 };
@@ -27,20 +28,24 @@ class Phase {
     return this.duration;
   };
 
+  getDelay() {
+    return this.delay;
+  }
+
   /**
    *
-   * @param {Moveable} card
+   * @param {Component} component
    * @param {Number} newX
    * @param {Number} newY
    * @param {Number} newScale
    */
-  addTransform(card, newX, newY, newScale) {
-    const {x, y, scale} = card.getPos();
+  addTransform(component, newX, newY, newScale) {
+    const {x, y, scale} = component.spatial;
     if (newX === x || newY === y || newScale === scale) {
       return;
     }
     this.particles.push({
-      element: card,
+      element: component,
       startX: x,
       startY: y,
       startScale: scale,
@@ -49,6 +54,14 @@ class Phase {
       deltaScale: newScale - scale
     });
     return this;
+  };
+
+  addColorChange (element, newColor) {
+    this.colorChanges.push({
+      element: element,
+      startColor: ColorUtil.splitColor(element.getColor()),
+      endColor: ColorUtil.splitColor(newColor)
+    });
   };
 
   /**
@@ -68,32 +81,6 @@ class Phase {
     });
   };
 
-  /**
-   *
-   * @param {Moveable} card
-   * @param {number} newX
-   * @param {number} newY
-   * @param {number} newScale
-   * @param {number} newWidth
-   * @param {number} newHeight
-   */
-  addTransformAndSize(card, newX, newY, newScale, newWidth, newHeight) {
-    this.particles.push({
-      element: card,
-      startX: card.x,
-      startY: card.y,
-      startScale: card.scale,
-      startHeight: card.height,
-      startWidth: card.width,
-      deltaX: newX - card.x,
-      deltaY: newY - card.y,
-      deltaScale: newScale - card.scale,
-      deltaHeight: newHeight - card.height,
-      deltaWidth: newWidth - card.width
-    });
-    return this;
-  };
-
   addInterpolation(startArray, endArray, callback) {
     this.interpolations.push({
       startArray: startArray,
@@ -107,7 +94,7 @@ class Phase {
     const tau = uneasedTau >= 1 ? 1 : Math.max(0, this.easing(uneasedTau));
     for (let i = 0; i < this.particles.length; i++) {
       const p = this.particles[i];
-      p.element.updateTransform(p.startX + tau * p.deltaX, p.startY + tau * p.deltaY, p.startScale + tau * p.deltaScale);
+      p.element.updateSpatial({x: p.startX + tau * p.deltaX, y:  p.startY + tau * p.deltaY, scale: p.startScale + tau * p.deltaScale});
     }
     for (let i = 0; i < this.alphaChanges.length; i++) {
       const ac = this.alphaChanges[i];
@@ -124,11 +111,11 @@ class Phase {
     this.startTime = performance.now();
   };
 
-  onEndCall = function (callback) {
+  onEndCall(callback) {
     this.parent.onEndCall(callback);
   };
 
-  newPhase = function (delay, duration, easingfunction) {
+  newPhase (delay, duration, easingfunction) {
     return this.parent.newPhase(delay, duration, easingfunction);
   };
 }
@@ -164,13 +151,13 @@ export default class Tween {
 
   /**
    *
-   * @param {Moveable} card
+   * @param {Component} component
    * @param {Number} newX
    * @param {Number} newY
    * @param {Number} newScale
    */
-  addTransform(card, newX, newY, newScale) {
-    this.phases[0].addTransform(card, newX, newY, newScale);
+  addTransform(component, newX, newY, newScale) {
+    this.phases[0].addTransform(component, newX, newY, newScale);
   };
 
   addColorChange(element, newColor) {

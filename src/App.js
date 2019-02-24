@@ -26,7 +26,7 @@ export default class App extends Component {
         )._Table
     );
     console.log(css);
-    this.div.className = css.app;
+    this.dom.className = css.app;
   }
 
 };

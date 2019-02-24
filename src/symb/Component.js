@@ -1,26 +1,37 @@
 import P from 'prop-types';
-import get from 'lodash/get';
 import isEqual from 'lodash/isEqual';
 import isEmpty from 'lodash/isEmpty';
+import omit from 'lodash/omit';
 import {DEBUG_MODE} from '../Config';
 import ComponentFactory from './ComponentFactory'
+import {getTransformString} from "@symb/util";
 
 export default class Component {
 
   static propTypes = {
     key: P.string.isRequired,
+    className: P.string,
+    style: P.object,
+    alpha: P.number,
+    spatial: P.shape ({
+      x: P.number,
+      y: P.number,
+      scale: P.number,
+    }),
     children: P.oneOfType([P.string, P.array])
   };
 
   static baseTag = 'div';
 
-  constructor(props, div) {
-    if (div) {
-      this.div = div;
+  constructor(props, domNode) {
+    if (domNode) {
+      this.dom = domNode;
     } else {
-      this.div = document.createElement(this.constructor.elementType || this.constructor.baseTag);
+      this.dom = document.createElement(this.constructor.elementType || this.constructor.baseTag);
     }
+    this.className = props.className || this.constructor.className;
     this.key = props.key;
+    this.alpha = 1;
     this.update(props);
   }
 
@@ -32,7 +43,8 @@ export default class Component {
       if (!this.constructor.propTypes) {
         throw new Error(`Missing static member propTypes in Component ${this.constructor.name}`);
       }
-      P.checkPropTypes(this.constructor.propTypes, props, 'parameter', 'Type constructor');
+      P.checkPropTypes(Component.propTypes, props, 'prop', 'Component');
+      P.checkPropTypes(this.constructor.propTypes, props, 'prop', this.constructor.name);
     }
   }
 
@@ -42,7 +54,7 @@ export default class Component {
 
   createChild(fallbackKey, childDescriptor) {
     if (typeof(childDescriptor) === 'string') {
-      this.div.innerHTML = childDescriptor;
+      this.dom.innerHTML = childDescriptor;
       return childDescriptor;
     }
     if (childDescriptor === undefined) {
@@ -65,18 +77,29 @@ export default class Component {
       }
       return this.addChild(ComponentFactory.create(type, netProps));
     } else if (!isEqual(netProps, existing.props)) {
-      console.log(`updating ${key}`);
         existing.update(netProps);
     }
     return existing;
   }
 
+  /**
+   * includes an already instantiated Component into the list of child components
+   * However, if no child descriptor with the same key is passed in the next
+   * @param child
+   * @param spatial - position and scale in this component's local coordinate system
+   */
+  adoptChild(child, spatial) {
+    if (!this.childByKey) {
+      this.childByKey = {};
+    }
+    child.update({spatial});
+    this.addChild(child);
+  }
+
   createChildren(children) {
     const updatedChildren = {};
     let count = 0;
-
     let result;
-
     if (!this.childByKey) {
       this.childByKey = {};
     }
@@ -108,32 +131,82 @@ export default class Component {
    */
   update(props) {
     this.checkProps(props);
-    this.props = props;
-    const {key, className, style, children, ...otherProps} = this.props;
-    if (style && !isEqual(style, this.div.style)) {
-      this.div.style = style;
+    const {key, className, style, alpha, spatial, children, ...innerProps} = props;
+    if (key !== this.key) {
+      throw new Error(`Attempt to update object ${this.key} with props for ${key}`);
     }
-    const newClassName = className || this.constructor.className;
-    if (newClassName && newClassName !== this.div.className) {
-      this.div.className = className || this.constructor.className;
+
+    // each of the top-level properties can be updated independently without requiring
+    // a full update
+
+    if (alpha !== null) {
+      this.updateAlpha(alpha);
     }
-    if (!isEmpty(otherProps)) {
-      this.div.innerHTML = this.fillTemplate(otherProps);
+
+    if (style) {
+      this.updateStyle(style);
     }
+
+    if (spatial) {
+      this.updateSpatial(spatial);
+    }
+
+    if (className) {
+      this.updateClassName(className);
+    }
+
+    if (!isEmpty(innerProps)) {
+      this.updateInnerProps(innerProps);
+    }
+
     if (children) {
       this.createChildren(children);
     }
   }
 
+  updateInnerProps(props) {
+    if (!isEqual(this.innerProps, props)) {
+      this.dom.innerHTML = this.fillTemplate(props);
+      this.innerProps = props;
+    }
+  }
+
+  updateStyle(style) {
+    if (!isEqual(style, this.style)) {
+       this.dom.style = omit(style,['transform','left','top']);
+       this.style = style;
+    }
+  }
+
+  updateSpatial(spatial) {
+    if (!isEqual(this.spatial, spatial)) {
+      const {x, y, scale} = spatial;
+      this.dom.style.transform = getTransformString(x, y, scale);
+      this.spatial = spatial;
+    }
+  }
+
+  updateAlpha(alpha) {
+    this.alpha = alpha;
+    this.dom.style.opacity = this.alpha;
+  }
+
+  updateClassName(className) {
+    if (className !== this.className) {
+      this.dom.className = className;
+      this.className = className;
+    }
+  }
+
   addChild(child) {
     this.childByKey[child.key] = child;
-    this.div.appendChild(child.div);
+    this.dom.appendChild(child.dom);
     return child;
   }
 
   onResize(width, height) {
-    this.div.style.width = `${width}px`;
-    this.div.style.height = `${height}px`;
+    this.dom.style.width = `${width}px`;
+    this.dom.style.height = `${height}px`;
   }
 
   destroy() {
@@ -145,7 +218,7 @@ export default class Component {
         }
       })
     }
-    this.div.remove();
+    this.dom.remove();
   }
 
 };

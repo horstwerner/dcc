@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import Component from '@ssymb/Component';
 import P from 'prop-types';
 import get from 'lodash/get';
 import isEmpty from 'lodash/isEmpty';
@@ -9,34 +9,28 @@ import css from './Group.module.css';
 
 export default class Group extends Component {
 
-  constructor(props){
-    super(props);
-    this.elementsByKey={};
-    this.registerMoveable = this.registerMoveable.bind(this);
+  static baseTag = 'div';
+
+  static propTypes = {
+    elements: P.arrayOf(P.instanceOf(Component)),
+    arrangement: P.shape({getPositions: P.func}),
+    tween: P.shape({addTransform: P.func})
+  };
+
+  arrange(arrangement, tween) {
+
   }
 
-  registerMoveable(key, element) {
-    this.elementsByKey[key].moveable = element;
-    const pendingTransition = get(this.pendingTransitions, 'key');
-    if (pendingTransition) {
-      delete this.pendingTransitions[key];
-      this.addTransitionToPendingTween(pendingTransition)
-    }
-    if (this.pendingTween && isEmpty(this.pendingTransitions)) {
-      this.startPendingTween();
-      this.pendingTween = null;
-    }
-  }
+  update(props) {
 
-  render() {
-
-    const {elements, arrangement, tween} = this.props;
-    const positions = arrangement.getPositions(elements);
+    const {children, arrangement, tween} = props;
+    const positions = arrangement.getPositions(children);
 
     const elementNodes = [];
     const renderedElementsByKey = {};
-    elements.forEach(element => {
-      const {key, x, y, scale, alpha, node} = element;
+    children.forEach(element => {
+      const {key, spatial, alpha} = element;
+      const {x, y, scale} = spatial;
       if (isNaN(x) || isNaN(y) || isNaN(scale)) {
         throw new Error(`Invalid actor position x:${x} y:${y} scale:${scale}`);
       }
