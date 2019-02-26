@@ -41,7 +41,7 @@ class Phase {
    */
   addTransform(component, newX, newY, newScale) {
     const {x, y, scale} = component.spatial;
-    if (newX === x || newY === y || newScale === scale) {
+    if (newX === x && newY === y && newScale === scale) {
       return;
     }
     this.particles.push({

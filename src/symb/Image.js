@@ -26,6 +26,11 @@ export class Image extends Component {
       this.dom.onclick = onClick;
     }
   }
+
+  getNativeSize() {
+    const { width, height } = this.innerProps;
+    return { width, height };
+  }
 }
 
 ComponentFactory.registerType(Image);

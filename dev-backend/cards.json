@@ -3,20 +3,21 @@
     {
       "type": "jira:ticket",
       "background": {
-        "type": "rect",
-        "color": "#e0e0e0",
-        "w": 300, "h": 300
+        "type": "image",
+        "source": "/images/Alertcard.svg",
+        "w": 220, "h": 220
       },
       "captions": [
         {
-          "x": 20, "y": 10, "w": 100, "h": 16,
-          "text": "Ticket ",
-          "color": "#000"
+          "x": 20, "y": 12, "w": 100, "h": 18,
+          "text": "Alert ",
+          "font-weight": "bold",
+          "color": "white"
         }
       ],
       "textfields": [
         {
-          "x": 20, "y": 30, "w": 100, "h": 16,
+          "x": 20, "y": 50, "w": 100, "h": 16,
           "attribute": "id",
           "color": "#000"
         },
@@ -37,13 +38,15 @@
       },
       "textfields": [
         {
-          "x": 60, "y": 30, "w": 100, "h": 16,
+          "key": "title",
+          "x": 88, "y": 20, "w": 100, "h": 16,
           "attribute": "title",
-          "color": "red"
+          "color": "#D95E5E"
         }
       ],
       "childcards":[
         {
+          "key": "elements",
           "source": "elements",
           "template": "jira:ticket",
           "arrangement": {
@@ -54,7 +57,29 @@
             "height": 132
           }
         }
-      ]
+      ],
+      "states": {
+        "expanded": {
+          "elements": {
+            "arrangement": {
+              "type": "grid",
+              "x": 250,
+              "y": 44,
+              "width": 800,
+              "height": 500
+            }
+          },
+          "background": {
+            "x": 20,
+            "y": 20,
+            "width": 100,
+            "height": 100
+          },
+          "title": {
+            "x": 48, "y": 60, "width": 100, "height": 16
+          }
+        }
+      }
     }
   ]
 }

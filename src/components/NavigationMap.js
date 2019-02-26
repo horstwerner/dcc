@@ -17,19 +17,19 @@ const BACKGROUND = 'background';
 const ACTION_REARRANGE = 'rearrange';
 
 const elementShape = {
-  type: P.oneOf(['grid', 'card', 'label', 'donut', 'bar']),
+  type: P.oneOf(['group', 'card', 'label', 'donut', 'bar']),
   onClick: P.shape(transitionPropTypes)
 };
 
 const createElement = function (descriptor, dataSource, onClick) {
   switch (descriptor.type) {
     case ELEMENT_GROUP: {
-      const {key, source, x, y, width, height} = descriptor;
+      const {key, title, source, x, y, width, height} = descriptor;
       const template = TemplateRegistry.getTemplate(descriptor.template);
       const spatial = fit(width, height, template.background.w, template.background.h, x, y);
       const nodes = dataSource.getAllNodesOf(source);
       // const cardSetProps = {key,, width, height, backdrop, template, nodes;
-      return Card_({key, spatial, data: {elements: nodes}, onClick, template})._Card
+      return Card_({key, spatial, data: {elements: nodes, title}, onClick, template})._Card
     }
     default:
       throw new Error(`Unknown element type ${descriptor.type}`);
@@ -64,16 +64,20 @@ class NavigationMap extends Component {
       const { elements } = action;
       Object.keys(this.childByKey).forEach(key => {
         if (!elements[key]) {
-          tween.addFade(this.childByKey[key],0);
+          tween.addFade(this.childByKey[key],0.1);
         } else {
           const element = this.childByKey[key];
           if (element.constructor !== Card) {
             throw new Error(`can't reposition navigation map element ${key}, only cards allowed`);
           }
-          const template = element.getTemplate();
-          const {x, y, width, height} = elements[key];
-          const spatial = fit(width, height, template.background.w, template.background.h, x, y);
-          tween.addTransform(element, spatial.x, spatial.y, spatial.scale);
+          const {x, y, width, height, morph} = elements[key];
+          if (morph) {
+             element.morph(morph, tween);
+          } else {
+            const template = element.getTemplate();
+            const spatial = fit(width, height, template.background.w, template.background.h, x, y);
+            tween.addTransform(element, spatial.x, spatial.y, spatial.scale);
+          }
         }
       });
       tween.start();

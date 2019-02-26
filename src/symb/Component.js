@@ -187,6 +187,11 @@ export default class Component {
     }
   }
 
+  getNativeSize() {
+    const { width, height } = this.style;
+    return { width, height };
+  }
+
   updateSpatial(spatial) {
     if (!isEqual(this.spatial, spatial)) {
       const {x, y, scale} = spatial;

@@ -27,7 +27,6 @@ class CardSet extends Component {
 
   constructor(props, div) {
     super(props, div  );
-    this.arrange = this.arrange.bind(this);
     this.arrangement = new GridArrangement(PADDING);
   }
 
@@ -62,11 +61,10 @@ class CardSet extends Component {
   //   // this.resizeTween.start();
   // }
 
-  arrange() {
-    const tween = new Tween(600);
-    const {arrangement} = this.props;
-    arrangement.arrange(this.elements.map(element => element.card), tween, false);
-    tween.start();
+  updateArrangement(arrangement, tween) {
+    this.innerProps.arrangement = arrangement;
+    const children = Object.keys(this.childByKey).map(key => this.childByKey[key]);
+    arrangement.arrange(children, tween);
   }
 }
 

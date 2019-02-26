@@ -9,6 +9,8 @@ import {Image_} from "@symb/Image";
 import GridArrangement, {GRID} from "@/arrangement/GridArrangement";
 import {CardSet_} from "@/components/CardSet";
 import TemplateRegistry from '../templates/TemplateRegistry';
+import CardSet from "@/components/CardSet";
+import {fit} from "@symb/util";
 
 const CARD = 'card';
 const PADDING = 0.2;
@@ -34,17 +36,18 @@ export const TEXT_PROPS = {
 
 const BACKGR_RECT = 'rect';
 const BACKGR_IMAGE = 'image';
-export const BACKGR_SHAPE = P.shape({type: P.oneOf([BACKGR_RECT]), color: P.string});
+export const BACKGR_SHAPE = P.shape({type: P.oneOf([BACKGR_RECT, BACKGR_IMAGE]), color: P.string});
 
 function Background(props, onClick) {
   const {type, color, w, h, source, cornerRadius} = props;
   const className =  onClick ? css.clickable : css.background;
+  const spatial = {x: 0, y: 0, scale: 1};
   switch (type) {
     case BACKGR_RECT:
-      return Div_({key: 'background', className,
+      return Div_({key: 'background', className, spatial,
         style:{backgroundColor: color, width: w, height: h, borderRadius: cornerRadius}})._Div;
     case BACKGR_IMAGE:
-      return Image_({key: 'background', className, source, width: w, height: h, cornerRadius, onClick})._Image;
+      return Image_({key: 'background', className, spatial, source, width: w, height: h, cornerRadius, onClick})._Image;
     default:
       throw new Error(`Unknown background type: ${type}`);
   }
@@ -52,11 +55,10 @@ function Background(props, onClick) {
 
 function Caption(props) {
   const {key, x, y, w, h, text, color} = props;
-  return Div_({key, className: css.caption, style:{width: w, height: h, left: x, top: y, color: color, fontSize: h}}, text)._Div
+  return Div_({key, className: css.caption, spatial:{ x, y, scale: 1}, style:{width: w, height: h, color: color, fontSize: h}}, text)._Div
 }
 
-function createArrangement(descriptor, childTemplate) {
-  const childSize = {width: childTemplate.background.w, height: childTemplate.background.h};
+function createArrangement(descriptor, childSize) {
 
   const { type } = descriptor;
   // console.log(`rendering cardset with ${width}/${height}`);
@@ -70,18 +72,21 @@ function createArrangement(descriptor, childTemplate) {
 }
 
 function childSetDescriptor(data, set, onClick) {
-  const {source, arrangement} = set;
+  const {key, source, arrangement} = set;
   const templateName = set.template;
   const template = TemplateRegistry.getTemplate(templateName);
+  const { background } = template;
+  const childSize = {width: background.w, height: background.h};
 
   let nodes = resolveAttribute(data, source);
   if (!Array.isArray(nodes)) {
     nodes = [nodes];
   }
   if (!nodes) return null;
-  return CardSet_({nodes,
+  return CardSet_({key,
+    nodes,
     template,
-    arrangement: createArrangement(arrangement, template),
+    arrangement: createArrangement(arrangement, childSize),
     onClick})._CardSet
 }
 
@@ -143,6 +148,37 @@ export default class Card extends Component {
     this.createChildren(children);
     this.updateStyle({...this.style, width: background.w, height: background.h, pointerEvents: onClick ? '': 'none'});
   };
+
+  morph(stateName, tween) {
+    const { template } = this.innerProps;
+    const stateDescriptor = template.states && template.states[stateName];
+    if (!stateDescriptor) {
+      throw new Error(`Template ${template.type} has no state ${stateName}`);
+    }
+    const { childcards } = template;
+    Object.keys(stateDescriptor).forEach(key => {
+      const element = this.childByKey[key];
+      const elementState = stateDescriptor[key];
+      if (element.constructor === CardSet) {
+        const childTemplate = childcards.find(set => set.key === key).template;
+        const { background } = TemplateRegistry.getTemplate(childTemplate);
+        const childSize = {width: background.w, height: background.h};
+        const arrangement = createArrangement(elementState.arrangement, childSize);
+        element.updateArrangement(arrangement, tween);
+      } else {
+        const {x, y, width, height} = elementState;
+        const native = element.getNativeSize();
+        const spatial = fit(width, height, native.width, native.height, x, y);
+        tween.addTransform(element, spatial.x, spatial.y, spatial.scale);
+      }
+    });
+  }
+
+  getNativeSize() {
+    const { template } = this.innerProps;
+    return {width: template.background.w, height: template.background.h};
+  }
+
 }
 
 ComponentFactory.registerType(Card);

@@ -22,6 +22,7 @@ export class Div extends Component {
       this.dom.onClick = onClick;
     }
   }
+
 }
 
 ComponentFactory.registerType(Div);
