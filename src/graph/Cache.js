@@ -192,7 +192,7 @@ export const resolveAttribute = function (node, path) {
     const segments = path.split('/');
     let current = node;
     for (let segIdx = 0; segIdx < segments.length; segIdx++) {
-      if (segIdx < segments.length - 1 && !current.constructor === GraphNode) {
+      if (segIdx < segments.length - 1 && current.constructor !== GraphNode) {
         throw new Error(`Element ${segments[segIdx - 1]} in psth ${path} is not a node`);
       }
       current = current[segments[segIdx]];

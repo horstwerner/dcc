@@ -58,6 +58,18 @@ router.get("/data", (req, res) => {
   }
 });
 
+router.get("/groupcards", (req, res) => {
+  let cards;
+  try {
+    const data = fs.readFileSync(path.join(__dirname, 'cards.json'), {encoding: 'utf-8'});
+    cards = JSON.parse(data)['groupCards'];
+  } catch (err) {
+    throw new Error(`Couldn't load data: ${err}`);
+  }
+  console.log(`serving group cards`);
+  return res.json({success: true, data: cards});
+});
+
 router.get("/cards", (req, res) => {
   let cards;
   try {

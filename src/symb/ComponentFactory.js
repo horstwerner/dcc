@@ -20,7 +20,6 @@ class ComponentFactory {
     return !!this.constructorByType[type];
   }
 
-
   create( descriptor, div ) {
     const {type, ...props} = descriptor;
     const constructor = this.constructorByType[type];
@@ -31,7 +30,6 @@ class ComponentFactory {
     result.update(props);
     return result;
   }
-
 
 }
 

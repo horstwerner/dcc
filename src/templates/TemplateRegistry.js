@@ -2,6 +2,7 @@ class TemplateRegistry {
 
   constructor() {
     this.templateByType = {};
+    this.groupTemplateByType = {};
     this.navigationMapByName = {};
     this.startMap = null;
   }
@@ -11,11 +12,23 @@ class TemplateRegistry {
     this.templateByType[descriptor.type] = descriptor;
   }
 
+  registerGroupTemplate(descriptor) {
+    console.log(`registered group template '${descriptor.type}'`);
+    this.groupTemplateByType[descriptor.type] = descriptor;
+  }
+
   getTemplate(type) {
     if (!this.templateByType[type]) {
       throw new Error(`No template for type ${type} registered`)
     }
     return this.templateByType[type];
+  }
+
+  getGroupTemplate(type) {
+    if (!this.groupTemplateByType[type]) {
+      throw new Error(`No template for type ${type} registered`)
+    }
+    return this.groupTemplateByType[type];
   }
 
   registerNavigationMaps(descriptor) {

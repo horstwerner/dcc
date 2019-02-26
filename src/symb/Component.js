@@ -195,6 +195,10 @@ export default class Component {
     }
   }
 
+  getAlpha() {
+    return (this.alpha == null ? 1 : this.alpha);
+  }
+
   updateAlpha(alpha) {
     this.alpha = alpha;
     this.dom.style.opacity = this.alpha;
@@ -202,7 +206,6 @@ export default class Component {
 
   updateClassName(className) {
     if (className !== this.className) {
-      debugger
       this.dom.className = className;
       this.className = className;
     }

@@ -1,41 +1,60 @@
 {
   "cards": [
-     {
-       "type": "jira:ticket",
-       "background": {
-         "type": "rect",
-         "color": "#e0e0e0",
-         "w": 300,
-         "h": 300
-       },
-       "captions": [
-         {
-           "x": 20,
-           "y": 10,
-           "w": 100,
-           "h": 16,
-           "text": "Ticket ",
-           "color": "#000"
-         }
-       ],
-       "textfields": [
-         {
-           "x": 20,
-           "y": 30,
-           "w": 100,
-           "h": 16,
-           "attribute": "id",
-           "color": "#000"
-         },
-         {
-           "x": 20,
-           "y": 90,
-           "w": 100,
-           "h": 16,
-           "attribute": "dcc:test",
-           "color": "#000"
-         }
-       ]
-     }
-    ]
+    {
+      "type": "jira:ticket",
+      "background": {
+        "type": "rect",
+        "color": "#e0e0e0",
+        "w": 300, "h": 300
+      },
+      "captions": [
+        {
+          "x": 20, "y": 10, "w": 100, "h": 16,
+          "text": "Ticket ",
+          "color": "#000"
+        }
+      ],
+      "textfields": [
+        {
+          "x": 20, "y": 30, "w": 100, "h": 16,
+          "attribute": "id",
+          "color": "#000"
+        },
+        {
+          "x": 20, "y": 90, "w": 100, "h": 16,
+          "attribute": "dcc:test",
+          "color": "#000"
+        }
+      ]
+    },
+    {
+      "type": "tricircle",
+      "background": {
+        "type": "image",
+        "source": "/images/Tricircle.svg",
+        "w": 220, "h": 220,
+        "cornerRadius": 110
+      },
+      "textfields": [
+        {
+          "x": 60, "y": 30, "w": 100, "h": 16,
+          "attribute": "title",
+          "color": "red"
+        }
+      ],
+      "childcards":[
+        {
+          "source": "elements",
+          "template": "jira:ticket",
+          "arrangement": {
+            "type": "grid",
+            "x": 44,
+            "y": 44,
+            "width": 132,
+            "height": 132
+          }
+        }
+      ]
+    }
+  ]
 }

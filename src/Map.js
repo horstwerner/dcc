@@ -1,7 +1,7 @@
 import P from 'prop-types';
 import CheckedObject from './CheckedObject';
 
-export const ELEMENT_GRID = 'grid';
+export const ELEMENT_GROUP = 'group';
 export const TRANSITION_REARRANGE = 'rearrange';
 export const TRANSITION_NAVIGATE = 'navigation';
 
@@ -34,7 +34,7 @@ export const arrangementTransitionPropTypes = {
 
 export const mapElementPropTypes =  {
   key: P.string.isRequired,
-  type: P.oneOf([ELEMENT_GRID]).isRequired,
+  type: P.oneOf([ELEMENT_GROUP]).isRequired,
   source: P.string.isRequired,
   traverse: P.string,
   filter: P.string,

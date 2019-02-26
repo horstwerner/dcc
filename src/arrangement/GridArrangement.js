@@ -1,4 +1,8 @@
+export const GRID = 'grid';
+
 export default class GridArrangement {
+
+  static type = GRID;
 
   constructor(padding, childSize) {
     this.xOffset = 0;
