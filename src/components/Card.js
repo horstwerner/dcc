@@ -3,17 +3,23 @@ import Component from '@symb/Component';
 import css from './Card.css';
 import {resolveAttribute} from "../graph/Cache";
 import {Div_} from "@symb/Div";
+import find from "lodash/find";
 import isEqual from "lodash/isEqual";
 import ComponentFactory from "@symb/ComponentFactory";
 import {Image_} from "@symb/Image";
 import GridArrangement, {GRID} from "@/arrangement/GridArrangement";
 import {CardSet_} from "@/components/CardSet";
-import TemplateRegistry from '../templates/TemplateRegistry';
+import TemplateRegistry, {ARRANGEMENT_DEFAULT} from '../templates/TemplateRegistry';
 import CardSet from "@/components/CardSet";
 import {fit} from "@symb/util";
+import GraphNode from "@/graph/GraphNode";
+import {DURATION_REARRANGEMENT} from "@/Config";
+import Tween from "@/arrangement/Tween";
+import Template from "@/templates/Template";
 
 const CARD = 'card';
 const PADDING = 0.2;
+export const KEY_BACKGROUND = 'background';
 
 const POSITION_PROPS = {
   x: P.number.isRequired,
@@ -41,13 +47,16 @@ export const BACKGR_SHAPE = P.shape({type: P.oneOf([BACKGR_RECT, BACKGR_IMAGE]),
 function Background(props, onClick) {
   const {type, color, w, h, source, cornerRadius} = props;
   const className =  onClick ? css.clickable : css.background;
-  const spatial = {x: 0, y: 0, scale: 1};
+  // if (onClick) {console.log(`${JSON.stringify(props)} is clickable`)}
+  const spatial = props.spatial || {x: 0, y: 0, scale: 1};
+
   switch (type) {
     case BACKGR_RECT:
-      return Div_({key: 'background', className, spatial,
-        style:{backgroundColor: color, width: w, height: h, borderRadius: cornerRadius}})._Div;
+      return Div_({key: KEY_BACKGROUND, className, spatial,
+        style:{backgroundColor: color, width: w, height: h, borderRadius: cornerRadius},
+        onClick})._Div;
     case BACKGR_IMAGE:
-      return Image_({key: 'background', className, spatial, source, width: w, height: h, cornerRadius, onClick})._Image;
+      return Image_({key: KEY_BACKGROUND, className, spatial, source, width: w, height: h, cornerRadius, onClick})._Image;
     default:
       throw new Error(`Unknown background type: ${type}`);
   }
@@ -64,25 +73,47 @@ function createArrangement(descriptor, childSize) {
   // console.log(`rendering cardset with ${width}/${height}`);
   switch (type) {
     case GRID:
-      const {x, y, width, height } = descriptor;
+      const {x, y, w, h } = descriptor;
       return new GridArrangement(PADDING, childSize)
-          .setArea(width, height)
+          .setArea(w, h)
           .setOffset(x, y)
   }
 }
 
+function createAggregatedNode(nodes, descriptor) {
+    const result = { nodes };
+    const { title } = descriptor;
+    if (title) {
+      result.title = `${title} (${nodes.length})`;
+    }
+    return result;
+}
+
 function childSetDescriptor(data, set, onClick) {
-  const {key, source, arrangement} = set;
+  const {key, source, aggregate, arrangement, x, y, w, h} = set;
   const templateName = set.template;
   const template = TemplateRegistry.getTemplate(templateName);
   const { background } = template;
   const childSize = {width: background.w, height: background.h};
 
-  let nodes = resolveAttribute(data, source);
-  if (!Array.isArray(nodes)) {
-    nodes = [nodes];
-  }
+  let nodes = source === 'this' ?
+      data :
+      resolveAttribute(data, source);
   if (!nodes) return null;
+
+  if (aggregate) {
+    nodes = createAggregatedNode(nodes, aggregate);
+  }
+
+  if (!Array.isArray(nodes)) {
+    return Card_({
+      key,
+      template,
+      spatial: fit(w, h, childSize.width, childSize.height, x, y),
+      data:  nodes,
+      onClick
+    })._Card;
+  }
   return CardSet_({key,
     nodes,
     template,
@@ -92,24 +123,37 @@ function childSetDescriptor(data, set, onClick) {
 
 Caption.propTypes = CAPTION_PROPS;
 
-export const SHAPE_TEMPLATE = P.shape({
-      background: BACKGR_SHAPE,
-      captions: P.array,
-      textfields: P.array});
-
 export default class Card extends Component {
 
   static type = CARD;
+  // noinspection JSUnusedGlobalSymbols
   static baseTag = 'div';
   static className = css.card;
 
+  // noinspection JSUnusedGlobalSymbols
   static propTypes = {
-    template: SHAPE_TEMPLATE,
+    template: P.instanceOf(Template),
+    arrangement: P.string,
     data: P.object
   };
 
+  constructor(descriptor, domNode) {
+    super(descriptor, domNode);
+    this.childClickAction = {};
+  }
+
   getTemplate() {
     return this.innerProps.template;
+  }
+
+  updateChildClickAction(key, action) {
+    this.childClickAction[key] = action;
+  }
+
+  handleChildClick(childKey, clickAction) {
+    const tween = new Tween(DURATION_REARRANGEMENT);
+    this.morph(clickAction, tween);
+    tween.start();
   }
 
   updateContents(props) {
@@ -118,65 +162,87 @@ export default class Card extends Component {
     }
     this.innerProps = props;
 
-    const {template, data, onClick} = props;
-    const {background, captions, textfields, childcards} = template;
-
-    const hasCaptions = captions && captions.length > 0;
-    const hasTextFields = textfields && textfields.length > 0;
-    const hasChildCards = childcards && childcards.length > 0;
+    const {template, arrangement, data, onClick} = props;
+    const {background, elements} = template;
 
     const children = [Background(background, onClick ?  () => onClick(this) : null)];
-    if (hasCaptions) {
-      captions.forEach(caption => children.push(Caption({key: caption.text, ...caption})));
-    }
-    if (hasTextFields) {
-      textfields.forEach(textfield => {
-        const {attribute, ...rest} = textfield;
-        children.push(Caption({
-              key: attribute,
-              text: resolveAttribute(data, textfield.attribute),
-              ...rest
-            })
-        );
-      });
-    }
-    if (hasChildCards) {
-      childcards.forEach(set => {
-        children.push(childSetDescriptor(data, set))
-      });
-    }
+    elements.forEach(element => {
+      const { key } = element;
+      const childState = template.getChildState(key, arrangement);
+      switch (element.type) {
+        case 'caption':
+          children.push(Caption({key: element.text, ...element, ...childState}));
+          break;
+        case 'textfield': {
+          const {attribute, ...rest} = element;
+          children.push(Caption({
+            key: attribute,
+            text: resolveAttribute(data, attribute),
+            ...rest,
+            ...childState
+          }));
+          }
+          break;
+        case "childcards":
+          this.childClickAction[element.key] = element.clickAction;
+          children.push(childSetDescriptor(data,{...element, ...childState},
+              element.clickAction ? () => {this.handleChildClick(key, element.clickAction)} : null));
+          break;
+        default:
+          throw new Error(`Unsupported Element type: ${element.type}`);
+      }
+    });
+
     this.createChildren(children);
-    this.updateStyle({...this.style, width: background.w, height: background.h, pointerEvents: onClick ? '': 'none'});
+    this.updateStyle({...this.style, width: background.w, height: background.h, pointerEvents: onClick || template.type === 'root' ? '': 'none'});
   };
 
-  morph(stateName, tween) {
+  morph(arrangementName, tween, onClick) {
     const { template } = this.innerProps;
-    const stateDescriptor = template.states && template.states[stateName];
+    const stateDescriptor = template.arrangements[arrangementName];
     if (!stateDescriptor) {
-      throw new Error(`Template ${template.type} has no state ${stateName}`);
+      throw new Error(`Template ${template.type} has no state ${arrangementName}`);
     }
-    const { childcards } = template;
-    Object.keys(stateDescriptor).forEach(key => {
+    const { elements } = template;
+    const { layout } = stateDescriptor;
+
+    // update background with new onClick method, but make sure not to change spatial position
+    const spatial = this.childByKey[KEY_BACKGROUND].getSpatial();
+    this.updateChild(KEY_BACKGROUND,
+        Background({...template.background, ...spatial}, onClick));
+    Object.keys(layout).forEach(key => {
       const element = this.childByKey[key];
-      const elementState = stateDescriptor[key];
+      const elementState = layout[key];
+      const position = template.getChildState(key, arrangementName);
       if (element.constructor === CardSet) {
-        const childTemplate = childcards.find(set => set.key === key).template;
-        const { background } = TemplateRegistry.getTemplate(childTemplate);
-        const childSize = {width: background.w, height: background.h};
-        const arrangement = createArrangement(elementState.arrangement, childSize);
-        element.updateArrangement(arrangement, tween);
+        const childTemplate = TemplateRegistry.getTemplate(find(elements, {key}).template);
+        const childSize = childTemplate.getSize();
+        const setArrangement = createArrangement(elementState.arrangement, childSize);
+        element.updateArrangement(setArrangement, tween);
       } else {
-        const {x, y, width, height} = elementState;
-        const native = element.getNativeSize();
-        const spatial = fit(width, height, native.width, native.height, x, y);
-        tween.addTransform(element, spatial.x, spatial.y, spatial.scale);
+        const {x, y, w, h, alpha, arrangement, clickAction} = elementState;
+        const native = element.getNativeSize(arrangement);
+        if (x!= null && y != null && w!= null && h != null) {
+          const spatial = fit(w, h, native.width, native.height, x, y);
+          tween.addTransform(element, spatial.x, spatial.y, spatial.scale);
+        }
+        if (alpha != null) {
+          tween.addFade(element, alpha);
+        }
+        if (element.constructor === Card) {
+          element.morph(elementState.arrangement, tween,
+              clickAction ? () => {this.handleChildClick(key, clickAction)} : null);
+          if (elementState.clickAction) {
+            this.childClickAction[element.key] = elementState.clickAction;
+          }
+        }
       }
     });
   }
 
-  getNativeSize() {
+  getNativeSize(arrangementName) {
     const { template } = this.innerProps;
-    return {width: template.background.w, height: template.background.h};
+    return template.getSize(arrangementName);
   }
 
 }

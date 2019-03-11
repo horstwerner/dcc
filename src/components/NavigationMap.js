@@ -56,6 +56,7 @@ class NavigationMap extends Component {
   constructor(props, domNode) {
     super(props, domNode);
     this.handleElementClick = this.handleElementClick.bind(this);
+    this.state = {  }
   }
 
   handleElementClick(key, action) {

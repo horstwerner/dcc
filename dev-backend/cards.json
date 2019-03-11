@@ -2,31 +2,86 @@
   "cards": [
     {
       "type": "jira:ticket",
+      "size": {"w": 220, "h": 200},
       "background": {
         "type": "image",
         "source": "/images/Alertcard.svg",
         "w": 220, "h": 220
       },
-      "captions": [
-        {
-          "x": 20, "y": 12, "w": 100, "h": 18,
+      "elements": [
+        { "key": "heading",
+          "type": "caption",
           "text": "Alert ",
           "font-weight": "bold",
-          "color": "white"
-        }
-      ],
-      "textfields": [
+          "color": "white",
+          "x": 20, "y": 12, "w": 100, "h": 18
+        },
         {
+          "key": "id",
+          "type": "textfield",
           "x": 20, "y": 50, "w": 100, "h": 16,
           "attribute": "id",
           "color": "#000"
         },
         {
+          "key": "tests",
+          "type": "textfield",
           "x": 20, "y": 90, "w": 100, "h": 16,
           "attribute": "dcc:test",
           "color": "#000"
         }
       ]
+    },
+    {
+      "type": "root",
+      "background": {
+        "type": "image",
+        "source": "/images/ToplevelMap.svg",
+        "w": 1200,
+        "h": 700
+      },
+      "elements": [
+        {
+          "key": "alerts",
+          "type": "childcards",
+          "source": "jira:ticket",
+          "aggregate": {
+            "title": "Alerts"
+          },
+          "template": "tricircle",
+          "title": "Alerts",
+          "x": 20, "y": 20, "w": 240, "h": 240,
+          "clickAction": "focusAlerts"
+        }
+      ],
+      "arrangements": {
+        "default": {
+          "size": {"w": 1200, "h": 700},
+          "layout": {
+            "background": {
+              "alpha": 1
+            },
+            "alerts": {
+              "arrangement": "default",
+              "x": 20, "y": 20, "w": 240, "h": 240,
+              "clickAction": "focusAlerts"
+            }
+          }
+        },
+        "focusAlerts": {
+          "size": {"w": 1200, "h": 700},
+          "layout": {
+          "background": {
+            "alpha": 0.1
+          },
+          "alerts": {
+            "arrangement": "expanded",
+            "x": 20, "y": 20, "w": 1100, "h": 600,
+            "clickAction": "default"
+          }
+        }
+        }
+      }
     },
     {
       "type": "tricircle",
@@ -36,47 +91,64 @@
         "w": 220, "h": 220,
         "cornerRadius": 110
       },
-      "textfields": [
+      "elements": [
         {
-          "key": "title",
-          "x": 88, "y": 20, "w": 100, "h": 16,
+          "key": "title", "type": "textfield",
           "attribute": "title",
           "color": "#D95E5E"
-        }
-      ],
-      "childcards":[
+        },
         {
-          "key": "elements",
-          "source": "elements",
-          "template": "jira:ticket",
+          "key": "nodes", "type": "childcards",
+          "source": "nodes",
           "arrangement": {
-            "type": "grid",
-            "x": 44,
-            "y": 44,
-            "width": 132,
-            "height": 132
-          }
+            "x": 44, "y": 44, "w": 132, "h": 132,
+            "type": "grid"
+          },
+          "template": "jira:ticket"
         }
       ],
-      "states": {
-        "expanded": {
-          "elements": {
-            "arrangement": {
-              "type": "grid",
-              "x": 250,
-              "y": 44,
-              "width": 800,
-              "height": 500
+      "arrangements": {
+        "default": {
+          "size": {"w": 220, "h": 220},
+          "layout": {
+            "title": {
+              "x": 88, "y": 20, "w": 100, "h": 16
+            },
+            "nodes": {
+              "arrangement": {
+                "type": "grid",
+                "x": 44,
+                "y": 44,
+                "w": 132,
+                "h": 132
+              }
             }
-          },
-          "background": {
-            "x": 20,
-            "y": 20,
-            "width": 100,
-            "height": 100
-          },
-          "title": {
-            "x": 48, "y": 60, "width": 100, "height": 16
+          }
+        },
+        "expanded": {
+          "size": {"w": 1100, "h": 600},
+          "layout": {
+            "nodes": {
+              "arrangement": {
+                "type": "grid",
+                "x": 250,
+                "y": 44,
+                "w": 800,
+                "h": 500
+              }
+            },
+            "background": {
+              "x": 20,
+              "y": 20,
+              "w": 100,
+              "h": 100
+            },
+            "title": {
+              "x": 48,
+              "y": 60,
+              "w": 100,
+              "h": 16
+            }
           }
         }
       }

@@ -6,13 +6,15 @@ const TYPE_ENTITY = 'ENTITY';
 class Cache {
   
   typeDic = {};
+  lookUpByType = {};
   rootNode = {};
   
   createType (descriptor) {
     let type = new Type(descriptor);
     this.typeDic[descriptor.uri] = type;
     if (type.dataType === TYPE_ENTITY && !type.isAssociation) {
-      this.rootNode[descriptor.uri] = {};
+      this.rootNode[descriptor.uri] = [];
+      this.lookUpByType[descriptor.uri] = {};
     }
     return type;
   };
@@ -21,28 +23,18 @@ class Cache {
     return this.typeDic[typeuri];
   };
 
-  createNode (typeUri, uri) {
-    if (this.rootNode[typeUri] === undefined) {
-      this.rootNode[typeUri] = {};
-    }
-    let result = this.rootNode[typeUri][uri];
-    if (!result) {
-      result = new GraphNode(typeUri, uri);
-      this.rootNode[typeUri][uri] = result;
-    }
-    return result;
-  };
-  
   getNode (typeUri, uri) {
-    let dictionary = this.rootNode[typeUri];
+    let dictionary = this.lookUpByType[typeUri];
     if (!dictionary) {
       dictionary = {};
-      this.rootNode[typeUri] = dictionary;
+      this.lookUpByType[typeUri] = dictionary;
+      this.rootNode[typeUri] = [];
     }
     let node = dictionary[uri];
     if (!node) {
       node = new GraphNode(typeUri, uri);
       dictionary[uri] = node;
+      this.rootNode[typeUri].push(node);
     }
     return node;
   };
@@ -52,23 +44,15 @@ class Cache {
   }
   
   getAllNodesOf (nodeType) {
-    const dictionary = this.rootNode[nodeType];
-    if (dictionary) {
-      return Object.keys(dictionary).map(key => dictionary[key]);
-    }
+    return this.rootNode[nodeType] || [];
   };
 
   mapAllNodesOf (nodeType, callback) {
-    const dictionary = this.rootNode[nodeType];
-    if (dictionary) {
-      return Object.keys(dictionary).map(key => callback(dictionary[key]));
-    } else {
-      return [];
-    }
+    return (this.rootNode[nodeType] || []).map(callback);
   };
 
   findNode (typeUri, uri) {
-    const dictionary = this.rootNode[typeUri];
+    const dictionary = this.lookUpByType[typeUri];
     if (!dictionary) {
       throw new Error("Unknown type: " + typeUri);
     }
@@ -87,7 +71,7 @@ class Cache {
     for (let rowIdx = 0; rowIdx < valueRows.length; rowIdx ++) {
       const row = valueRows[rowIdx];
       const nodeUri = row[idIndex];
-      const newNode = this.createNode(typeUri, nodeUri);
+      const newNode = this.getNode(typeUri, nodeUri);
       for (let colIdx = 0; colIdx < headerRow.length; colIdx ++) {
         const prop = headerRow[colIdx];
         const proptype = this.getType(prop);
@@ -112,7 +96,7 @@ class Cache {
       if (nodeType === undefined) {
         throw new Error("Can't import node with missing uri: " + rawNode.toString());
       }
-      let newNode = this.createNode(nodeType, nodeUri);
+      let newNode = this.getNode(nodeType, nodeUri);
       for (let prop in rawNode) {
         if (!rawNode.hasOwnProperty(prop) || prop === 'core:type') continue;
         const proptype = this.getType(prop);
@@ -192,9 +176,6 @@ export const resolveAttribute = function (node, path) {
     const segments = path.split('/');
     let current = node;
     for (let segIdx = 0; segIdx < segments.length; segIdx++) {
-      if (segIdx < segments.length - 1 && current.constructor !== GraphNode) {
-        throw new Error(`Element ${segments[segIdx - 1]} in psth ${path} is not a node`);
-      }
       current = current[segments[segIdx]];
       // simplistic disambiguation - if multiple, select first
       if (Array.isArray(current)) {

@@ -9,6 +9,10 @@ import TemplateRegistry from './templates/TemplateRegistry';
 import {Div_} from '@symb/Div';
 import {NavigationMap_} from "@/components/NavigationMap";
 import {fit} from "@symb/util";
+import {Card_} from "@/components/Card";
+import {TRANSITION_REARRANGE} from "@/Map";
+import {DURATION_REARRANGEMENT} from "@/Config";
+import Tween from "@/arrangement/Tween";
 const APP = 'app';
 
 const handleResponse = function (response) {
@@ -53,8 +57,10 @@ export default class App extends Component {
 
   }
 
-  onElementClick(e, element) {
-    debugger
+  onElementClick(card, newArrangement) {
+    const tween = new Tween(DURATION_REARRANGEMENT);
+    card.morph(newArrangement, tween);
+    tween.start();
   }
 
   getDictionaryFromDb() {
@@ -119,14 +125,22 @@ export default class App extends Component {
     this.createChildren([
       error && Div_({}, `An error occurred: ${error.message}`)._Div,
 
-      dataLoaded && NavigationMap_({
-          key: 'navigation',
-          spatial: fit(windowWidth, windowHeight, currentMap.width, currentMap.height),
-          dataSource: Cache,
-          onElementClick: this.onElementClick,
-          ...currentMap
-        })._NavigationMap
-    ]);
+      dataLoaded && Card_({
+        key: 'navigation',
+        spatial: fit(windowWidth, windowHeight, currentMap.width, currentMap.height),
+        data: Cache.rootNode,
+        template: TemplateRegistry.getTemplate('root'),
+        onClick: null
+      })._Card]);
+
+    //   NavigationMap_({
+    //       key: 'navigation',
+    //       spatial: fit(windowWidth, windowHeight, currentMap.width, currentMap.height),
+    //       dataSource: Cache,
+    //       onElementClick: this.onElementClick,
+    //       ...currentMap
+    //     })._NavigationMap
+    // ]);
   }
 
   onResize(width, height) {

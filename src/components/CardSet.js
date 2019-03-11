@@ -2,12 +2,11 @@ import P from 'prop-types';
 import isEqual from 'lodash/isEqual';
 import Component from '@symb/Component';
 import css from './CardSet.css';
-import {Card_, BACKGR_SHAPE, SHAPE_TEMPLATE} from "./Card";
+import {Card_} from "./Card";
 import GridArrangement from "../arrangement/GridArrangement";
-import Tween from "../arrangement/Tween";
 import ComponentFactory from "@symb/ComponentFactory";
 import GraphNode from "@/graph/GraphNode";
-import {Image_} from "@symb/Image";
+import Template from "@/templates/Template";
 
 const CARDSET = 'card-set';
 const PADDING = 0.2;
@@ -20,7 +19,7 @@ class CardSet extends Component {
 
   static propTypes = {
     nodes: P.arrayOf(P.instanceOf(GraphNode)),
-    template: SHAPE_TEMPLATE.isRequired,
+    template: P.instanceOf(Template).isRequired,
     arrangement: P.object,
     onClick: P.func,
   };

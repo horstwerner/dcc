@@ -1,3 +1,8 @@
+import Template from './Template';
+
+export const ARRANGEMENT_DEFAULT = 'default';
+
+
 class TemplateRegistry {
 
   constructor() {
@@ -9,7 +14,10 @@ class TemplateRegistry {
 
   registerTemplate(descriptor) {
     console.log(`registered template for '${descriptor.type}'`);
-    this.templateByType[descriptor.type] = descriptor;
+    if (!descriptor.arrangements) {
+      descriptor.arrangements = {};
+    }
+    this.templateByType[descriptor.type] = new Template(descriptor);
   }
 
   registerGroupTemplate(descriptor) {

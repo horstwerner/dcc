@@ -96,6 +96,10 @@ export default class Component {
     this.addChild(child);
   }
 
+  updateChild(key, descriptor) {
+    this.childByKey[key] = this.createChild(key, descriptor);
+  }
+
   createChildren(descriptor) {
     const updatedChildren = {};
     let count = 0;
@@ -195,9 +199,16 @@ export default class Component {
   updateSpatial(spatial) {
     if (!isEqual(this.spatial, spatial)) {
       const {x, y, scale} = spatial;
+      if (isNaN(x) || isNaN(y) || isNaN(scale)){
+        throw new Error('NaN passed as argument for updateSpatial');
+      }
       this.dom.style.transform = getTransformString(x, y, scale);
       this.spatial = spatial;
     }
+  }
+
+  getSpatial() {
+    return this.spatial || {x: 0, y: 0, scale: 1};
   }
 
   getAlpha() {
