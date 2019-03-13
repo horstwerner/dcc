@@ -2,7 +2,7 @@ import P from 'prop-types';
 import Component from '@symb/Component';
 import css from './Card.css';
 import {resolveAttribute} from "../graph/Cache";
-import {Div_} from "@symb/Div";
+import {Div_, FlexBox_} from "@symb/Div";
 import find from "lodash/find";
 import isEqual from "lodash/isEqual";
 import ComponentFactory from "@symb/ComponentFactory";
@@ -44,8 +44,8 @@ const BACKGR_RECT = 'rect';
 const BACKGR_IMAGE = 'image';
 export const BACKGR_SHAPE = P.shape({type: P.oneOf([BACKGR_RECT, BACKGR_IMAGE]), color: P.string});
 
-function Background(props, onClick) {
-  const {type, color, w, h, source, cornerRadius} = props;
+function Background(props, color, onClick) {
+  const {type, w, h, source, cornerRadius} = props;
   const className =  onClick ? css.clickable : css.background;
   // if (onClick) {console.log(`${JSON.stringify(props)} is clickable`)}
   const spatial = props.spatial || {x: 0, y: 0, scale: 1};
@@ -56,15 +56,36 @@ function Background(props, onClick) {
         style:{backgroundColor: color, width: w, height: h, borderRadius: cornerRadius},
         onClick})._Div;
     case BACKGR_IMAGE:
-      return Image_({key: KEY_BACKGROUND, className, spatial, source, width: w, height: h, cornerRadius, onClick})._Image;
+      return Image_({key: KEY_BACKGROUND, className, spatial, source, width: w, height: h, color, cornerRadius, onClick})._Image;
     default:
       throw new Error(`Unknown background type: ${type}`);
   }
 }
 
+function calcStyle(styleDescriptor, h) {
+  if (!styleDescriptor) return null;
+  const result = { fontSize: h};
+  Object.keys(styleDescriptor).forEach(key => {
+    const value = styleDescriptor[key];
+    switch (key) {
+      case 'color':
+      case 'font-weight':
+      case 'font-size':
+        result[key] = value;
+        break;
+      case 'h-align':
+        if (value === 'center') {
+          result.msrgin = 'auto';
+        }
+    }
+  });
+  return result;
+}
+
 function Caption(props) {
-  const {key, x, y, w, h, text, color} = props;
-  return Div_({key, className: css.caption, spatial:{ x, y, scale: 1}, style:{width: w, height: h, color: color, fontSize: h}}, text)._Div
+  const {key, x, y, w, h, text, style} = props;
+  return FlexBox_({key, className: css.caption, spatial:{ x, y, scale: 1}, style: {width: w, height: h, justifyContent: 'center'}},
+      Div_({key: 'innertext', style:calcStyle(style, h)}, text)._Div)._FlexBox;
 }
 
 function createArrangement(descriptor, childSize) {
@@ -93,8 +114,7 @@ function childSetDescriptor(data, set, onClick) {
   const {key, source, aggregate, arrangement, x, y, w, h} = set;
   const templateName = set.template;
   const template = TemplateRegistry.getTemplate(templateName);
-  const { background } = template;
-  const childSize = {width: background.w, height: background.h};
+  const childSize = template.getSize();
 
   let nodes = source === 'this' ?
       data :
@@ -164,8 +184,9 @@ export default class Card extends Component {
 
     const {template, arrangement, data, onClick} = props;
     const {background, elements} = template;
+    const color = template.colorCoder ? template.colorCoder.getColor(data): null;
 
-    const children = [Background(background, onClick ?  () => onClick(this) : null)];
+    const children = [Background(background, color, onClick ?  () => onClick(this) : null)];
     elements.forEach(element => {
       const { key } = element;
       const childState = template.getChildState(key, arrangement);
@@ -198,18 +219,19 @@ export default class Card extends Component {
   };
 
   morph(arrangementName, tween, onClick) {
-    const { template } = this.innerProps;
+    const { template, data } = this.innerProps;
     const stateDescriptor = template.arrangements[arrangementName];
     if (!stateDescriptor) {
       throw new Error(`Template ${template.type} has no state ${arrangementName}`);
     }
     const { elements } = template;
     const { layout } = stateDescriptor;
+    const color = template.colorCoder ? template.colorCoder.getColor(data): null;
 
     // update background with new onClick method, but make sure not to change spatial position
     const spatial = this.childByKey[KEY_BACKGROUND].getSpatial();
     this.updateChild(KEY_BACKGROUND,
-        Background({...template.background, ...spatial}, onClick));
+        Background({...template.background, spatial}, color, onClick));
     Object.keys(layout).forEach(key => {
       const element = this.childByKey[key];
       const elementState = layout[key];

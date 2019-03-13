@@ -18,7 +18,7 @@ export default class Component {
       y: P.number,
       scale: P.number,
     }),
-    children: P.oneOfType([P.string, P.array])
+    children: P.oneOfType([P.object, P.string, P.array])
   };
 
   static baseTag = 'div';

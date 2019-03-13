@@ -1,11 +1,11 @@
 import P from 'prop-types';
 import CheckedObject from "@/CheckedObject";
 import {ARRANGEMENT_DEFAULT} from "@/templates/TemplateRegistry";
+import ColorCoder from "@symb/ColorCoder";
 
-export const sizeType
-
-= {w: P.number, h: P.number};
+export const sizeType = {w: P.number, h: P.number};
 export const positionType = {...sizeType, x: P.number, y: P.number};
+export const arrangementType= {type: P.string.isRequired, x: P.number, y: P.number, w: P.number, h: P.number};
 
 const extractDefaultArrangement = function extractDefaultArrangement(descriptor) {
 
@@ -37,6 +37,7 @@ export default class Template extends CheckedObject{
       source: P.string,
       ...sizeType
     }),
+    colorcoding: P.shape(ColorCoder.propTypes),
     elements: P.arrayOf(P.shape(
         {
           key: P.string.isRequired,
@@ -48,10 +49,10 @@ export default class Template extends CheckedObject{
           clickAction: P.string
         })),
     arrangements: P.objectOf(P.shape({
-      size: sizeType,
+      size: P.shape(sizeType),
       layout: P.objectOf(P.shape({
         ...positionType,
-        arrangement: P.string
+        arrangement: P.oneOfType([P.string,P.shape(arrangementType)])
       }))
     }))
   };
@@ -64,6 +65,9 @@ export default class Template extends CheckedObject{
     if (!this.arrangements[ARRANGEMENT_DEFAULT]) {
       this.arrangements[ARRANGEMENT_DEFAULT] = extractDefaultArrangement(descriptor);
     }
+    if (descriptor.colorcoding) {
+      this.colorCoder = new ColorCoder(descriptor.colorcoding);
+    }
   }
 
   getChildState(elementName, arrangementName) {
@@ -75,10 +79,16 @@ export default class Template extends CheckedObject{
 
     if (arrangementName && this.arrangements[arrangementName].size ) {
       const {w, h} = this.arrangements[arrangementName].size;
+      if (isNaN(w)|| isNaN(h)) {
+        throw new Error(`No size defined for template ${this.type}`);
+      }
       return {width: w, height: h};
     }
 
-    const {w, h} = (this.size || this.background);
+    const {w, h} = (this.size || this.arrangements[ARRANGEMENT_DEFAULT].size || this.background);
+    if (isNaN(w)|| isNaN(h)) {
+      throw new Error(`No size defined for template ${this.type}`);
+    }
     return {width: w, height: h};
   }
 

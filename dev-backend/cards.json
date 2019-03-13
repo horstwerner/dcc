@@ -2,12 +2,13 @@
   "cards": [
     {
       "type": "jira:ticket",
-      "size": {"w": 220, "h": 200},
+      "size": {"w": 220, "h": 220},
       "background": {
         "type": "image",
-        "source": "/images/Alertcard.svg",
+        "source": "/images/SimpleCard.svg",
         "w": 220, "h": 220
       },
+      "colorcoding": {"type": "selection", "attribute": "jira:status", "cases": [{"condition": "=closed", "color": "#959595"},{"condition":"=in progress","color":"#601010"},{"condition":"=open", "color":"#941513"}],"default":"#BAB6CB"},
       "elements": [
         { "key": "heading",
           "type": "caption",
@@ -85,6 +86,7 @@
     },
     {
       "type": "tricircle",
+      "size": {"w": 220, "h": 220},
       "background": {
         "type": "image",
         "source": "/images/Tricircle.svg",
@@ -95,7 +97,7 @@
         {
           "key": "title", "type": "textfield",
           "attribute": "title",
-          "color": "#D95E5E"
+          "style": {"color": "#D95E5E", "h-align": "center", "font-weight": "bold"}
         },
         {
           "key": "nodes", "type": "childcards",
@@ -111,8 +113,11 @@
         "default": {
           "size": {"w": 220, "h": 220},
           "layout": {
+            "background": {
+              "x": 0, "y": 0, "w": 220, "h": 220
+            },
             "title": {
-              "x": 88, "y": 20, "w": 100, "h": 16
+              "x": 60, "y": 20, "w": 100, "h": 16
             },
             "nodes": {
               "arrangement": {
@@ -144,7 +149,7 @@
               "h": 100
             },
             "title": {
-              "x": 48,
+              "x": 20,
               "y": 60,
               "w": 100,
               "h": 16
