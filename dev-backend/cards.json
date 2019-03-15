@@ -104,7 +104,8 @@
           "source": "nodes",
           "arrangement": {
             "x": 44, "y": 44, "w": 132, "h": 132,
-            "type": "grid"
+            "type": "grid",
+            "lod": "rect"
           },
           "template": "jira:ticket"
         }
@@ -122,6 +123,7 @@
             "nodes": {
               "arrangement": {
                 "type": "grid",
+                "lod": "rect",
                 "x": 44,
                 "y": 44,
                 "w": 132,
@@ -136,6 +138,7 @@
             "nodes": {
               "arrangement": {
                 "type": "grid",
+                "lod": "full",
                 "x": 250,
                 "y": 44,
                 "w": 800,

@@ -94,10 +94,11 @@ function createArrangement(descriptor, childSize) {
   // console.log(`rendering cardset with ${width}/${height}`);
   switch (type) {
     case GRID:
-      const {x, y, w, h } = descriptor;
+      const {x, y, w, h, lod } = descriptor;
       return new GridArrangement(PADDING, childSize)
           .setArea(w, h)
           .setOffset(x, y)
+          .setLOD(lod)
   }
 }
 
@@ -111,7 +112,7 @@ function createAggregatedNode(nodes, descriptor) {
 }
 
 function childSetDescriptor(data, set, onClick) {
-  const {key, source, aggregate, arrangement, x, y, w, h} = set;
+  const {key, source, lod, aggregate, arrangement, x, y, w, h} = set;
   const templateName = set.template;
   const template = TemplateRegistry.getTemplate(templateName);
   const childSize = template.getSize();
@@ -129,6 +130,7 @@ function childSetDescriptor(data, set, onClick) {
     return Card_({
       key,
       template,
+      lod,
       spatial: fit(w, h, childSize.width, childSize.height, x, y),
       data:  nodes,
       onClick
@@ -137,7 +139,8 @@ function childSetDescriptor(data, set, onClick) {
   return CardSet_({key,
     nodes,
     template,
-    arrangement: createArrangement(arrangement, childSize),
+    lod,
+      arrangement: createArrangement(arrangement, childSize),
     onClick})._CardSet
 }
 
@@ -184,7 +187,7 @@ export default class Card extends Component {
 
     const {template, arrangement, data, onClick} = props;
     const {background, elements} = template;
-    const color = template.colorCoder ? template.colorCoder.getColor(data): null;
+    const color = template.getCardColor(data);
 
     const children = [Background(background, color, onClick ?  () => onClick(this) : null)];
     elements.forEach(element => {

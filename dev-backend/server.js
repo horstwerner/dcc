@@ -7,7 +7,7 @@ let tickets;
 let tests;
 let dictionary;
 
-const NUM_CARDS = 4;
+const NUM_CARDS = 300;
 
 const fs = require('fs');
 const path = require('path');

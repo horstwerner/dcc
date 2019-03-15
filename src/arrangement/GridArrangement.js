@@ -28,6 +28,19 @@ export default class GridArrangement {
     return this;
   };
 
+  setLOD(lod) {
+    this.lod = lod;
+    return this;
+  }
+
+  getSize() {
+    return {width: this.areaw, height: this.areah}
+  }
+
+  getOffset() {
+    return {x: this.xOffset, y: this.yOffset};
+  }
+
   setChildSize(childSize) {
     this.childSize = childSize;
   }

@@ -35,6 +35,7 @@ export default class Template extends CheckedObject{
     background: P.shape({
       type: P.string.isRequired,
       source: P.string,
+      color: P.string,
       ...sizeType
     }),
     colorcoding: P.shape(ColorCoder.propTypes),
@@ -67,6 +68,14 @@ export default class Template extends CheckedObject{
     }
     if (descriptor.colorcoding) {
       this.colorCoder = new ColorCoder(descriptor.colorcoding);
+    }
+  }
+
+  getCardColor(node) {
+    if (this.colorCoder) {
+      return this.colorCoder.getColor(node);
+    } else {
+      return this.background.color;
     }
   }
 

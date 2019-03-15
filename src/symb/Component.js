@@ -6,6 +6,15 @@ import {DEBUG_MODE} from '../Config';
 import ComponentFactory from './ComponentFactory'
 import {getTransformString} from "@symb/util";
 
+export function setStyle(dom, style) {
+  Object.keys(style).forEach(key => {
+    let value = style[key];
+    if (['width','height','left','top'].includes(key) && typeof(value) === 'number') {
+      value = `${value}px`;
+    }
+    dom.style[key] = value});
+}
+
 export default class Component {
 
   static propTypes = {
@@ -181,12 +190,7 @@ export default class Component {
 
   updateStyle(style) {
     if (!isEqual(style, this.style)) {
-      Object.keys(style).forEach(key => {
-        let value = style[key];
-        if (['width','height','left','top'].includes(key) && typeof(value) === 'number') {
-          value = `${value}px`;
-        }
-        this.dom.style[key] = value});
+      setStyle(this.dom, style);
       this.style = style;
     }
   }
@@ -244,7 +248,6 @@ export default class Component {
   }
 
   destroy() {
-    console.log(`discarding ${this.key}`);
     if (this.childByKey) {
       Object.keys(this.childByKey).forEach(key => {
         if (this.childByKey[key].destroy) {
