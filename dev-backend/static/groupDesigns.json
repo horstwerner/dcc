@@ -1,0 +1,11 @@
+{
+  "jira:ticket": {
+    "aggregator": {
+      "title": {"value": ""},
+      "storypoints": {"attribute": "jira:storypoints", "calculate": "sum"}
+    },
+    "views": {
+      "by team": {"type": "grouped", "groupBy": "jira:team"}
+    }
+  }
+}

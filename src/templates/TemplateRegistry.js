@@ -2,12 +2,12 @@ import Template from './Template';
 
 export const ARRANGEMENT_DEFAULT = 'default';
 
-
 class TemplateRegistry {
 
   constructor() {
     this.templateByType = {};
-    this.groupTemplateByType = {};
+    this.viewsByType = {};
+    this.aggregatorsByType = {};
     this.navigationMapByName = {};
     this.startMap = null;
   }
@@ -20,9 +20,10 @@ class TemplateRegistry {
     this.templateByType[descriptor.type] = new Template(descriptor);
   }
 
-  registerGroupTemplate(descriptor) {
-    console.log(`registered group template '${descriptor.type}'`);
-    this.groupTemplateByType[descriptor.type] = descriptor;
+  registerViews(type, descriptor) {
+    console.log(`registered group template '${type}'`);
+    this.aggregatorByType[type] = descriptor.aggregator;
+    this.viewsByType[type] = descriptor.views;
   }
 
   getTemplate(type) {
@@ -32,11 +33,15 @@ class TemplateRegistry {
     return this.templateByType[type];
   }
 
-  getGroupTemplate(type) {
-    if (!this.groupTemplateByType[type]) {
+  getAggregator(type) {
+    return this.aggregatorsByType[type];
+  }
+
+  getViews(type) {
+    if (!this.viewsByType[type]) {
       throw new Error(`No template for type ${type} registered`)
     }
-    return this.groupTemplateByType[type];
+    return this.viewsByType[type];
   }
 
   registerNavigationMaps(descriptor) {

@@ -7,7 +7,6 @@ import GridArrangement from "../arrangement/GridArrangement";
 import ComponentFactory from "@symb/ComponentFactory";
 import GraphNode from "@/graph/GraphNode";
 import Template from "@/templates/Template";
-import CanvasPlot from "@symb/CanvasPlot";
 import {ARRANGEMENT_DEFAULT} from "@/templates/TemplateRegistry";
 
 const CARDSET = 'card-set';
@@ -48,7 +47,7 @@ class CardSet extends Component {
         this.canvas = document.createElement('canvas');
         this.canvas.setAttribute('width', size.width);
         this.canvas.setAttribute('height', size.height);
-        setStyle(this.canvas, {position: 'absolute', left: offset.x, top: offset.y});
+        setStyle(this.canvas, {position: 'absolute', left: offset.x, top: offset.y, pointerEvents: 'none'});
         const context = this.canvas.getContext('2d');
         this.dom.appendChild(this.canvas);
         const {width, height} = template.getSize(ARRANGEMENT_DEFAULT);

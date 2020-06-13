@@ -8,14 +8,13 @@ import isEqual from "lodash/isEqual";
 import ComponentFactory from "@symb/ComponentFactory";
 import {Image_} from "@symb/Image";
 import GridArrangement, {GRID} from "@/arrangement/GridArrangement";
-import {CardSet_} from "@/components/CardSet";
-import TemplateRegistry, {ARRANGEMENT_DEFAULT} from '../templates/TemplateRegistry';
-import CardSet from "@/components/CardSet";
+import CardSet, {CardSet_} from "@/components/CardSet";
+import TemplateRegistry from '../templates/TemplateRegistry';
 import {fit} from "@symb/util";
-import GraphNode from "@/graph/GraphNode";
 import {DURATION_REARRANGEMENT} from "@/Config";
 import Tween from "@/arrangement/Tween";
 import Template from "@/templates/Template";
+import Aggregator from "@/Aggregator";
 
 const CARD = 'card';
 const PADDING = 0.2;
@@ -103,12 +102,7 @@ function createArrangement(descriptor, childSize) {
 }
 
 function createAggregatedNode(nodes, descriptor) {
-    const result = { nodes };
-    const { title } = descriptor;
-    if (title) {
-      result.title = `${title} (${nodes.length})`;
-    }
-    return result;
+    return new Aggregator(descriptor).aggregate(nodes);
 }
 
 function childSetDescriptor(data, set, onClick) {
@@ -123,6 +117,7 @@ function childSetDescriptor(data, set, onClick) {
   if (!nodes) return null;
 
   if (aggregate) {
+    debugger
     nodes = createAggregatedNode(nodes, aggregate);
   }
 
@@ -192,10 +187,10 @@ export default class Card extends Component {
     const children = [Background(background, color, onClick ?  () => onClick(this) : null)];
     elements.forEach(element => {
       const { key } = element;
-      const childState = template.getChildState(key, arrangement);
+      const childProps = template.getChildProps(key, arrangement);
       switch (element.type) {
         case 'caption':
-          children.push(Caption({key: element.text, ...element, ...childState}));
+          children.push(Caption({key: element.text, ...element, ...childProps}));
           break;
         case 'textfield': {
           const {attribute, ...rest} = element;
@@ -203,13 +198,13 @@ export default class Card extends Component {
             key: attribute,
             text: resolveAttribute(data, attribute),
             ...rest,
-            ...childState
+            ...childProps
           }));
           }
           break;
         case "childcards":
           this.childClickAction[element.key] = element.clickAction;
-          children.push(childSetDescriptor(data,{...element, ...childState},
+          children.push(childSetDescriptor(data,{...element, ...childProps},
               element.clickAction ? () => {this.handleChildClick(key, element.clickAction)} : null));
           break;
         default:
@@ -238,7 +233,7 @@ export default class Card extends Component {
     Object.keys(layout).forEach(key => {
       const element = this.childByKey[key];
       const elementState = layout[key];
-      const position = template.getChildState(key, arrangementName);
+      const position = template.getChildProps(key, arrangementName);
       if (element.constructor === CardSet) {
         const childTemplate = TemplateRegistry.getTemplate(find(elements, {key}).template);
         const childSize = childTemplate.getSize();

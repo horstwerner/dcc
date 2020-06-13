@@ -79,7 +79,7 @@ export default class Template extends CheckedObject{
     }
   }
 
-  getChildState(elementName, arrangementName) {
+  getChildProps(elementName, arrangementName) {
     const arrangementLayout = this.arrangements[arrangementName] && this.arrangements[arrangementName].layout[elementName];
     return {...this.arrangements[ARRANGEMENT_DEFAULT].layout[elementName], ...arrangementLayout};
   }
@@ -99,6 +99,11 @@ export default class Template extends CheckedObject{
       throw new Error(`No size defined for template ${this.type}`);
     }
     return {width: w, height: h};
+  }
+
+  getAspectRatio(arrangementName) {
+    const {width, height} = this.getSize(arrangementName);
+    return width / height;
   }
 
 }

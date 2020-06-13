@@ -11,7 +11,6 @@
           "key": "tickets",
           "type": "group",
           "source": "jira:ticket",
-
           "template": "tricircle",
           "title": "Alerts"
         }

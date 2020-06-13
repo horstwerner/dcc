@@ -47,7 +47,8 @@
           "type": "childcards",
           "source": "jira:ticket",
           "aggregate": {
-            "title": "Alerts"
+            "aggregations": {},
+            "texts": {"title": "{{core:nodeCount}} Alerts"}
           },
           "template": "tricircle",
           "title": "Alerts",
@@ -101,7 +102,7 @@
         },
         {
           "key": "nodes", "type": "childcards",
-          "source": "nodes",
+          "source": "core:subNodes",
           "arrangement": {
             "x": 44, "y": 44, "w": 132, "h": 132,
             "type": "grid",

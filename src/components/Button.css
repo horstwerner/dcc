@@ -1,0 +1,15 @@
+.button {
+  position: absolute;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: #FEFEFE;
+  background-color: #808080;
+  padding: 4px;
+  height: 20px;
+  border-radius: 10px;
+  border: solid 1px #c0c0c0;
+}
+
+button:hover {
+  background-color: #404040;
+}

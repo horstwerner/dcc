@@ -1,18 +1,41 @@
 import Type from './Type';
 import GraphNode from './GraphNode';
 
-const TYPE_ENTITY = 'ENTITY';
+export const DATATYPE_INTEGER = 'INTEGER';
+export const DATATYPE_STRING = 'STRING';
+export const DATATYPE_BOOLEAN = 'BOOLEAN';
+export const DATATYPE_FLOAT = 'FLOAT';
+export const DATATYPE_ENTITY = 'ENTITY';
+
+export const TYPE_AGGREGATOR = 'core:aggregator';
+export const TYPE_NODES = 'core:subNodes'
+export const TYPE_NODE_COUNT = 'core:nodeCount';
 
 class Cache {
+
+  idCount = 0;
   
-  typeDic = {};
-  lookUpByType = {};
+  typeDic;
+  lookUpByType;
   rootNode = {};
+
+  constructor () {
+    this.typeDic = {};
+    this.lookUpByType = {};
+    this.rootNode = {};
+    this.createType({uri: TYPE_AGGREGATOR, name: 'aggregated', dataType: DATATYPE_ENTITY, isAssociation: false});
+    this.createType({uri: TYPE_NODES, name: 'nodes', dataType: DATATYPE_ENTITY, isAssociation: true});
+    this.createType({uri: TYPE_NODE_COUNT, name: 'node count', dataType: DATATYPE_INTEGER, isAssociation: false});
+  };
+
+  createUri() {
+    return `core:surrogate${this.idCount++}`;
+  }
   
   createType (descriptor) {
     let type = new Type(descriptor);
     this.typeDic[descriptor.uri] = type;
-    if (type.dataType === TYPE_ENTITY && !type.isAssociation) {
+    if (type.dataType === DATATYPE_ENTITY && !type.isAssociation) {
       this.rootNode[descriptor.uri] = [];
       this.lookUpByType[descriptor.uri] = {};
     }
@@ -75,7 +98,7 @@ class Cache {
       for (let colIdx = 0; colIdx < headerRow.length; colIdx ++) {
         const prop = headerRow[colIdx];
         const proptype = this.getType(prop);
-        if (proptype && proptype.dataType === TYPE_ENTITY) {
+        if (proptype && proptype.dataType === DATATYPE_ENTITY) {
           newNode.addAssociation(proptype, row[colIdx]);
         }
         else {
@@ -127,7 +150,9 @@ class Cache {
 
 }
 
-export default new Cache();
+const cacheInstance = new Cache();
+
+export default cacheInstance;
 
 export const traverse = function(source, path) {
   const steps = path.split('/');

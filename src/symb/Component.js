@@ -1,8 +1,7 @@
 import P from 'prop-types';
 import isEqual from 'lodash/isEqual';
 import isEmpty from 'lodash/isEmpty';
-import omit from 'lodash/omit';
-import {DEBUG_MODE} from '../Config';
+import {DEBUG_MODE} from '@/Config';
 import ComponentFactory from './ComponentFactory'
 import {getTransformString} from "@symb/util";
 
@@ -63,7 +62,7 @@ export default class Component {
 
   createChild(fallbackKey, childDescriptor) {
     if (typeof(childDescriptor) === 'string') {
-      this.dom.innerHTML = childDescriptor;
+      this.dom.innerText = childDescriptor;
       return childDescriptor;
     }
     if (childDescriptor === undefined) {

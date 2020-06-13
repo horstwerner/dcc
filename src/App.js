@@ -1,18 +1,15 @@
 import P from 'prop-types';
 import Component from '@symb/Component';
-import {CardSet_} from "./components/CardSet";
 import css from './App.css';
 import ComponentFactory from "@symb/ComponentFactory";
-import omit from 'lodash/omit';
 import Cache from './graph/Cache';
 import TemplateRegistry from './templates/TemplateRegistry';
 import {Div_} from '@symb/Div';
-import {NavigationMap_} from "@/components/NavigationMap";
 import {fit} from "@symb/util";
 import {Card_} from "@/components/Card";
-import {TRANSITION_REARRANGE} from "@/Map";
 import {DURATION_REARRANGEMENT} from "@/Config";
 import Tween from "@/arrangement/Tween";
+
 const APP = 'app';
 
 const handleResponse = function (response) {
@@ -95,6 +92,20 @@ export default class App extends Component {
           if (result && result.data) {
             TemplateRegistry.registerNavigationMaps(result.data.maps);
             TemplateRegistry.setStartMap(result.data.startmap);
+          }
+        })
+        .catch(error => {
+          console.log(error.stack);
+          this.setState({error})
+        });
+  }
+
+  getViewsFromDb() {
+    return fetch('/api/views')
+        .then(handleResponse)
+        .then(result => {
+          if (result && result.data) {
+            TemplateRegistry.registerViews(result.data);
           }
         })
         .catch(error => {
