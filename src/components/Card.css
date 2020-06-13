@@ -21,5 +21,6 @@
 
 .caption {
   position: absolute;
+  pointer-events: none;
   transform-origin: 0 0;
 }

@@ -1,5 +1,6 @@
 import P from 'prop-types';
 import isEqual from 'lodash/isEqual';
+import merge from 'lodash/merge';
 import Component from "./Component";
 import ComponentFactory from "./ComponentFactory"
 
@@ -31,3 +32,4 @@ ComponentFactory.registerType(Div);
 
 export const Div_ = (props, children) => ({_Div: {type: DIV, children, ...props}});
 
+export const FlexBox_ = (props, children) => ({_FlexBox: {type: DIV, children, ...merge(props, {style: {display: 'flex'}})}});

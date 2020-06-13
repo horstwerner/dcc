@@ -2,26 +2,31 @@
   "cards": [
     {
       "type": "jira:ticket",
+      "size": {"w": 220, "h": 220},
       "background": {
         "type": "image",
-        "source": "/images/Alertcard.svg",
+        "source": "/images/SimpleCard.svg",
         "w": 220, "h": 220
       },
-      "captions": [
-        {
-          "x": 20, "y": 12, "w": 100, "h": 18,
+      "colorcoding": {"type": "selection", "attribute": "jira:status", "cases": [{"condition": "=closed", "color": "#959595"},{"condition":"=in progress","color":"#601010"},{"condition":"=open", "color":"#941513"}],"default":"#BAB6CB"},
+      "elements": [
+        { "key": "heading",
+          "type": "caption",
           "text": "Alert ",
           "font-weight": "bold",
-          "color": "white"
-        }
-      ],
-      "textfields": [
+          "color": "white",
+          "x": 20, "y": 12, "w": 100, "h": 18
+        },
         {
+          "key": "id",
+          "type": "textfield",
           "x": 20, "y": 50, "w": 100, "h": 16,
           "attribute": "id",
           "color": "#000"
         },
         {
+          "key": "tests",
+          "type": "textfield",
           "x": 20, "y": 90, "w": 100, "h": 16,
           "attribute": "dcc:test",
           "color": "#000"
@@ -29,54 +34,130 @@
       ]
     },
     {
+      "type": "root",
+      "background": {
+        "type": "image",
+        "source": "/images/ToplevelMap.svg",
+        "w": 1200,
+        "h": 700
+      },
+      "elements": [
+        {
+          "key": "alerts",
+          "type": "childcards",
+          "source": "jira:ticket",
+          "aggregate": {
+            "aggregations": {},
+            "texts": {"title": "{{core:nodeCount}} Alerts"}
+          },
+          "template": "tricircle",
+          "title": "Alerts",
+          "x": 20, "y": 20, "w": 240, "h": 240,
+          "clickAction": "focusAlerts"
+        }
+      ],
+      "arrangements": {
+        "default": {
+          "size": {"w": 1200, "h": 700},
+          "layout": {
+            "background": {
+              "alpha": 1
+            },
+            "alerts": {
+              "arrangement": "default",
+              "x": 20, "y": 20, "w": 240, "h": 240,
+              "clickAction": "focusAlerts"
+            }
+          }
+        },
+        "focusAlerts": {
+          "size": {"w": 1200, "h": 700},
+          "layout": {
+          "background": {
+            "alpha": 0.1
+          },
+          "alerts": {
+            "arrangement": "expanded",
+            "x": 20, "y": 20, "w": 1100, "h": 600,
+            "clickAction": "default"
+          }
+        }
+        }
+      }
+    },
+    {
       "type": "tricircle",
+      "size": {"w": 220, "h": 220},
       "background": {
         "type": "image",
         "source": "/images/Tricircle.svg",
         "w": 220, "h": 220,
         "cornerRadius": 110
       },
-      "textfields": [
+      "elements": [
         {
-          "key": "title",
-          "x": 88, "y": 20, "w": 100, "h": 16,
+          "key": "title", "type": "textfield",
           "attribute": "title",
-          "color": "#D95E5E"
-        }
-      ],
-      "childcards":[
+          "style": {"color": "#D95E5E", "h-align": "center", "font-weight": "bold"}
+        },
         {
-          "key": "elements",
-          "source": "elements",
-          "template": "jira:ticket",
+          "key": "nodes", "type": "childcards",
+          "source": "core:subNodes",
           "arrangement": {
+            "x": 44, "y": 44, "w": 132, "h": 132,
             "type": "grid",
-            "x": 44,
-            "y": 44,
-            "width": 132,
-            "height": 132
-          }
+            "lod": "rect"
+          },
+          "template": "jira:ticket"
         }
       ],
-      "states": {
-        "expanded": {
-          "elements": {
-            "arrangement": {
-              "type": "grid",
-              "x": 250,
-              "y": 44,
-              "width": 800,
-              "height": 500
+      "arrangements": {
+        "default": {
+          "size": {"w": 220, "h": 220},
+          "layout": {
+            "background": {
+              "x": 0, "y": 0, "w": 220, "h": 220
+            },
+            "title": {
+              "x": 60, "y": 20, "w": 100, "h": 16
+            },
+            "nodes": {
+              "arrangement": {
+                "type": "grid",
+                "lod": "rect",
+                "x": 44,
+                "y": 44,
+                "w": 132,
+                "h": 132
+              }
             }
-          },
-          "background": {
-            "x": 20,
-            "y": 20,
-            "width": 100,
-            "height": 100
-          },
-          "title": {
-            "x": 48, "y": 60, "width": 100, "height": 16
+          }
+        },
+        "expanded": {
+          "size": {"w": 1100, "h": 600},
+          "layout": {
+            "nodes": {
+              "arrangement": {
+                "type": "grid",
+                "lod": "full",
+                "x": 250,
+                "y": 44,
+                "w": 800,
+                "h": 500
+              }
+            },
+            "background": {
+              "x": 20,
+              "y": 20,
+              "w": 100,
+              "h": 100
+            },
+            "title": {
+              "x": 20,
+              "y": 60,
+              "w": 100,
+              "h": 16
+            }
           }
         }
       }

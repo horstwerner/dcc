@@ -44,6 +44,9 @@ class Phase {
     if (newX === x && newY === y && newScale === scale) {
       return;
     }
+    if (isNaN(newX) || isNaN(newY) || isNaN(newScale)) {
+      throw new Error(`NaN passed as target coordinate for Tewwn`);
+    }
     this.particles.push({
       element: component,
       startX: x,

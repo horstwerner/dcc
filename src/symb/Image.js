@@ -15,10 +15,13 @@ export class Image extends Component {
       return;
     }
     this.innerProps = props;
-    const {source, width, height, cornerRadius, onClick} = props;
+    const {source, width, height, cornerRadius, onClick, color} = props;
     this.dom.setAttribute('src',props.source);
     if (cornerRadius) {
       this.dom.style.borderRadius = `${cornerRadius}px`;
+    }
+    if (color !== null) {
+      this.dom.style.backgroundColor = color;
     }
     this.dom.style.width = `${width}px`;
     this.dom.style.height = `${height}px`;

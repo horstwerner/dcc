@@ -7,7 +7,7 @@ let tickets;
 let tests;
 let dictionary;
 
-const NUM_CARDS = 4;
+const NUM_CARDS = 300;
 
 const fs = require('fs');
 const path = require('path');
@@ -58,16 +58,16 @@ router.get("/data", (req, res) => {
   }
 });
 
-router.get("/groupcards", (req, res) => {
+router.get("/views", (req, res) => {
   let cards;
   try {
-    const data = fs.readFileSync(path.join(__dirname, 'cards.json'), {encoding: 'utf-8'});
-    cards = JSON.parse(data)['groupCards'];
+    const data = fs.readFileSync(path.join(__dirname, 'groupDesigns.json'), {encoding: 'utf-8'});
+    views = JSON.parse(data);
   } catch (err) {
     throw new Error(`Couldn't load data: ${err}`);
   }
   console.log(`serving group cards`);
-  return res.json({success: true, data: cards});
+  return res.json({success: true, data: views});
 });
 
 router.get("/cards", (req, res) => {

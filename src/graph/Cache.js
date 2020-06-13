@@ -1,18 +1,43 @@
 import Type from './Type';
 import GraphNode from './GraphNode';
 
-const TYPE_ENTITY = 'ENTITY';
+export const DATATYPE_INTEGER = 'INTEGER';
+export const DATATYPE_STRING = 'STRING';
+export const DATATYPE_BOOLEAN = 'BOOLEAN';
+export const DATATYPE_FLOAT = 'FLOAT';
+export const DATATYPE_ENTITY = 'ENTITY';
+
+export const TYPE_AGGREGATOR = 'core:aggregator';
+export const TYPE_NODES = 'core:subNodes'
+export const TYPE_NODE_COUNT = 'core:nodeCount';
 
 class Cache {
+
+  idCount = 0;
   
-  typeDic = {};
+  typeDic;
+  lookUpByType;
   rootNode = {};
+
+  constructor () {
+    this.typeDic = {};
+    this.lookUpByType = {};
+    this.rootNode = {};
+    this.createType({uri: TYPE_AGGREGATOR, name: 'aggregated', dataType: DATATYPE_ENTITY, isAssociation: false});
+    this.createType({uri: TYPE_NODES, name: 'nodes', dataType: DATATYPE_ENTITY, isAssociation: true});
+    this.createType({uri: TYPE_NODE_COUNT, name: 'node count', dataType: DATATYPE_INTEGER, isAssociation: false});
+  };
+
+  createUri() {
+    return `core:surrogate${this.idCount++}`;
+  }
   
   createType (descriptor) {
     let type = new Type(descriptor);
     this.typeDic[descriptor.uri] = type;
-    if (type.dataType === TYPE_ENTITY && !type.isAssociation) {
-      this.rootNode[descriptor.uri] = {};
+    if (type.dataType === DATATYPE_ENTITY && !type.isAssociation) {
+      this.rootNode[descriptor.uri] = [];
+      this.lookUpByType[descriptor.uri] = {};
     }
     return type;
   };
@@ -21,28 +46,18 @@ class Cache {
     return this.typeDic[typeuri];
   };
 
-  createNode (typeUri, uri) {
-    if (this.rootNode[typeUri] === undefined) {
-      this.rootNode[typeUri] = {};
-    }
-    let result = this.rootNode[typeUri][uri];
-    if (!result) {
-      result = new GraphNode(typeUri, uri);
-      this.rootNode[typeUri][uri] = result;
-    }
-    return result;
-  };
-  
   getNode (typeUri, uri) {
-    let dictionary = this.rootNode[typeUri];
+    let dictionary = this.lookUpByType[typeUri];
     if (!dictionary) {
       dictionary = {};
-      this.rootNode[typeUri] = dictionary;
+      this.lookUpByType[typeUri] = dictionary;
+      this.rootNode[typeUri] = [];
     }
     let node = dictionary[uri];
     if (!node) {
       node = new GraphNode(typeUri, uri);
       dictionary[uri] = node;
+      this.rootNode[typeUri].push(node);
     }
     return node;
   };
@@ -52,23 +67,15 @@ class Cache {
   }
   
   getAllNodesOf (nodeType) {
-    const dictionary = this.rootNode[nodeType];
-    if (dictionary) {
-      return Object.keys(dictionary).map(key => dictionary[key]);
-    }
+    return this.rootNode[nodeType] || [];
   };
 
   mapAllNodesOf (nodeType, callback) {
-    const dictionary = this.rootNode[nodeType];
-    if (dictionary) {
-      return Object.keys(dictionary).map(key => callback(dictionary[key]));
-    } else {
-      return [];
-    }
+    return (this.rootNode[nodeType] || []).map(callback);
   };
 
   findNode (typeUri, uri) {
-    const dictionary = this.rootNode[typeUri];
+    const dictionary = this.lookUpByType[typeUri];
     if (!dictionary) {
       throw new Error("Unknown type: " + typeUri);
     }
@@ -87,11 +94,11 @@ class Cache {
     for (let rowIdx = 0; rowIdx < valueRows.length; rowIdx ++) {
       const row = valueRows[rowIdx];
       const nodeUri = row[idIndex];
-      const newNode = this.createNode(typeUri, nodeUri);
+      const newNode = this.getNode(typeUri, nodeUri);
       for (let colIdx = 0; colIdx < headerRow.length; colIdx ++) {
         const prop = headerRow[colIdx];
         const proptype = this.getType(prop);
-        if (proptype && proptype.dataType === TYPE_ENTITY) {
+        if (proptype && proptype.dataType === DATATYPE_ENTITY) {
           newNode.addAssociation(proptype, row[colIdx]);
         }
         else {
@@ -112,7 +119,7 @@ class Cache {
       if (nodeType === undefined) {
         throw new Error("Can't import node with missing uri: " + rawNode.toString());
       }
-      let newNode = this.createNode(nodeType, nodeUri);
+      let newNode = this.getNode(nodeType, nodeUri);
       for (let prop in rawNode) {
         if (!rawNode.hasOwnProperty(prop) || prop === 'core:type') continue;
         const proptype = this.getType(prop);
@@ -143,7 +150,9 @@ class Cache {
 
 }
 
-export default new Cache();
+const cacheInstance = new Cache();
+
+export default cacheInstance;
 
 export const traverse = function(source, path) {
   const steps = path.split('/');
@@ -192,9 +201,6 @@ export const resolveAttribute = function (node, path) {
     const segments = path.split('/');
     let current = node;
     for (let segIdx = 0; segIdx < segments.length; segIdx++) {
-      if (segIdx < segments.length - 1 && current.constructor !== GraphNode) {
-        throw new Error(`Element ${segments[segIdx - 1]} in psth ${path} is not a node`);
-      }
       current = current[segments[segIdx]];
       // simplistic disambiguation - if multiple, select first
       if (Array.isArray(current)) {

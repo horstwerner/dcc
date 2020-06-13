@@ -11,22 +11,25 @@
           "key": "tickets",
           "type": "group",
           "source": "jira:ticket",
-          "x": 20,
-          "y": 20,
-          "width": 240,
-          "height": 240,
           "template": "tricircle",
-          "title": "Alerts",
-          "onClick": {
-            "type": "rearrange",
-            "elements": {
-              "tickets": {
-                "morph": "expanded"
-              }
-            }
+          "title": "Alerts"
+        }
+      ],
+      "states": {
+        "initial": {
+          "backdrop": {
+            "alpha": 1
+          },
+          "tickets": {
+            "state": "default",
+            "x": 20,
+            "y": 20,
+            "width": 240,
+            "height": 240,
+            "onClick": "showTickets"
           }
         }
-      ]
+      }
     },
     "map2": {
       "width": 1200,

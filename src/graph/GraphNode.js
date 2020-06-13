@@ -57,7 +57,22 @@ export default class GraphNode {
   displayName() {
     return this['core:name'] === undefined ? this.uri : this['core:name'];
   };
-  
+
+  setAttributes(object) {
+    Object.assign(this, object);
+    return this;
+  }
+
+  setBulkAssociation(associationTypeUri, nodes) {
+    this[associationTypeUri] = nodes;
+    return this;
+  }
+
+  /**
+   * private, lower level, one-directional addition of association
+   * @param associationTypeUri
+   * @param graphnode
+   */
   addAssociatedNode(associationTypeUri, graphnode) {
     const property = this[associationTypeUri];
     if (property === undefined) {
@@ -71,7 +86,7 @@ export default class GraphNode {
       return;
     }
     if (property.constructor === GraphNode) {
-      if (property === graphnode) return;
+      if (property === graphnode) return; //already exists
       let newArray = [];
       newArray.push(property);
       newArray.push(graphnode);
@@ -81,6 +96,11 @@ export default class GraphNode {
     throw new Error("Unexpected type of associated object (" + this.uri + "->" + associationTypeUri + ")");
   };
 
+  /**
+   * creates bidirectional association
+   * @param associationtype
+   * @param target
+   */
   addAssociation(associationtype, target) {
     const inversetypeuri = associationtype.getInverseType(this.type).uri;
 
@@ -88,12 +108,12 @@ export default class GraphNode {
       const targetnode = Cache.getNode(associationtype.uri, target);
       this.addAssociatedNode(associationtype.uri, targetnode);
       targetnode.addAssociatedNode(inversetypeuri, this);
-      return;
+      return this;
     }
     else if (typeof target === 'object' && target.constructor === GraphNode) {
       this.addAssociatedNode(associationtype.uri, target);
       target.addAssociatedNode(inversetypeuri, this);
-      return;
+      return this;
     }
 
     if (typeof target === 'object' && target.constructor === Array) {
@@ -109,7 +129,7 @@ export default class GraphNode {
           element.addAssociatedNode(inversetypeuri, this);
         }
       }
-      return;
+      return this;
     }
 
     throw new Error("Unexpected type of associated object (" + this.uri + "->" + associationtype + ")");

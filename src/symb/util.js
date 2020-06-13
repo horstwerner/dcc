@@ -8,5 +8,9 @@ export function fit(parentWidth, parentHeight, childWidth, childHeight, xOffset,
   const x = Math.max(0, (parentWidth - childWidth * scale) / 2) + (xOffset || 0);
   const y = Math.max(0, (parentHeight - childHeight * scale) / 2) + (yOffset || 0);
 
+  if (isNaN(scale) || isNaN(x) || isNaN(y)) {
+    throw new Error('call to fit with invalid parameters');
+  }
+
   return {x, y, scale};
 }

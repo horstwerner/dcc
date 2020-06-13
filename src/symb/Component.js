@@ -1,10 +1,18 @@
 import P from 'prop-types';
 import isEqual from 'lodash/isEqual';
 import isEmpty from 'lodash/isEmpty';
-import omit from 'lodash/omit';
-import {DEBUG_MODE} from '../Config';
+import {DEBUG_MODE} from '@/Config';
 import ComponentFactory from './ComponentFactory'
 import {getTransformString} from "@symb/util";
+
+export function setStyle(dom, style) {
+  Object.keys(style).forEach(key => {
+    let value = style[key];
+    if (['width','height','left','top'].includes(key) && typeof(value) === 'number') {
+      value = `${value}px`;
+    }
+    dom.style[key] = value});
+}
 
 export default class Component {
 
@@ -18,7 +26,7 @@ export default class Component {
       y: P.number,
       scale: P.number,
     }),
-    children: P.oneOfType([P.string, P.array])
+    children: P.oneOfType([P.object, P.string, P.array])
   };
 
   static baseTag = 'div';
@@ -54,7 +62,7 @@ export default class Component {
 
   createChild(fallbackKey, childDescriptor) {
     if (typeof(childDescriptor) === 'string') {
-      this.dom.innerHTML = childDescriptor;
+      this.dom.innerText = childDescriptor;
       return childDescriptor;
     }
     if (childDescriptor === undefined) {
@@ -94,6 +102,10 @@ export default class Component {
     }
     child.update({spatial});
     this.addChild(child);
+  }
+
+  updateChild(key, descriptor) {
+    this.childByKey[key] = this.createChild(key, descriptor);
   }
 
   createChildren(descriptor) {
@@ -177,12 +189,7 @@ export default class Component {
 
   updateStyle(style) {
     if (!isEqual(style, this.style)) {
-      Object.keys(style).forEach(key => {
-        let value = style[key];
-        if (['width','height','left','top'].includes(key) && typeof(value) === 'number') {
-          value = `${value}px`;
-        }
-        this.dom.style[key] = value});
+      setStyle(this.dom, style);
       this.style = style;
     }
   }
@@ -195,9 +202,16 @@ export default class Component {
   updateSpatial(spatial) {
     if (!isEqual(this.spatial, spatial)) {
       const {x, y, scale} = spatial;
+      if (isNaN(x) || isNaN(y) || isNaN(scale)){
+        throw new Error('NaN passed as argument for updateSpatial');
+      }
       this.dom.style.transform = getTransformString(x, y, scale);
       this.spatial = spatial;
     }
+  }
+
+  getSpatial() {
+    return this.spatial || {x: 0, y: 0, scale: 1};
   }
 
   getAlpha() {
@@ -233,7 +247,6 @@ export default class Component {
   }
 
   destroy() {
-    console.log(`discarding ${this.key}`);
     if (this.childByKey) {
       Object.keys(this.childByKey).forEach(key => {
         if (this.childByKey[key].destroy) {
