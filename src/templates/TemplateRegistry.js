@@ -44,31 +44,27 @@ class TemplateRegistry {
     return this.viewsByType[type];
   }
 
-  registerNavigationMaps(descriptor) {
-    if (!descriptor) {
-      throw new Error("Missing navigation map descriptor");
-    }
-    this.navigationMapByName = descriptor;
-  }
-
-  setStartMap(name) {
-    this.startMap = this.navigationMapByName[name];
-    if (!this.startMap) {
-      throw new Error(`Can't find start map ${name} `);
-    }
-  }
-
-  getMap(name) {
-    const result = this.navigationMapByName[name];
-    if (!result) {
-      throw new Error(`Can't find map ${name} `);
-    }
-    return result;
-  }
-
-  getStartMap() {
-    return this.startMap;
-  }
+  // registerNavigationMaps(descriptor) {
+  //   if (!descriptor) {
+  //     throw new Error("Missing navigation map descriptor");
+  //   }
+  //   this.navigationMapByName = descriptor;
+  // }
+  //
+  // setStartMap(name) {
+  //   this.startMap = this.navigationMapByName[name];
+  //   if (!this.startMap) {
+  //     throw new Error(`Can't find start map ${name} `);
+  //   }
+  // }
+  //
+  // getMap(name) {
+  //   const result = this.navigationMapByName[name];
+  //   if (!result) {
+  //     throw new Error(`Can't find map ${name} `);
+  //   }
+  //   return result;
+  // }
 
 }
 

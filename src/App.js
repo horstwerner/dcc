@@ -41,12 +41,12 @@ export default class App extends Component {
     };
 
     this.getDictionaryFromDb()
-        .then(() => Promise.all([...Cache.getEntityTypes().map(type => this.getDataFromDb(type)), this.getCardDescriptorsFromDb(), this.getNavigationFromDb()]))
+        .then(() => Promise.all([...Cache.getEntityTypes().map(type => this.getDataFromDb(type)), this.getCardDescriptorsFromDb()]))
         .then(() => {
           if (!this.state.error) {
             this.setState({
               dataLoaded: true,
-              currentMap: TemplateRegistry.getStartMap()
+              // currentMap: TemplateRegistry.getStartMap()
             })
           }
         });
@@ -85,20 +85,20 @@ export default class App extends Component {
         });
   };
 
-  getNavigationFromDb() {
-    return fetch('/api/navigation')
-        .then(handleResponse)
-        .then(result => {
-          if (result && result.data) {
-            TemplateRegistry.registerNavigationMaps(result.data.maps);
-            TemplateRegistry.setStartMap(result.data.startmap);
-          }
-        })
-        .catch(error => {
-          console.log(error.stack);
-          this.setState({error})
-        });
-  }
+  // getNavigationFromDb() {
+  //   return fetch('/api/navigation')
+  //       .then(handleResponse)
+  //       .then(result => {
+  //         if (result && result.data) {
+  //           TemplateRegistry.registerNavigationMaps(result.data.maps);
+  //           TemplateRegistry.setStartMap(result.data.startmap);
+  //         }
+  //       })
+  //       .catch(error => {
+  //         console.log(error.stack);
+  //         this.setState({error})
+  //       });
+  // }
 
   getViewsFromDb() {
     return fetch('/api/views')
@@ -131,16 +131,17 @@ export default class App extends Component {
   updateContents(props) {
     const {dataLoaded, error, focusMap, windowWidth, windowHeight} = this.state;
     // const backgroundColor = (map && map.backColor) || '#ffffff';
-    const {width, height, currentMap} = this.state;
+    const {currentMap} = this.state;
+    const template = dataLoaded && TemplateRegistry.getTemplate('root');
 
     this.createChildren([
       error && Div_({}, `An error occurred: ${error.message}`)._Div,
 
       dataLoaded && Card_({
         key: 'navigation',
-        spatial: fit(windowWidth, windowHeight, currentMap.width, currentMap.height),
+        spatial: fit(windowWidth, windowHeight, template.background.w, template.background.h),
         data: Cache.rootNode,
-        template: TemplateRegistry.getTemplate('root'),
+        template,
         onClick: null
       })._Card]);
 

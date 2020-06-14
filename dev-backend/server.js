@@ -7,7 +7,7 @@ let tickets;
 let tests;
 let dictionary;
 
-const NUM_CARDS = 300;
+const NUM_CARDS = 30;
 
 const fs = require('fs');
 const path = require('path');
@@ -122,24 +122,24 @@ const randomVal = function (array) {
   return array[randomNum(array.length)];
 };
 
-const ticketArray = [];
-for (let i = 0; i < NUM_CARDS; i++) {
-  ticketArray.push({
-    id: `JRA-${i}`,
-    type: `jira:ticket`,
-    'jira:ticket-type': randomVal(['bug', 'story']),
-    'jira:status': randomVal(['unassigned', 'open', 'in progress', 'in review', 'validate', 'closed'])
-  });
-}
-
-tickets = compressArray(ticketArray);
-
-// try {
-//   const ticketdata = fs.readFileSync(path.join(__dirname, 'tickets.csv'), {encoding: 'utf-8'});
-//   tickets = csv2array(ticketdata);
-// } catch(err) {
-//   throw new Error(`Couldn't load tickets: ${err}`);
+// const ticketArray = [];
+// for (let i = 0; i < NUM_CARDS; i++) {
+//   ticketArray.push({
+//     id: `JRA-${i}`,
+//     type: `jira:ticket`,
+//     'jira:ticket-type': randomVal(['bug', 'story']),
+//     'jira:status': randomVal(['unassigned', 'open', 'in progress', 'in review', 'validate', 'closed'])
+//   });
 // }
+//
+// tickets = compressArray(ticketArray);
+
+try {
+  const ticketdata = fs.readFileSync(path.join(__dirname, 'jira.csv'), {encoding: 'utf-8'});
+  tickets = csv2array(ticketdata);
+} catch(err) {
+  throw new Error(`Couldn't load tickets: ${err}`);
+}
 
 try {
   const testdata = fs.readFileSync(path.join(__dirname, 'tests.csv'), {encoding: 'utf-8'});

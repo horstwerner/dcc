@@ -74,7 +74,7 @@ function calcStyle(styleDescriptor, h) {
         break;
       case 'h-align':
         if (value === 'center') {
-          result.msrgin = 'auto';
+          result.margin = 'auto';
         }
     }
   });
@@ -82,9 +82,10 @@ function calcStyle(styleDescriptor, h) {
 }
 
 function Caption(props) {
-  const {key, x, y, w, h, text, style} = props;
-  return FlexBox_({key, className: css.caption, spatial:{ x, y, scale: 1}, style: {width: w, height: h, justifyContent: 'center'}},
-      Div_({key: 'innertext', style:calcStyle(style, h)}, text)._Div)._FlexBox;
+  const {key, x, y, w, h, text, hAlign, style} = props;
+  return FlexBox_({key, className: css.caption, spatial:{ x, y, scale: 1}, style: {width: w, height: h, justifyContent: (style && style.hAlign) || 'left'}},
+      Div_({key: 'innertext', style: calcStyle(style, h)}, text)._Div
+  )._FlexBox;
 }
 
 function createArrangement(descriptor, childSize) {
@@ -213,6 +214,7 @@ export default class Card extends Component {
     });
 
     this.createChildren(children);
+    //TODO: remove dependency to 'root' literal
     this.updateStyle({...this.style, width: background.w, height: background.h, pointerEvents: onClick || template.type === 'root' ? '': 'none'});
   };
 

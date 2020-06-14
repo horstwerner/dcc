@@ -99,7 +99,8 @@ class Cache {
         const prop = headerRow[colIdx];
         const proptype = this.getType(prop);
         if (proptype && proptype.dataType === DATATYPE_ENTITY) {
-          newNode.addAssociation(proptype, row[colIdx]);
+          const target = row[colIdx].includes('+') ? row[colIdx].split('+') : row[colIdx];
+          newNode.addAssociation(proptype, target);
         }
         else {
           newNode[prop] = row[colIdx];
