@@ -1,20 +1,19 @@
 import P from 'prop-types';
 import Component from '@symb/Component';
 import css from './Card.css';
-import {resolveAttribute} from "../graph/Cache";
+import {resolveAttribute} from "@/graph/Cache";
 import {Div_, FlexBox_} from "@symb/Div";
-import find from "lodash/find";
 import isEqual from "lodash/isEqual";
 import ComponentFactory from "@symb/ComponentFactory";
 import {Image_} from "@symb/Image";
 import GridArrangement, {GRID} from "@/arrangement/GridArrangement";
-import CardSet, {CardSet_} from "@/components/CardSet";
+import {CardSet_} from "@/components/CardSet";
 import TemplateRegistry from '../templates/TemplateRegistry';
 import {fit} from "@symb/util";
-import {DURATION_REARRANGEMENT} from "@/Config";
-import Tween from "@/arrangement/Tween";
 import Template from "@/templates/Template";
 import Aggregator from "@/Aggregator";
+import {Svg_} from "@/components/Svg";
+import {Rect_} from "@/components/Rect";
 
 const CARD = 'card';
 const PADDING = 0.2;
@@ -81,12 +80,25 @@ function calcStyle(styleDescriptor, h) {
   return result;
 }
 
+function Chart({data, descriptor}) {
+  const {chartType, x, y} = descriptor;
+  const spatial = { x, y, scale: 1};
+  switch (chartType) {
+    case 'rect':
+      const { attribute, maxValue, maxW, h, color } = descriptor;
+      return Svg_({spatial, width: maxW, height: h, children: [Rect_({x: 0, y: 0, width: resolveAttribute(data, attribute)/maxValue * maxW, height: h, style: {fill: color}})._Rect]})._Svg
+  }
+}
+
+
 function Caption(props) {
-  const {key, x, y, w, h, text, hAlign, style} = props;
-  return FlexBox_({key, className: css.caption, spatial:{ x, y, scale: 1}, style: {width: w, height: h, justifyContent: (style && style.hAlign) || 'left'}},
+  const {key, x, y, w, h, text, style} = props;
+  return FlexBox_({key, className: css.caption, spatial:{ x, y, scale: 1}, style: {width: w, height: h, justifyContent: (style && style['hAlign']) || 'left'}},
       Div_({key: 'innertext', style: calcStyle(style, h)}, text)._Div
   )._FlexBox;
 }
+
+Caption.propTypes = CAPTION_PROPS;
 
 function createArrangement(descriptor, childSize) {
 
@@ -94,8 +106,8 @@ function createArrangement(descriptor, childSize) {
   // console.log(`rendering cardset with ${width}/${height}`);
   switch (type) {
     case GRID:
-      const {x, y, w, h, lod } = descriptor;
-      return new GridArrangement(PADDING, childSize)
+      const {x, y, w, h, lod, padding } = descriptor;
+      return new GridArrangement(padding || PADDING, childSize)
           .setArea(w, h)
           .setOffset(x, y)
           .setLOD(lod)
@@ -110,7 +122,7 @@ function childSetDescriptor(data, set, onClick) {
   const {key, source, lod, aggregate, arrangement, x, y, w, h} = set;
   const templateName = set.template;
   const template = TemplateRegistry.getTemplate(templateName);
-  const childSize = template.getSize();
+  const nativeSize = template.getSize();
 
   let nodes = source === 'this' ?
       data :
@@ -118,7 +130,6 @@ function childSetDescriptor(data, set, onClick) {
   if (!nodes) return null;
 
   if (aggregate) {
-    debugger
     nodes = createAggregatedNode(nodes, aggregate);
   }
 
@@ -127,7 +138,7 @@ function childSetDescriptor(data, set, onClick) {
       key,
       template,
       lod,
-      spatial: fit(w, h, childSize.width, childSize.height, x, y),
+      spatial: fit(w, h, nativeSize.width, nativeSize.height, x, y),
       data:  nodes,
       onClick
     })._Card;
@@ -136,11 +147,12 @@ function childSetDescriptor(data, set, onClick) {
     nodes,
     template,
     lod,
-      arrangement: createArrangement(arrangement, childSize),
+    spatial: {x: 0, y: 0, scale: 1},
+    arrangement: createArrangement(arrangement, nativeSize),
     onClick})._CardSet
 }
 
-Caption.propTypes = CAPTION_PROPS;
+
 
 export default class Card extends Component {
 
@@ -170,42 +182,47 @@ export default class Card extends Component {
   }
 
   handleChildClick(childKey, clickAction) {
-    const tween = new Tween(DURATION_REARRANGEMENT);
-    this.morph(clickAction, tween);
-    tween.start();
+    // const tween = new Tween(DURATION_REARRANGEMENT);
+    // this.morph(clickAction, tween);
+    // tween.start();
   }
 
+  /**
+   * map from template to symb component descriptors
+   * @param props
+   */
   updateContents(props) {
     if (isEqual(this.innerProps, props)) {
       return;
     }
     this.innerProps = props;
 
-    const {template, arrangement, data, onClick} = props;
+    const {template, data, onClick} = props;
     const {background, elements} = template;
     const color = template.getCardColor(data);
 
     const children = [Background(background, color, onClick ?  () => onClick(this) : null)];
     elements.forEach(element => {
       const { key } = element;
-      const childProps = template.getChildProps(key, arrangement);
       switch (element.type) {
         case 'caption':
-          children.push(Caption({key: element.text, ...element, ...childProps}));
+          children.push(Caption({key: element.text, ...element}));
           break;
         case 'textfield': {
           const {attribute, ...rest} = element;
           children.push(Caption({
             key: attribute,
             text: resolveAttribute(data, attribute),
-            ...rest,
-            ...childProps
+            ...rest
           }));
           }
           break;
+        case "chart":
+          children.push(Chart({data, descriptor: element}));
+          break;
         case "childcards":
           this.childClickAction[element.key] = element.clickAction;
-          children.push(childSetDescriptor(data,{...element, ...childProps},
+          children.push(childSetDescriptor(data,element,
               element.clickAction ? () => {this.handleChildClick(key, element.clickAction)} : null));
           break;
         default:
@@ -218,53 +235,53 @@ export default class Card extends Component {
     this.updateStyle({...this.style, width: background.w, height: background.h, pointerEvents: onClick || template.type === 'root' ? '': 'none'});
   };
 
-  morph(arrangementName, tween, onClick) {
-    const { template, data } = this.innerProps;
-    const stateDescriptor = template.arrangements[arrangementName];
-    if (!stateDescriptor) {
-      throw new Error(`Template ${template.type} has no state ${arrangementName}`);
-    }
-    const { elements } = template;
-    const { layout } = stateDescriptor;
-    const color = template.colorCoder ? template.colorCoder.getColor(data): null;
+  // morph(arrangementName, tween, onClick) {
+  //   const { template, data } = this.innerProps;
+  //   const stateDescriptor = template.arrangements[arrangementName];
+  //   if (!stateDescriptor) {
+  //     throw new Error(`Template ${template.type} has no state ${arrangementName}`);
+  //   }
+  //   const { elements } = template;
+  //   const { layout } = stateDescriptor;
+  //   const color = template.colorCoder ? template.colorCoder.getColor(data): null;
+  //
+  //   // update background with new onClick method, but make sure not to change spatial position
+  //   const spatial = this.childByKey[KEY_BACKGROUND].getSpatial();
+  //   this.updateChild(KEY_BACKGROUND,
+  //       Background({...template.background, spatial}, color, onClick));
+  //   Object.keys(layout).forEach(key => {
+  //     const element = this.childByKey[key];
+  //     const elementState = layout[key];
+  //     const position = template.getChildProps(key, arrangementName);
+  //     if (element.constructor === CardSet) {
+  //       const childTemplate = TemplateRegistry.getTemplate(find(elements, {key}).template);
+  //       const childSize = childTemplate.getSize();
+  //       const setArrangement = createArrangement(elementState.arrangement, childSize);
+  //       element.updateArrangement(setArrangement, tween);
+  //     } else {
+  //       const {x, y, w, h, alpha, arrangement, clickAction} = elementState;
+  //       const native = element.getNativeSize(arrangement);
+  //       if (x!= null && y != null && w!= null && h != null) {
+  //         const spatial = fit(w, h, native.width, native.height, x, y);
+  //         tween.addTransform(element, spatial.x, spatial.y, spatial.scale);
+  //       }
+  //       if (alpha != null) {
+  //         tween.addFade(element, alpha);
+  //       }
+  //       if (element.constructor === Card) {
+  //         element.morph(elementState.arrangement, tween,
+  //             clickAction ? () => {this.handleChildClick(key, clickAction)} : null);
+  //         if (elementState.clickAction) {
+  //           this.childClickAction[element.key] = elementState.clickAction;
+  //         }
+  //       }
+  //     }
+  //   });
+  // }
 
-    // update background with new onClick method, but make sure not to change spatial position
-    const spatial = this.childByKey[KEY_BACKGROUND].getSpatial();
-    this.updateChild(KEY_BACKGROUND,
-        Background({...template.background, spatial}, color, onClick));
-    Object.keys(layout).forEach(key => {
-      const element = this.childByKey[key];
-      const elementState = layout[key];
-      const position = template.getChildProps(key, arrangementName);
-      if (element.constructor === CardSet) {
-        const childTemplate = TemplateRegistry.getTemplate(find(elements, {key}).template);
-        const childSize = childTemplate.getSize();
-        const setArrangement = createArrangement(elementState.arrangement, childSize);
-        element.updateArrangement(setArrangement, tween);
-      } else {
-        const {x, y, w, h, alpha, arrangement, clickAction} = elementState;
-        const native = element.getNativeSize(arrangement);
-        if (x!= null && y != null && w!= null && h != null) {
-          const spatial = fit(w, h, native.width, native.height, x, y);
-          tween.addTransform(element, spatial.x, spatial.y, spatial.scale);
-        }
-        if (alpha != null) {
-          tween.addFade(element, alpha);
-        }
-        if (element.constructor === Card) {
-          element.morph(elementState.arrangement, tween,
-              clickAction ? () => {this.handleChildClick(key, clickAction)} : null);
-          if (elementState.clickAction) {
-            this.childClickAction[element.key] = elementState.clickAction;
-          }
-        }
-      }
-    });
-  }
-
-  getNativeSize(arrangementName) {
+  getNativeSize() {
     const { template } = this.innerProps;
-    return template.getSize(arrangementName);
+    return template.getSize();
   }
 
 }

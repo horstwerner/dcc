@@ -39,10 +39,10 @@
           },
           {
             "condition": "=open",
-            "color": "#c0c0c0"
+            "color": "#b0b0b0"
           }
         ],
-        "default": "#c0c0c0"
+        "default": "#a0a0a0"
       },
       "elements": [
         {
@@ -64,7 +64,7 @@
           "key": "name",
           "type": "textfield",
           "x": 10,
-          "y": 50,
+          "y": 47,
           "w": 200,
           "h": 32,
           "attribute": "core:name",
@@ -73,25 +73,25 @@
           }
         },
         {
-          "key": "tests",
-          "type": "textfield",
-          "x": 20,
-          "y": 90,
-          "w": 100,
-          "h": 16,
-          "attribute": "dcc:test",
-          "style": {
-            "color": "#000"
-          }
+          "key": "storybar",
+          "type": "chart",
+          "chartType": "rect",
+          "x": 10,
+          "y": 89 ,
+          "maxW": 200,
+          "h": 20,
+          "attribute": "jira:storypoints",
+          "maxValue": 24,
+          "color": "rgba(0,0,0,0.15)"
         }
       ]
     },
     {
       "type": "root",
       "background": {
-        "type": "image",
-        "source": "/images/ToplevelMap.svg",
-        "w": 1200,
+        "type": "rect",
+        "color": "#F0F0F0",
+        "w": 1400,
         "h": 700
       },
       "elements": [
@@ -102,80 +102,46 @@
           "aggregate": {
             "aggregations": {},
             "texts": {
-              "title": "{{core:nodeCount}} Alerts"
+              "title": "{{core:nodeCount}} Stories"
             }
           },
-          "template": "tricircle",
-          "title": "Alerts",
+          "template": "grid",
           "x": 20,
           "y": 20,
-          "w": 240,
-          "h": 240,
+          "w": 400,
+          "h": 660,
           "clickAction": "focusAlerts"
         }
-      ],
-      "arrangements": {
-        "default": {
-          "size": {
-            "w": 1200,
-            "h": 700
-          },
-          "layout": {
-            "background": {
-              "alpha": 1
-            },
-            "alerts": {
-              "arrangement": "default",
-              "x": 20,
-              "y": 20,
-              "w": 240,
-              "h": 240,
-              "clickAction": "focusAlerts"
-            }
-          }
-        },
-        "focusAlerts": {
-          "size": {
-            "w": 1200,
-            "h": 700
-          },
-          "layout": {
-            "background": {
-              "alpha": 0.1
-            },
-            "alerts": {
-              "arrangement": "expanded",
-              "x": 20,
-              "y": 20,
-              "w": 1100,
-              "h": 600,
-              "clickAction": "default"
-            }
-          }
-        }
-      }
+      ]
     },
     {
-      "type": "tricircle",
+      "type": "grid",
       "size": {
-        "w": 220,
-        "h": 220
+        "w": 400,
+        "h": 800
       },
       "background": {
-        "type": "image",
-        "source": "/images/Tricircle.svg",
-        "w": 220,
-        "h": 220,
-        "cornerRadius": 110
+        "type": "rect",
+        "color": "#FEFEFE",
+        "x": 0,
+        "y": 0,
+        "w": 400,
+        "h": 750,
+        "cornerRadius": "6px"
       },
       "elements": [
         {
           "key": "title",
           "type": "textfield",
           "attribute": "title",
+          "x": 30,
+          "y": 20,
+          "w": 200,
+          "h": 32,
           "style": {
-            "color": "#D95E5E",
-            "hAlign": "center",
+            "color": "#A0A0A0",
+            "font-size": "24px",
+            "hAlign": "left",
             "font-weight": "bold"
           }
         },
@@ -184,78 +150,17 @@
           "type": "childcards",
           "source": "core:subNodes",
           "arrangement": {
-            "x": 44,
-            "y": 44,
-            "w": 132,
-            "h": 132,
+            "x": 20,
+            "y": 60,
+            "w": 360,
+            "h": 720,
             "type": "grid",
-            "lod": "rect"
+            "lod": "full",
+            "padding": 0.1
           },
           "template": "jira:ticket"
         }
-      ],
-      "arrangements": {
-        "default": {
-          "size": {
-            "w": 220,
-            "h": 220
-          },
-          "layout": {
-            "background": {
-              "x": 0,
-              "y": 0,
-              "w": 220,
-              "h": 220
-            },
-            "title": {
-              "x": 60,
-              "y": 20,
-              "w": 100,
-              "h": 16
-            },
-            "nodes": {
-              "arrangement": {
-                "type": "grid",
-                "lod": "full",
-                "x": 44,
-                "y": 44,
-                "w": 132,
-                "h": 132
-              }
-            }
-          }
-        },
-        "expanded": {
-          "size": {
-            "w": 1100,
-            "h": 600
-          },
-          "layout": {
-            "nodes": {
-              "arrangement": {
-                "type": "grid",
-                "lod": "full",
-                "x": 250,
-                "y": 44,
-                "w": 800,
-                "h": 500
-              }
-            },
-            "background": {
-              "x": 20,
-              "y": 20,
-              "w": 100,
-              "h": 100
-            },
-            "title": {
-              "x": 20,
-              "y": 60,
-              "w": 100,
-              "h": 16
-            }
-          }
-        }
-      }
+      ]
     }
   ]
 }

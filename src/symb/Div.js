@@ -18,12 +18,14 @@ export class Div extends Component {
       return;
     }
     this.innerProps = props;
-    const { onClick } = props;
+    const { onClick, children } = props;
+    if (children) {
+      this.createChildren(children);
+    }
     if (onClick) {
       this.dom.onClick = onClick;
     }
   }
-
 }
 
 ComponentFactory.registerType(Div);

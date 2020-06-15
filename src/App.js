@@ -7,8 +7,6 @@ import TemplateRegistry from './templates/TemplateRegistry';
 import {Div_} from '@symb/Div';
 import {fit} from "@symb/util";
 import {Card_} from "@/components/Card";
-import {DURATION_REARRANGEMENT} from "@/Config";
-import Tween from "@/arrangement/Tween";
 
 const APP = 'app';
 
@@ -36,8 +34,6 @@ export default class App extends Component {
       error: null,
       windowWidth: window.innerWidth,
       windowHeight: window.innerHeight,
-      focusMap: null,
-      trsnsitions: []
     };
 
     this.getDictionaryFromDb()
@@ -55,9 +51,9 @@ export default class App extends Component {
   }
 
   onElementClick(card, newArrangement) {
-    const tween = new Tween(DURATION_REARRANGEMENT);
-    card.morph(newArrangement, tween);
-    tween.start();
+    // const tween = new Tween(DURATION_REARRANGEMENT);
+    // card.morph(newArrangement, tween);
+    // tween.start();
   }
 
   getDictionaryFromDb() {
@@ -129,10 +125,13 @@ export default class App extends Component {
   }
 
   updateContents(props) {
-    const {dataLoaded, error, focusMap, windowWidth, windowHeight} = this.state;
+    const {dataLoaded, error, windowWidth, windowHeight} = this.state;
     // const backgroundColor = (map && map.backColor) || '#ffffff';
     const {currentMap} = this.state;
     const template = dataLoaded && TemplateRegistry.getTemplate('root');
+    if (template) {
+      document.body.style.backgroundColor = template.background.color;
+    }
 
     this.createChildren([
       error && Div_({}, `An error occurred: ${error.message}`)._Div,

@@ -27,11 +27,6 @@ const elementPositionPropTypes = {
   onClick: P.shape(transitionPropTypes)
 };
 
-export const arrangementTransitionPropTypes = {
-  type: P.exact(TRANSITION_REARRANGE),
-  elements: P.arrayOf(P.shape(elementPositionPropTypes))
-};
-
 export const mapElementPropTypes =  {
   key: P.string.isRequired,
   type: P.oneOf([ELEMENT_GROUP]).isRequired,

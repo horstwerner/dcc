@@ -3,7 +3,6 @@ import isEqual from 'lodash/isEqual';
 import Component, {setStyle} from '@symb/Component';
 import css from './CardSet.css';
 import {Card_} from "./Card";
-import GridArrangement from "../arrangement/GridArrangement";
 import ComponentFactory from "@symb/ComponentFactory";
 import GraphNode from "@/graph/GraphNode";
 import Template from "@/templates/Template";
@@ -27,7 +26,6 @@ class CardSet extends Component {
 
   constructor(props, div) {
     super(props, div);
-    this.arrangement = new GridArrangement(PADDING);
   }
 
   createChildrenForLod(lod) {

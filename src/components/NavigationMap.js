@@ -60,33 +60,33 @@ class NavigationMap extends Component {
   }
 
   handleElementClick(key, action) {
-    if (action.type === ACTION_REARRANGE) {
-      const tween = new Tween(600);
-      const { elements } = action;
-      Object.keys(this.childByKey).forEach(key => {
-        if (!elements[key]) {
-          tween.addFade(this.childByKey[key],0.1);
-        } else {
-          const element = this.childByKey[key];
-          if (element.constructor !== Card) {
-            throw new Error(`can't reposition navigation map element ${key}, only cards allowed`);
-          }
-          const {x, y, width, height, morph} = elements[key];
-          if (morph) {
-             element.morph(morph, tween);
-          } else {
-            const template = element.getTemplate();
-            const spatial = fit(width, height, template.background.w, template.background.h, x, y);
-            tween.addTransform(element, spatial.x, spatial.y, spatial.scale);
-          }
-        }
-      });
-      tween.start();
+    // if (action.type === ACTION_REARRANGE) {
+    //   const tween = new Tween(600);
+    //   const { elements } = action;
+    //   Object.keys(this.childByKey).forEach(key => {
+    //     if (!elements[key]) {
+    //       tween.addFade(this.childByKey[key],0.1);
+    //     } else {
+    //       const element = this.childByKey[key];
+    //       if (element.constructor !== Card) {
+    //         throw new Error(`can't reposition navigation map element ${key}, only cards allowed`);
+    //       }
+    //       const {x, y, width, height, morph} = elements[key];
+    //       if (morph) {
+    //          element.morph(morph, tween);
+    //       } else {
+    //         const template = element.getTemplate();
+    //         const spatial = fit(width, height, template.background.w, template.background.h, x, y);
+    //         tween.addTransform(element, spatial.x, spatial.y, spatial.scale);
+    //       }
+    //     }
+    //   });
+    //   tween.start();
 
-    } else {
+    // } else {
       const { onElementClick } = this.innerProps;
       onElementClick(this.childByKey[key], action);
-    }
+    // }
   }
 
   updateContents(props) {
