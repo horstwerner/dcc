@@ -2,6 +2,7 @@ import P from 'prop-types';
 import ComponentFactory from '@symb/ComponentFactory';
 import Component from "@symb/Component";
 import isEqual from "lodash/isEqual";
+import {DEBUG_MODE} from "@/Config";
 
 const SVGNS = "http://www.w3.org/2000/svg";
 const RECT = 'svg_rect';
@@ -16,9 +17,6 @@ export default class Rect extends Component {
     y: P.number.isRequired,
     width: P.number.isRequired,
     height: P.number.isRequired,
-    fill: P.string,
-    stroke: P.string,
-    strokeWidth: P.number
   };
 
   updateContents(props) {
@@ -26,9 +24,14 @@ export default class Rect extends Component {
       return;
     }
     this.innerProps = props;
-    const { width, height} = props;
+    const { x, y, width, height} = props;
+    if (DEBUG_MODE && (isNaN(width) || isNaN(height) || isNaN(x) || isNaN(y))) {
+      debugger
+    }
     this.dom.setAttribute('width', width);
     this.dom.setAttribute('height', height);
+    this.dom.setAttribute('x', x);
+    this.dom.setAttribute('y', y);
 
   }
 

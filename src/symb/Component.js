@@ -78,7 +78,7 @@ export default class Component {
       console.log(`Warning: automatically closed unclosed child descriptor ${JSON.stringify(childDescriptor)}`);
       childDescriptor = childDescriptor[propKeys[0]];
     }
-    if (childDescriptor.key === null) {
+    if (childDescriptor.key == null) {
       childDescriptor.key = fallbackKey;
     }
     const existing = this.childByKey[childDescriptor.key];

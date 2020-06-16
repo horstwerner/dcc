@@ -103,14 +103,13 @@ export class Slices {
 /**
  * used to create an empty accumulator with the specified start values
  * @param array
- * @param keyAttribute
  * @param value
  * @return {{}}
  */
-const mapToObject = function mapToObject(array, keyAttribute, value) {
+const mapToObject = function mapToObject(array,  value) {
   const result = {};
   array.forEach(element => {
-    result[element.keyAttribute] = clone(value);
+    result[element.sourceField] = clone(value);
   });
   return result;
 };
@@ -127,16 +126,17 @@ export const aggregateDatapoints = function aggregateDatapoints(subset, aggregat
 
   // efficient aggregation in two phases:  first, all required source fields are aggregated
   // then, the required
-  const sourceFieldAggregates = mapToObject(aggregations, 'sourceField', startValue);
+  const sourceFieldAggregates = mapToObject(aggregations, startValue);
 
   for (let i = 0; i < subset.length; i++) {
     Object.keys(sourceFieldAggregates).forEach(sourceField => {
-      const value = subset[i][sourceField] || 0;
-      sourceFieldAggregates.min = Math.min(sourceFieldAggregates.min, value);
-      sourceFieldAggregates.max = Math.max(sourceFieldAggregates.max, value);
-      sourceFieldAggregates.sum += value;
+      const value = Number(subset[i][sourceField]) || 0;
+      const aggregator = sourceFieldAggregates[sourceField];
+      aggregator.min = Math.min(aggregator.min, value);
+      aggregator.max = Math.max(aggregator.max, value);
+      aggregator.sum += value;
       if ( subset[i][sourceField] != null) {
-        sourceFieldAggregates.count++;
+        aggregator.count++;
       }
     });
   }

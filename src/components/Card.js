@@ -14,6 +14,7 @@ import Template from "@/templates/Template";
 import Aggregator from "@/Aggregator";
 import {Svg_} from "@/components/Svg";
 import {Rect_} from "@/components/Rect";
+import {StackedBarChart} from "@/components/Generators";
 
 const CARD = 'card';
 const PADDING = 0.2;
@@ -80,13 +81,38 @@ function calcStyle(styleDescriptor, h) {
   return result;
 }
 
-function Chart({data, descriptor}) {
-  const {chartType, x, y} = descriptor;
+function Chart({key, data, descriptor}) {
+  const {chartType, x, y, source, ...chartProps} = descriptor;
   const spatial = { x, y, scale: 1};
+
+  const chartData = (source && source !== 'this') ? resolveAttribute(data, source) : data;
+
   switch (chartType) {
     case 'rect':
-      const { attribute, maxValue, maxW, h, color } = descriptor;
-      return Svg_({spatial, width: maxW, height: h, children: [Rect_({x: 0, y: 0, width: resolveAttribute(data, attribute)/maxValue * maxW, height: h, style: {fill: color}})._Rect]})._Svg
+      const {maxValue, maxW, h, color, attribute} = chartProps;
+      const value = resolveAttribute(chartData, attribute);
+      if (value == null || isNaN(value) || maxValue == null || isNaN(maxValue)) {
+        console.log(`Warning: invalid numbers (value=${value}, maxVal=${maxValue}) for rect chart`);
+        return null;
+      }
+      return Svg_({
+        key,
+        spatial,
+        width: maxW,
+        height: h,
+        children: [Rect_({
+          key: 'rect',
+          x: 0,
+          y: 0,
+          width: value / maxValue * maxW,
+          height: h,
+          style: {fill: color}
+        })._Rect]
+      })._Svg
+    case 'stackedBar':
+      return StackedBarChart({data: chartData, spatial, ...chartProps})
+    default:
+      throw new Error(`Unkonwn chart type ${chartType}`);
   }
 }
 
@@ -129,22 +155,20 @@ function childSetDescriptor(data, set, onClick) {
       resolveAttribute(data, source);
   if (!nodes) return null;
 
-  if (aggregate) {
-    nodes = createAggregatedNode(nodes, aggregate);
-  }
+  const childData = aggregate? createAggregatedNode(nodes, aggregate) : nodes;
 
-  if (!Array.isArray(nodes)) {
+  if (!Array.isArray(childData)) {
     return Card_({
       key,
       template,
       lod,
       spatial: fit(w, h, nativeSize.width, nativeSize.height, x, y),
-      data:  nodes,
+      data:  childData,
       onClick
     })._Card;
   }
   return CardSet_({key,
-    nodes,
+    nodes: childData,
     template,
     lod,
     spatial: {x: 0, y: 0, scale: 1},
@@ -212,17 +236,17 @@ export default class Card extends Component {
           const {attribute, ...rest} = element;
           children.push(Caption({
             key: attribute,
-            text: resolveAttribute(data, attribute),
+            text: String(resolveAttribute(data, attribute)),
             ...rest
           }));
           }
           break;
         case "chart":
-          children.push(Chart({data, descriptor: element}));
+          children.push(Chart({key, data, descriptor: element}));
           break;
         case "childcards":
           this.childClickAction[element.key] = element.clickAction;
-          children.push(childSetDescriptor(data,element,
+          children.push(childSetDescriptor(data, element,
               element.clickAction ? () => {this.handleChildClick(key, element.clickAction)} : null));
           break;
         default:
