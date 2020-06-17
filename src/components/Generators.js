@@ -19,7 +19,7 @@ export const StackedBarChart = function StackedBarChart(props) {
     P.checkPropTypes(StackedBarChart.propTypes, props, 'prop', 'StackedBarChart');
   }
 
-  const {data, spatial, w, h, maxValue, colorAttribute, widthAttribute, colors, defaultColor, sortSequence} = props;
+  const {data, spatial, w, h, maxValue, colorAttribute, widthAttribute, colors, defaultColor, fragmentStroke, sortSequence} = props;
   const colorCoder = new ColorCoder({type: 'selection', attribute: 'colorVal', cases: colors, default: defaultColor});
 
   // create copy with only needed values for sorting
@@ -49,7 +49,7 @@ export const StackedBarChart = function StackedBarChart(props) {
   const children = nodes.map(node => {
     const x = xCursor;
     xCursor += node.width;
-    return Rect_({x, y: 0, width: node.width + 1, height: h, style: {fill: colorCoder.getColor(node)}})._Rect;
+    return Rect_({x, y: 0, width: node.width + 1, height: h-2, style: {stroke: fragmentStroke, fill: colorCoder.getColor(node)}})._Rect;
   });
 
   return Svg_({width: w, height: h, children, spatial})._Svg;
@@ -64,6 +64,7 @@ StackedBarChart.propTypes = {
   colorAttribute: P.string,
   widthAttribute: P.string,
   colors: P.arrayOf(P.shape({condition: P.string.isRequired, color: P.string.isRequired})),
+  fragmentStroke: P.string,
   defaultColor: P.string,
   sortSequence: P.oneOfType(P.oneOf([SORT_ASC, SORT_DESC, SORT_URI]), P.array)
 }

@@ -1,4 +1,4 @@
-import {sliceBy} from "@/graph/Grouping";
+import {sliceBy} from "@/graph/GroupedSet";
 
 export default class GroupedArrangement extends Arrangement {
   constructor(groupBy, padding, childSize) {

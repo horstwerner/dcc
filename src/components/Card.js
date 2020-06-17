@@ -182,7 +182,7 @@ export default class Card extends Component {
 
   static type = CARD;
   // noinspection JSUnusedGlobalSymbols
-  static baseTag = 'div';
+  static baseTag = 'div';g
   static className = css.card;
 
   // noinspection JSUnusedGlobalSymbols
@@ -213,7 +213,7 @@ export default class Card extends Component {
 
   /**
    * map from template to symb component descriptors
-   * @param props
+   * @param {{template: String, data: GraphNode, onClick: function}} props
    */
   updateContents(props) {
     if (isEqual(this.innerProps, props)) {

@@ -6,7 +6,7 @@ import {ViewSwitch_} from "@/components/ViewSwitch";
 import {CardSet_} from "@/components/CardSet";
 import Template from "@/templates/Template";
 import GridArrangement from "@/arrangement/GridArrangement";
-import {sliceBy} from "@/graph/Grouping";
+import {sliceBy} from "@/graph/GroupedSet";
 import {Div_} from "@symb/Div";
 import Arrangement from "@/arrangement/Arrangement";
 

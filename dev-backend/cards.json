@@ -100,7 +100,7 @@
         "type": "rect",
         "color": "#F0F0F0",
         "w": 1400,
-        "h": 700
+        "h": 1000
       },
       "elements": [
         {
@@ -116,24 +116,20 @@
             }
           },
           "template": "grid",
-          "x": 20, "y": 20, "w": 400, "h": 660,
+          "x": 10, "y": 10, "w": 800, "h": 800,
           "clickAction": "focusAlerts"
         }
       ]
     },
     {
       "type": "grid",
-      "size": {
-        "w": 400,
-        "h": 800
-      },
       "background": {
         "type": "rect",
         "color": "#FEFEFE",
         "x": 0,
         "y": 0,
         "w": 400,
-        "h": 750,
+        "h": 400,
         "cornerRadius": "6px"
       },
       "elements": [
@@ -186,7 +182,7 @@
           "key": "storybar",
           "type": "chart",
           "source": "core:subNodes",
-          "sortSequence": ["closed", "in validation", "in code review", "in progress", "blocked", "open"],
+          "sortSequence": ["closed","in validation","in code review","in progress","blocked","open"],
           "chartType": "stackedBar",
           "x": 30, "y": 60 , "w": 360, "h": 20,
           "widthAttribute": "jira:storypoints",
@@ -226,9 +222,9 @@
           "source": "core:subNodes",
           "arrangement": {
             "x": 20,
-            "y": 100,
+            "y": 80,
             "w": 360,
-            "h": 630,
+            "h": 280,
             "type": "grid",
             "lod": "full",
             "padding": 0.1

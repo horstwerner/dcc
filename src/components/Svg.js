@@ -22,9 +22,9 @@ export default class Svg extends Component {
     }
     this.innerProps = props;
     const {children, width, height} = props;
+    // this.dom.setAttribute('overflow', 'visible')
     this.dom.setAttribute('width', width);
     this.dom.setAttribute('height', height);
-
     this.createChildren(children);
   }
 

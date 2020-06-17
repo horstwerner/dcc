@@ -28,6 +28,7 @@ export default class Rect extends Component {
     if (DEBUG_MODE && (isNaN(width) || isNaN(height) || isNaN(x) || isNaN(y))) {
       debugger
     }
+    this.dom.setAttribute('shape-rendering','crispEdges');
     this.dom.setAttribute('width', width);
     this.dom.setAttribute('height', height);
     this.dom.setAttribute('x', x);
