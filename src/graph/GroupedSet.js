@@ -1,10 +1,10 @@
-import {mapValues, omit} from 'lodash';
-import {resolveAttribute, TYPE_NODES} from "@/graph/Cache";
-import Aggregator from "@/Aggregator";
+import {mapValues} from 'lodash';
+import {resolveAttribute, TYPE_NAME, TYPE_NODES} from "@/graph/Cache";
+import Aggregator, {DEFAULT_AGGREGATOR} from "@/Aggregator";
 
 
 const EMPTY = '__empty__';
-const DEFAULT_AGGREGATOR = new Aggregator({aggregations: {}, texts: {}});
+
 
 /**
  * groups the array of data points by the specified dimension, creates a Slices instance containing these groups
@@ -37,6 +37,7 @@ export const sliceBy = function sliceBy(aggNode, dimension, aggregator = DEFAULT
       mapValues(subsets,(nodes, key) => {
         const agg = aggregator.aggregate(nodes);
         agg[dimension] = key;
+        agg[TYPE_NAME] = (key === EMPTY ? 'unspecified' : key);
         return agg;})
   );
 };

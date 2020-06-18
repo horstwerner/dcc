@@ -7,9 +7,12 @@ export const DATATYPE_BOOLEAN = 'BOOLEAN';
 export const DATATYPE_FLOAT = 'FLOAT';
 export const DATATYPE_ENTITY = 'ENTITY';
 
+export const TYPE_NAME = 'core:name';
 export const TYPE_AGGREGATOR = 'core:aggregator';
 export const TYPE_NODES = 'core:subNodes'
 export const TYPE_NODE_COUNT = 'core:nodeCount';
+export const TYPE_MIN_VALUES = 'core:minValues';
+export const TYPE_MAX_VALUES = 'core:maxValues';
 
 class Cache {
 

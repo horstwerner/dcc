@@ -19,7 +19,7 @@ export default class Template extends CheckedObject{
     elements: P.arrayOf(P.shape(
         {
           key: P.string.isRequired,
-          type: P.oneOf(["caption","textfield","childcards","chart"]).isRequired,
+          type: P.oneOf(["caption","textfield","childcards","chart","trellis"]).isRequired,
           source: P.string,
           aggregate: P.object,
           template: P.string,
@@ -33,6 +33,10 @@ export default class Template extends CheckedObject{
     if (descriptor.colorcoding) {
       this.colorCoder = new ColorCoder(descriptor.colorcoding);
     }
+  }
+
+  getType() {
+    return this.type;
   }
 
   getCardColor(node) {

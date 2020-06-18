@@ -55,7 +55,7 @@ export default class GraphNode {
   };
 
   displayName() {
-    return this['core:name'] === undefined ? this.uri : this['core:name'];
+    return this[TYPE_NAME] === undefined ? this.uri : this[TYPE_NAME];
   };
 
   setAttributes(object) {

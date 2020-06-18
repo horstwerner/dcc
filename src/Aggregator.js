@@ -1,11 +1,13 @@
-import Cache, {TYPE_AGGREGATOR, TYPE_NODE_COUNT, TYPE_NODES} from './graph/Cache';
+import P from 'prop-types';
+import Cache, {resolveAttribute, TYPE_AGGREGATOR, TYPE_NODE_COUNT, TYPE_NODES} from './graph/Cache';
 import GraphNode from "@/graph/GraphNode";
 import clone from "lodash/clone";
+import {DEBUG_MODE} from "@/Config";
 
 export const AGG_COUNT = 'count';
 export const AGG_SUM = 'sum';
 export const AGG_MAX = 'max';
-export const AGG_MIN = 'main';
+export const AGG_MIN = 'min';
 export const AGG_AVG = 'avg';
 
 const startValue = {
@@ -15,14 +17,10 @@ const startValue = {
   'count': 0
 };
 
-const fillIn = function(string, substitutions) {
-  let result = string;
-  for (let i = 0; i < substitutions.length; i++) {
-    const {placeholder, value} = substitutions[i];
-    result = result.split(placeholder).join(value);
-  }
-  return result;
+export const sum = function sum(nodes, attribute) {
+  return nodes.reduce((result, node) => result + Number(resolveAttribute(node, attribute) || 0), 0);
 }
+
 
 /**
  * used to create an empty accumulator with the specified start values
@@ -38,14 +36,15 @@ const mapToObject = function mapToObject(array,  value) {
   return result;
 };
 
-
 /**
  *
+ * Low-level aggregation method
+ *
  * @param {Array<Object>} subset
- * @param {Array<Object>} aggregations
- * @return {Object}
+ * @param {Array<{sourceField: string, targetField: string, method: string}>} aggregations
+ * @return {Object} keys are targetFields, values the respective aggregated values
  */
-const aggregateNodes = function aggregateNodes(subset, aggregations) {
+export const aggregateNodes = function aggregateNodes(subset, aggregations) {
 
   // efficient aggregation in two phases:  first, all required source fields are aggregated
   // then, the required
@@ -53,7 +52,7 @@ const aggregateNodes = function aggregateNodes(subset, aggregations) {
 
   for (let i = 0; i < subset.length; i++) {
     Object.keys(sourceFieldAggregates).forEach(sourceField => {
-      const value = Number(subset[i][sourceField]) || 0;
+      const value = Number(subset[i][sourceField] || 0);
       const aggregator = sourceFieldAggregates[sourceField];
       aggregator.min = Math.min(aggregator.min, value);
       aggregator.max = Math.max(aggregator.max, value);
@@ -100,22 +99,19 @@ export default class Aggregator {
   // }
 
 
+  static propTypes = P.objectOf(P.shape({attribute: P.string, calculate: P.string})).isRequired;
+
   /**
    * aggregation key is name of the aggregated attribute, aggregation is of format {attribute: string, calculate: string}
    * texts can contain handlebars containing aggregated attribute names, which will then be replaced by the respective
    * values
-   * @param {{aggregations: {[key]: {attribute: string, calculate:string}}, texts: {[key]: string}}} template
+   * @param aggregations: {[key]: {attribute: string, calculate:string}}
    */
-  constructor(template) {
-    const {aggregations, texts} = template;
-    this.derivedTexts = [];
-    const aggregatedProps = [...Object.keys(aggregations), TYPE_NODE_COUNT];
-    Object.keys(texts).forEach(key => {
-      const sourceText = texts[key];
-      this.derivedTexts.push({key, sourceText,
-        substitutions: aggregatedProps.filter(prop => sourceText.includes(`{{${prop}}}`))})
-        }
-    )
+  constructor(aggregations) {
+
+    if (DEBUG_MODE) {
+      P.checkPropTypes(Aggregator.propTypes, aggregations, 'prop', 'Aggregator');
+    }
 
     this.fieldAggregations = [];
     Object.keys(aggregations).forEach(key => {
@@ -124,12 +120,17 @@ export default class Aggregator {
     });
   }
 
+  getAggregatedAttributeNames() {
+    return this.fieldAggregations.map(({targetField}) => targetField);
+  }
 
+  /**
+   *
+   * @param {GraphNode[]} nodes
+   * @return {GraphNode}
+   */
   aggregate(nodes) {
     const aggregated = aggregateNodes(nodes, this.fieldAggregations);
-    this.derivedTexts.forEach(textDescriptor => {
-      aggregated[textDescriptor.key] = fillIn(textDescriptor.sourceText, textDescriptor.substitutions.map(key => ({placeholder:`{{${key}}}`, value: aggregated[key]})));
-    })
 
     return new GraphNode(TYPE_AGGREGATOR, Cache.createUri())
         .setAttributes(aggregated)
@@ -137,3 +138,5 @@ export default class Aggregator {
   }
 
 }
+
+export const DEFAULT_AGGREGATOR = new Aggregator({});

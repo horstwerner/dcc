@@ -41,6 +41,7 @@ export default class GridArrangement extends Arrangement{
     }
     const spacear = maxw / maxh;
     if (this.compact && childaspectratio >= spacear) {
+      debugger
       ystep *= spacear / childaspectratio;
       maxh = ystep * (childcount === 1 ? 1 : (1 - this.padding));
       if (this.maxChildsize) {

@@ -27,11 +27,11 @@
           },
           {
             "condition": "=in code review",
-            "color": "#b2cb80"
+            "color": "#a3b630"
           },
           {
             "condition": "=in progress",
-            "color": "#cec955"
+            "color": "#cfc726"
           },
           {
             "condition": "=blocked",
@@ -48,17 +48,17 @@
         {
           "key": "heading",
           "type": "textfield",
-          "attribute": "uri",
-          "style" : {
-            "font-weight": "bold",
-            "color": "white",
-            "font-size": "20px",
-            "hAlign": "center"
-          },
           "x": 10,
           "y": 10,
           "w": 200,
-          "h": 18
+          "h": 18,
+          "attribute": "uri",
+          "style": {
+            "font-weight": "bold",
+            "color": "white",
+            "font-size": "20px",
+            "h-align": "center"
+          }
         },
         {
           "key": "name",
@@ -75,16 +75,22 @@
         {
           "key": "storybar",
           "type": "chart",
-          "chartType": "rect",
-          "x": 10, "y": 89 , "maxW": 200, "h": 20,
+          "x": 10,
+          "y": 89,
+          "h": 20,
           "attribute": "jira:storypoints",
-          "maxValue": 24,
-          "color": "rgba(0,0,0,0.15)"
+          "color": "rgba(0,0,0,0.15)",
+          "chartType": "rect",
+          "maxW": 200,
+          "maxValue": 24
         },
         {
           "key": "storypts",
           "type": "textfield",
-          "x": 12, "y": 67, "w": 30, "h": 20,
+          "x": 12,
+          "y": 67,
+          "w": 30,
+          "h": 20,
           "attribute": "jira:storypoints",
           "style": {
             "font-size": "16px",
@@ -98,25 +104,23 @@
       "type": "root",
       "background": {
         "type": "rect",
-        "color": "#F0F0F0",
         "w": 1400,
-        "h": 1000
+        "h": 1000,
+        "color": "#F0F0F0"
       },
       "elements": [
         {
-          "key": "alerts",
+          "key": "stories",
           "type": "childcards",
           "source": "jira:ticket",
           "aggregate": {
-            "aggregations": {
               "total-storypoints": {"attribute": "jira:storypoints", "calculate": "sum"}
-            },
-            "texts": {
-              "title": "{{core:nodeCount}} Stories"
-            }
           },
-          "template": "grid",
-          "x": 10, "y": 10, "w": 800, "h": 800,
+          "template": "trellis",
+          "x": 10,
+          "y": 10,
+          "w": 500,
+          "h": 500,
           "clickAction": "focusAlerts"
         }
       ]
@@ -125,28 +129,28 @@
       "type": "grid",
       "background": {
         "type": "rect",
-        "color": "#FEFEFE",
-        "x": 0,
-        "y": 0,
         "w": 400,
         "h": 400,
-        "cornerRadius": "6px"
+        "cornerRadius": "6px",
+        "color": "#FEFEFE",
+        "x": 0,
+        "y": 0
       },
       "elements": [
         {
           "key": "title",
           "type": "textfield",
           "attribute": "title",
+          "style": {
+            "color": "#A0A0A0",
+            "font-weight": "bold",
+            "font-size": "24px",
+            "h-align": "left"
+          },
           "x": 30,
           "y": 20,
           "w": 200,
-          "h": 32,
-          "style": {
-            "color": "#A0A0A0",
-            "font-size": "24px",
-            "hAlign": "left",
-            "font-weight": "bold"
-          }
+          "h": 32
         },
         {
           "key": "storyptLabel",
@@ -159,7 +163,7 @@
           "style": {
             "color": "#A0A0A0",
             "font-size": "12px",
-            "hAlign": "left",
+            "h-align": "left",
             "font-weight": "bold"
           }
         },
@@ -174,7 +178,7 @@
           "style": {
             "color": "#A0A0A0",
             "font-size": "16px",
-            "hAlign": "left",
+            "h-align": "left",
             "font-weight": "bold"
           }
         },
@@ -182,11 +186,21 @@
           "key": "storybar",
           "type": "chart",
           "source": "core:subNodes",
-          "sortSequence": ["closed","in validation","in code review","in progress","blocked","open"],
+          "sortSequence": [
+            "closed",
+            "in validation",
+            "in code review",
+            "in progress",
+            "blocked",
+            "open"
+          ],
           "chartType": "stackedBar",
-          "x": 30, "y": 60 , "w": 360, "h": 20,
+          "x": 20,
+          "y": 60,
+          "w": 360,
+          "h": 20,
+          "totalWidthAttribute": "storyPointSum",
           "widthAttribute": "jira:storypoints",
-          "maxValue": 700,
           "colorAttribute": "jira:status",
           "colors": [
             {
@@ -199,11 +213,11 @@
             },
             {
               "condition": "=in code review",
-              "color": "#b2cb80"
+              "color": "#a3b630"
             },
             {
               "condition": "=in progress",
-              "color": "#cec955"
+              "color": "#cfc726"
             },
             {
               "condition": "=blocked",
@@ -220,16 +234,171 @@
           "key": "nodes",
           "type": "childcards",
           "source": "core:subNodes",
+          "x": 20,
+          "y": 80,
+          "w": 360,
+          "h": 280,
           "arrangement": {
-            "x": 20,
-            "y": 80,
-            "w": 360,
-            "h": 280,
             "type": "grid",
             "lod": "full",
             "padding": 0.1
           },
           "template": "jira:ticket"
+        }
+      ]
+    },
+    { "type": "trellisGroupStacked",
+      "background": {
+        "type": "rect",
+        "w": 400,
+        "h": 70
+      },
+      "elements": [
+        {
+          "key": "label",
+          "type": "textfield",
+          "attribute": "core:name",
+          "x": 0,
+          "y": 0,
+          "w": 400,
+          "h": 25,
+          "style": {
+            "color": "#A0A0A0",
+            "font-weight": "bold",
+            "font-size": "24px",
+            "h-align": "left"
+          }
+        },
+        { "key":  "counter",
+          "type": "caption",
+          "text": "{{core:nodeCount}} Stories, {{storyPointSum}} Story Points",
+          "x": 200, "y": 6, "w": 200, "h": 16,
+          "style": {"font-size":  "16px", "color":  "#A0A0A0", "h-align":  "right"}
+        },
+        {
+          "key": "storybar",
+          "type": "chart",
+          "source": "core:subNodes",
+          "sortSequence": [
+            "closed",
+            "in validation",
+            "in code review",
+            "in progress",
+            "blocked",
+            "open"
+          ],
+          "chartType": "stackedBar",
+          "x": 0,
+          "y": 30,
+          "w": 400,
+          "h": 30,
+          "totalWidthAttribute": "storyPointSum",
+          "widthAttribute": "jira:storypoints",
+          "colorAttribute": "jira:status",
+          "colors": [
+            {
+              "condition": "=closed",
+              "color": "#548546"
+            },
+            {
+              "condition": "=in validation",
+              "color": "#7ea550"
+            },
+            {
+              "condition": "=in code review",
+              "color": "#a3b630"
+            },
+            {
+              "condition": "=in progress",
+              "color": "#cfc726"
+            },
+            {
+              "condition": "=blocked",
+              "color": "#b65b56"
+            },
+            {
+              "condition": "=open",
+              "color": "#d0d0d0"
+            }
+          ],
+          "defaultColor": "#a0a0a0"
+        }
+      ]},
+    {
+      "type": "trellis",
+      "background": {
+        "type": "rect",
+        "w": 400,
+        "h": 500,
+        "cornerRadius": "6px",
+        "color": "#FEFEFE",
+        "x": 0,
+        "y": 0
+      },
+      "elements": [
+        {
+          "key": "title",
+          "type": "caption",
+          "text": "{{core:nodeCount}} Stories",
+          "style": {
+            "color": "#A0A0A0",
+            "font-weight": "bold",
+            "font-size": "24px",
+            "h-align": "left"
+          },
+          "x": 30,
+          "y": 20,
+          "w": 200,
+          "h": 32
+        },
+        {
+          "key": "storyptLabel",
+          "type": "caption",
+          "text": "Total Storypoints:",
+          "x": 240,
+          "y": 32,
+          "w": 200,
+          "h": 24,
+          "style": {
+            "color": "#A0A0A0",
+            "font-size": "12px",
+            "h-align": "left",
+            "font-weight": "bold"
+          }
+        },
+        {
+          "key": "storypts",
+          "type": "textfield",
+          "attribute": "total-storypoints",
+          "x": 348,
+          "y": 30,
+          "w": 200,
+          "h": 24,
+          "style": {
+            "color": "#A0A0A0",
+            "font-size": "16px",
+            "h-align": "left",
+            "font-weight": "bold"
+          }
+        },
+        {
+          "key": "trellis",
+          "type": "trellis",
+          "source": "core:subNodes",
+          "x": 20,
+          "y": 60,
+          "w": 360,
+          "h": 400,
+          "arrangement": {
+            "type": "grid",
+            "compact": true,
+            "padding": 0.1
+          },
+          "aggregate": {
+            "storyPointSum": {"attribute": "jira:storypoints", "calculate": "sum"}
+          },
+          "template": "trellisGroupStacked",
+          "groupAttribute": "jira:team"
         }
       ]
     }
