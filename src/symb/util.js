@@ -37,7 +37,6 @@ const findParameters = function findParameters(text) {
 
 export const fillIn = function fillIn(textTemplate, data) {
   const parameters = findParameters(textTemplate);
-  debugger
   let result = textTemplate;
   for (let i = 0; i < parameters.length; i++) {
     const parameter = parameters[i];

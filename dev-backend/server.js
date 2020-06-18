@@ -71,15 +71,15 @@ router.get("/views", (req, res) => {
 });
 
 router.get("/cards", (req, res) => {
-  let cards;
+  let templates;
   try {
     const data = fs.readFileSync(path.join(__dirname, 'cards.json'), {encoding: 'utf-8'});
-    cards = JSON.parse(data)['cards'];
+    templates = JSON.parse(data);
   } catch (err) {
     throw new Error(`Couldn't load data: ${err}`);
   }
   console.log(`serving cards`);
-  return res.json({success: true, data: cards});
+  return res.json({success: true, data: templates});
 });
 
 router.get("/navigation", (req, res) => {

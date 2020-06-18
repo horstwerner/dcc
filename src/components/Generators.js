@@ -79,6 +79,7 @@ function calcStyle(styleDescriptor, h) {
       case 'color':
       case 'font-weight':
       case 'font-size':
+      case 'font-family':
         result[key] = value;
         break;
       case 'h-align':

@@ -1,4 +1,5 @@
 import P from 'prop-types';
+import { omit } from 'lodash';
 import Component from '@symb/Component';
 import css from './App.css';
 import ComponentFactory from "@symb/ComponentFactory";
@@ -17,6 +18,66 @@ const handleResponse = function (response) {
     throw new Error(`${response.status}: ${response.statusText}`);
   }
 };
+
+const getGlobal = function getGlobal(constants, value) {
+  const constant = constants[value['$']];
+  if (constant === undefined) {
+    throw new Error(`Can't find global constant ${value['$']}`)
+  }
+  if (Object.keys(value).length === 1) {
+    return constant;
+  } else {
+    debugger
+    if (Array.isArray(constant) || typeof constant !== 'object'){
+      throw new Error(`Can't override parts of constant ${value['$']} - not an object`)
+    }
+   return {...constant, ...omit(value, ['$'])};
+  }
+};
+
+const processObject = function (constants, object) {
+  if (object == null) {
+    debugger
+  }
+  Object.keys(object).forEach(key => {
+    const value = object[key];
+    if (value == null) {
+      debugger
+    }
+    if (Array.isArray(value)) {
+      processArray(constants, value);
+    } else if (typeof value === 'object') {
+      if ( value['$']) {
+        object[key] = getGlobal(constants, value);
+      } else {
+        processObject(constants, value);
+      }
+    }
+  });
+};
+
+const processArray = function(constants, array) {
+  array.forEach(element => {
+    if (Array.isArray(element)) {
+      processArray(constants, element);
+    } else if (typeof element === 'object') {
+      processObject(constants, element);
+    }
+  })
+};
+
+const preprocess = function preprocess(constantList, templates) {
+  const constants = {};
+  // constants can use constants that precede them in list
+  constantList.forEach(constObj => {
+    processObject(constants, constObj);
+    const key = Object.keys(constObj)[0];
+    constants[key] = constObj[key];
+  });
+
+  //now that all constants are processed, process templates
+  processArray(constants, templates);
+}
 
 export default class App extends Component {
 
@@ -71,7 +132,9 @@ export default class App extends Component {
     return fetch('/api/cards')
         .then(handleResponse)
         .then(result => {
-          result.data.forEach(descriptor => {
+          const {constants, cards} = result.data;
+          preprocess(constants, cards)
+          cards.forEach(descriptor => {
             TemplateRegistry.registerTemplate(descriptor);
           })
         })

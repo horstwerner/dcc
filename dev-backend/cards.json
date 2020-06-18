@@ -1,4 +1,61 @@
 {
+  "constants": [
+    {"TEXT_COLOR":  "rgba(0,0,0,0.55"},
+    {"HEADING_COLOR":  "rgba(0,0,0,0.4"},
+    {"TEXT_STYLE":  {
+      "color": {"$":  "TEXT_COLOR"},
+      "font-family": "Arial, sans serif"
+    }},
+    {"CARD_HEADING_STYLE":  {
+      "font-family": "Arial, sans serif",
+      "color": {"$": "HEADING_COLOR"},
+      "font-weight": "600",
+      "font-size": "24px"
+    }},
+    {"GROUP_HEADING_STYLE":  {
+      "$": "CARD_HEADING_STYLE",
+      "font-size": "18px"
+    }},
+    {"LABEL_STYLE" : {
+      "$": "TEXT_STYLE",
+      "font-size": "16px"
+    }},
+    {"STATUS_SEQUENCE": [
+      "closed",
+      "in validation",
+      "in code review",
+      "in progress",
+      "blocked",
+      "open"
+    ]},
+    {"COLOR_BY_STATUS": [
+      {
+        "condition": "=closed",
+        "color": "#548546"
+      },
+      {
+        "condition": "=in validation",
+        "color": "#7ea550"
+      },
+      {
+        "condition": "=in code review",
+        "color": "#a3b630"
+      },
+      {
+        "condition": "=in progress",
+        "color": "#cfc726"
+      },
+      {
+        "condition": "=blocked",
+        "color": "#b65b56"
+      },
+      {
+        "condition": "=open",
+        "color": "#d0d0d0"
+      }
+    ]},
+    {"DEFAULT_TICKET_COLOR": "#a0a0a0"}
+  ],
   "cards": [
     {
       "type": "jira:ticket",
@@ -16,33 +73,8 @@
       "colorcoding": {
         "type": "selection",
         "attribute": "jira:status",
-        "cases": [
-          {
-            "condition": "=closed",
-            "color": "#548546"
-          },
-          {
-            "condition": "=in validation",
-            "color": "#7ea550"
-          },
-          {
-            "condition": "=in code review",
-            "color": "#a3b630"
-          },
-          {
-            "condition": "=in progress",
-            "color": "#cfc726"
-          },
-          {
-            "condition": "=blocked",
-            "color": "#b65b56"
-          },
-          {
-            "condition": "=open",
-            "color": "#b0b0b0"
-          }
-        ],
-        "default": "#a0a0a0"
+        "cases": {"$":  "COLOR_BY_STATUS"},
+        "default": {"$" : "DEFAULT_TICKET_COLOR"}
       },
       "elements": [
         {
@@ -69,7 +101,7 @@
           "h": 32,
           "attribute": "core:name",
           "style": {
-            "color": "rgba(0,0,0,0.6)"
+            "color": {"$": "TEXT_COLOR"}
           }
         },
         {
@@ -119,8 +151,22 @@
           "template": "trellis",
           "x": 10,
           "y": 10,
-          "w": 500,
+          "w": 400,
           "h": 500,
+          "clickAction": "focusAlerts"
+        },
+        {
+          "key": "storiesgrid",
+          "type": "childcards",
+          "source": "jira:ticket",
+          "aggregate": {
+            "total-storypoints": {"attribute": "jira:storypoints", "calculate": "sum"}
+          },
+          "template": "grid",
+          "x": 550,
+          "y": 10,
+          "w": 400,
+          "h": 800,
           "clickAction": "focusAlerts"
         }
       ]
@@ -130,7 +176,7 @@
       "background": {
         "type": "rect",
         "w": 400,
-        "h": 400,
+        "h": 800,
         "cornerRadius": "6px",
         "color": "#FEFEFE",
         "x": 0,
@@ -139,8 +185,8 @@
       "elements": [
         {
           "key": "title",
-          "type": "textfield",
-          "attribute": "title",
+          "type": "caption",
+          "text": "{{core:nodeCount}} Stories",
           "style": {
             "color": "#A0A0A0",
             "font-weight": "bold",
@@ -186,14 +232,7 @@
           "key": "storybar",
           "type": "chart",
           "source": "core:subNodes",
-          "sortSequence": [
-            "closed",
-            "in validation",
-            "in code review",
-            "in progress",
-            "blocked",
-            "open"
-          ],
+          "sortSequence": {"$": "STATUS_SEQUENCE"},
           "chartType": "stackedBar",
           "x": 20,
           "y": 60,
@@ -202,33 +241,8 @@
           "totalWidthAttribute": "storyPointSum",
           "widthAttribute": "jira:storypoints",
           "colorAttribute": "jira:status",
-          "colors": [
-            {
-              "condition": "=closed",
-              "color": "#548546"
-            },
-            {
-              "condition": "=in validation",
-              "color": "#7ea550"
-            },
-            {
-              "condition": "=in code review",
-              "color": "#a3b630"
-            },
-            {
-              "condition": "=in progress",
-              "color": "#cfc726"
-            },
-            {
-              "condition": "=blocked",
-              "color": "#b65b56"
-            },
-            {
-              "condition": "=open",
-              "color": "#b0b0b0"
-            }
-          ],
-          "defaultColor": "#a0a0a0"
+          "colors": {"$":  "COLOR_BY_STATUS"},
+          "defaultColor": {"$": "DEFAULT_TICKET_COLOR"}
         },
         {
           "key": "nodes",
@@ -237,7 +251,7 @@
           "x": 20,
           "y": 80,
           "w": 360,
-          "h": 280,
+          "h": 700,
           "arrangement": {
             "type": "grid",
             "lod": "full",
@@ -262,12 +276,7 @@
           "y": 0,
           "w": 400,
           "h": 25,
-          "style": {
-            "color": "#A0A0A0",
-            "font-weight": "bold",
-            "font-size": "24px",
-            "h-align": "left"
-          }
+          "style": {"$":  "GROUP_HEADING_STYLE"}
         },
         { "key":  "counter",
           "type": "caption",
@@ -279,14 +288,7 @@
           "key": "storybar",
           "type": "chart",
           "source": "core:subNodes",
-          "sortSequence": [
-            "closed",
-            "in validation",
-            "in code review",
-            "in progress",
-            "blocked",
-            "open"
-          ],
+          "sortSequence": {"$":  "STATUS_SEQUENCE"},
           "chartType": "stackedBar",
           "x": 0,
           "y": 30,
@@ -295,33 +297,10 @@
           "totalWidthAttribute": "storyPointSum",
           "widthAttribute": "jira:storypoints",
           "colorAttribute": "jira:status",
-          "colors": [
-            {
-              "condition": "=closed",
-              "color": "#548546"
-            },
-            {
-              "condition": "=in validation",
-              "color": "#7ea550"
-            },
-            {
-              "condition": "=in code review",
-              "color": "#a3b630"
-            },
-            {
-              "condition": "=in progress",
-              "color": "#cfc726"
-            },
-            {
-              "condition": "=blocked",
-              "color": "#b65b56"
-            },
-            {
-              "condition": "=open",
-              "color": "#d0d0d0"
-            }
-          ],
-          "defaultColor": "#a0a0a0"
+          "colors": {
+            "$": "COLOR_BY_STATUS"
+          },
+          "defaultColor": {"$": "DEFAULT_TICKET_COLOR"}
         }
       ]},
     {
@@ -340,12 +319,7 @@
           "key": "title",
           "type": "caption",
           "text": "{{core:nodeCount}} Stories",
-          "style": {
-            "color": "#A0A0A0",
-            "font-weight": "bold",
-            "font-size": "24px",
-            "h-align": "left"
-          },
+          "style": {"$": "CARD_HEADING_STYLE"},
           "x": 30,
           "y": 20,
           "w": 200,
