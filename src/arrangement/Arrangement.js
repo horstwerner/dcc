@@ -24,11 +24,6 @@ export default class Arrangement {
     return this;
   };
 
-  setLOD(lod) {
-    this.lod = lod;
-    return this;
-  }
-
   getSize() {
     return {width: this.areaw, height: this.areah}
   }

@@ -1,0 +1,69 @@
+jira:ticket,core:name,jira:status,jira:storypoints,jira:depends-on,jira:team,jira:ticket-type,jira:feature,jira:sprint,jira:release
+TQC-10348,Add flux field parameters,closed,8,,Datastore,Story,Flux Compensation,2020-05,1.2
+TQC-10349,Flux calculation,in validation,20,TQC-10348,Simulation,Story,Flux Compensation,2020-06,1.2
+TQC-10350,Add Flux to UI,in progress,10,TQC-10348+TQC-10351+TQC-10352+TQC-10353,Frontend,Story,Flux Compensation,2020-06,1.2
+TQC-10351,Flux support,in code review,8,TQC-10348,Platform,Story,Flux Compensation,2020-06,1.2
+TQC-10352,Flux analytics,in progress,14,TQC-10348+TQC-10350,Analytics,Story,Flux Compensation,2020-06,1.2
+TQC-10353,Flux workflow,open,10,TQC-10348,Workflow,Story,Flux Compensation,2020-08,1.3
+TQC-10354,Full fluxination,open,20,TQC-10348+TQC-10349,Simulation,Story,Flux Compensation,2020-11,1.3
+TQC-10355,Hubble data schema,closed,6,,Datastore,Story,Hubble Data Import,2020-05,1.2
+TQC-10356,Constellation influence,in validation,8,TQC-10355,Simulation,Story,Hubble Data Import,2020-06,1.2
+TQC-10357,Hubble import connector,in validation,4,TQC-10355,Datastore,Story,Hubble Data Import,2020-06,1.2
+TQC-10358,Hubble connectivity,in code review,4,,Platform,Story,Hubble Data Import,2020-06,1.2
+TQC-10359,Astrology module,open,14,TQC-10357+TQC-10358,Analytics,Story,Hubble Data Import,2020-12,1.3
+TQC-10360,Quantum bit storage,closed,20,,Datastore,Story,Fuzzy data support,2020-06,1.3
+TQC-10361,Oscillation simulation,blocked,10,TQC-10365+TQC-10360,Simulation,Story,Fuzzy data support,2020-07,1.3
+TQC-10362,Blur mode for UI,in progress,5,,Frontend,Story,Fuzzy data support,2020-07,1.3
+TQC-10363,Nondeterministic load distribution,in progress,6,TQC-10351,Platform,Story,Fuzzy data support,2020-07,1.3
+TQC-10364,Add probability functions,in code review,10,TQC-10360,Analytics,Story,Fuzzy data support,2020-07,1.3
+TQC-10365,Extract probabilities,open,8,TQC-10360+TQC-10354,Simulation,Story,Fuzzy data support,2020-08,1.3
+TQC-10366,Add tweet buttons,open,2,,Frontend,Story,Twitter integration,2020-09,1.3
+TQC-10367,Tweet overview,open,6,,Frontend,Story,Twitter integration,2020-09,1.3
+TQC-10368,Tweet approval workflow,open,8,,Workflow,Story,Twitter integration,2020-10,1.3
+TQC-10369,Tweet deletion workflow,open,6,,Workflow,Story,Twitter integration,2020-10,1.3
+TQC-10370,Twitter connectivity,open,10,,Platform,Story,Twitter integration,2020-09,1.3
+TQC-10371,NLP framework evaluation,open,6,,Analytics,Spike,Chatbot,,1.3
+TQC-10372,NLP queries,open,16,TQC-10371+TQC-10373,Analytics,Story,Chatbot,,1.3
+TQC-10373,Entity catalog,open,10,,Platform,Story,Chatbot,,1.3
+TQC-10374,Redesign Analytic Layout,open,4,,Frontend,Story,Chatbot,,1.3
+TQC-10375,Chat Column,open,6,,Frontend,Story,Chatbot,,1.3
+TQC-10376,Embed visualizations in chat,open,6,TQC-10375,Frontend,Story,Chatbot,,1.3
+TQC-10377,Add spin fields to schema,open,4,,Datastore,Story,Spin simulation,,1.3
+TQC-10378,Spin approximation algorithm,open,18,TQC-10359,Simulation,Story,Spin simulation,,1.3
+TQC-10379,Embed spin in flux,open,10,TQC-10378+TQC-10348,Simulation,Story,Spin simulation,,1.3
+TQC-10380,Embed spin in analytics,open,8,TQC-10378,Analytics,Story,Spin simulation,,1.3
+TQC-10381,Design spin viz,open,10,,Frontend,Story,Spin simulation,,1.3
+TQC-10382,Implement spin viz,open,10,TQC-10381+TQC-10380,Frontend,Story,Spin simulation,,1.3
+TQC-10383,Location service selection,open,4,,Platform,Spike,Location awareness,,1.3
+TQC-10384,Location service connectivity,open,6,TQC-10383,Platform,Story,Location awareness,,1.3
+TQC-10385,Location-sensitive model,open,10,TQC-10384,Simulation,Story,Location awareness,,1.3
+TQC-10386,Geospatial results,open,8,TQC-10385+TQC-10384,Simulation,Story,Location awareness,,1.3
+TQC-10387,Location in UI,open,8,TQC-10386+TQC-10384,Frontend,Story,Location awareness,,1.3
+TQC-10388,Set up AWS clusters,open,4,,Platform,Story,Distributed calculation,,1.4
+TQC-10389,Deployment scripts,open,10,,Platform,Story,Distributed calculation,,1.4
+TQC-10390,Mesos enabling,open,20,TQC-10388+TQC-10389,Simulation,Story,Distributed calculation,,1.4
+TQC-10391,Calculation Partitioning,open,20,TQC-10390,Simulation,Story,Distributed calculation,,1.4
+TQC-10392,Result shuffling,open,10,TQC-10390,Simulation,Story,Distributed calculation,,1.4
+TQC-10393,API Authentication,open,8,,Platform,Story,Public API,,1.4
+TQC-10394,Master Data API,open,14,,Datastore,Story,Public API,,1.4
+TQC-10395,Simulation API,open,16,,Simulation,Story,Public API,,1.4
+TQC-10396,Workflow API,open,12,,Workflow,Story,Public API,,1.4
+TQC-10397,API Usage Monitoring,open,10,,Platform,Story,Public API,,1.4
+TQC-10398,Workbook API,open,12,,Analytics,Story,Public API,,1.4
+TQC-10399,Result Cache,open,8,,Datastore,Story,Incremental Queries,,1.4
+TQC-10400,Sticky Sessions,open,10,,Platform,Story,Incremental Queries,,1.4
+TQC-10401,Context Model,open,12,,Analytics,Story,Incremental Queries,,1.4
+TQC-10402,Cache Invalidation,open,8,TQC-10399,Datastore,Story,Incremental Queries,,1.4
+TQC-10403,Data Merge,open,4,TQC-10401+TQC-10399,Frontend,Story,Incremental Queries,,1.4
+TQC-10404,Full reload,open,4,TQC-10403,Frontend,Story,Incremental Queries,,1.4
+TQC-10405,3D environment,open,20,,Frontend,Story,VR visualization,,1.4
+TQC-10406,3D charts,open,14,,Frontend,Story,VR visualization,,1.4
+TQC-10407,VR interaction module,open,20,,Frontend,Story,VR visualization,,1.4
+TQC-10408,Voice control,open,18,,Frontend,Story,VR visualization,,1.4
+TQC-10409,Subsecond queries,open,10,TQC-10403+TQC-10392,Platform,Story,VR visualization,,1.4
+TQC-10410,VR flux,open,10,TQC-10352+TQC-10407,Analytics,Story,VR visualization,,1.4
+TQC-10411,Datastore Introspection,open,4,,Datastore,Story,Service Introspection,,1.4
+TQC-10412,Simulation Introspection,open,4,,Simulation,Story,Service Introspection,,1.4
+TQC-10413,Analytics Introspection,open,4,,Analytics,Story,Service Introspection,,1.4
+TQC-10414,Workflow Introspection,open,4,,Workflow,Story,Service Introspection,,1.4
+TQC-10415,Provide Introspection Port,open,2,,Platform,Story,Service Introspection,,1.4

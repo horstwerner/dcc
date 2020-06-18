@@ -31,11 +31,11 @@ export default class GraphNode {
       return property.displayname();
     }
     if (property.constructor === Array || property.constructor === Set) {
-      let namearray = [];
+      let nameArray = [];
       property.forEach(function (el) {
-        namearray.push(el.displayname());
+        nameArray.push(el.displayname());
       });
-      return namearray.join(separator);
+      return nameArray.join(separator);
     }
     return property;
   };
@@ -55,7 +55,7 @@ export default class GraphNode {
   };
 
   displayName() {
-    return this['core:name'] === undefined ? this.uri : this['core:name'];
+    return this[TYPE_NAME] === undefined ? this.uri : this[TYPE_NAME];
   };
 
   setAttributes(object) {
@@ -66,6 +66,10 @@ export default class GraphNode {
   setBulkAssociation(associationTypeUri, nodes) {
     this[associationTypeUri] = nodes;
     return this;
+  }
+
+  removeBulkAssociation(associationTypeUri) {
+    delete this[associationTypeUri];
   }
 
   /**
@@ -169,9 +173,9 @@ export default class GraphNode {
   hasAnyDirectAssociationTo(targetnode) {
     for (let key in this) {
       if (!this.hasOwnProperty(key)) continue;
-      const proptype = Cache.getType(key);
-      if (proptype && proptype.isAssociation) {
-        if (this.hasDirectAssociation(proptype, targetnode)) return true;
+      const propType = Cache.getType(key);
+      if (propType && propType.isAssociation) {
+        if (this.hasDirectAssociation(propType, targetnode)) return true;
       }
     }
     return false;

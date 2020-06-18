@@ -35,10 +35,14 @@ export default class Component {
     if (domNode) {
       this.dom = domNode;
     } else {
-      this.dom = document.createElement(this.constructor.elementType || this.constructor.baseTag);
+      this.dom = props.nameSpace ?
+          this.svg = document.createElementNS(props.nameSpace, this.constructor.elementType || this.constructor.baseTag) :
+          document.createElement(this.constructor.elementType || this.constructor.baseTag);
     }
     this.className = props.className || this.constructor.className;
-    this.dom.className = this.className;
+    if (this.className) {
+      this.dom.className = this.className;
+    }
     this.key = props.key;
     this.alpha = 1;
   }
@@ -74,7 +78,7 @@ export default class Component {
       console.log(`Warning: automatically closed unclosed child descriptor ${JSON.stringify(childDescriptor)}`);
       childDescriptor = childDescriptor[propKeys[0]];
     }
-    if (childDescriptor.key === null) {
+    if (childDescriptor.key == null) {
       childDescriptor.key = fallbackKey;
     }
     const existing = this.childByKey[childDescriptor.key];
@@ -147,7 +151,7 @@ export default class Component {
     if (props) {
       this.checkProps(props);
     }
-    const {key, className, style, alpha, spatial, children, ...innerProps} = props;
+    const {key, className, style, alpha, spatial, ...innerProps} = props;
     if (key && (key !== this.key)) {
       throw new Error(`Attempt to update object ${this.key} with props for ${key}`);
     }
@@ -174,16 +178,18 @@ export default class Component {
     if (innerProps && !isEmpty(innerProps)) {
       this.updateContents(innerProps);
     }
-
-    if (children) {
-      this.createChildren(children);
-    }
   }
 
   updateContents(props) {
     if (!isEqual(this.innerProps, props)) {
-      this.dom.innerHTML = this.fillTemplate(props);
-      this.innerProps = props;
+      const { children } = props;
+      if (children) {
+        this.innerProps = props;
+        this.createChildren(children);
+      } else {
+        this.dom.innerHTML = this.fillTemplate(props);
+        this.innerProps = props;
+      }
     }
   }
 

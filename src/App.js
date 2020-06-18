@@ -7,8 +7,6 @@ import TemplateRegistry from './templates/TemplateRegistry';
 import {Div_} from '@symb/Div';
 import {fit} from "@symb/util";
 import {Card_} from "@/components/Card";
-import {DURATION_REARRANGEMENT} from "@/Config";
-import Tween from "@/arrangement/Tween";
 
 const APP = 'app';
 
@@ -36,17 +34,15 @@ export default class App extends Component {
       error: null,
       windowWidth: window.innerWidth,
       windowHeight: window.innerHeight,
-      focusMap: null,
-      trsnsitions: []
     };
 
     this.getDictionaryFromDb()
-        .then(() => Promise.all([...Cache.getEntityTypes().map(type => this.getDataFromDb(type)), this.getCardDescriptorsFromDb(), this.getNavigationFromDb()]))
+        .then(() => Promise.all([...Cache.getEntityTypes().map(type => this.getDataFromDb(type)), this.getCardDescriptorsFromDb()]))
         .then(() => {
           if (!this.state.error) {
             this.setState({
               dataLoaded: true,
-              currentMap: TemplateRegistry.getStartMap()
+              // currentMap: TemplateRegistry.getStartMap()
             })
           }
         });
@@ -55,9 +51,9 @@ export default class App extends Component {
   }
 
   onElementClick(card, newArrangement) {
-    const tween = new Tween(DURATION_REARRANGEMENT);
-    card.morph(newArrangement, tween);
-    tween.start();
+    // const tween = new Tween(DURATION_REARRANGEMENT);
+    // card.morph(newArrangement, tween);
+    // tween.start();
   }
 
   getDictionaryFromDb() {
@@ -85,20 +81,20 @@ export default class App extends Component {
         });
   };
 
-  getNavigationFromDb() {
-    return fetch('/api/navigation')
-        .then(handleResponse)
-        .then(result => {
-          if (result && result.data) {
-            TemplateRegistry.registerNavigationMaps(result.data.maps);
-            TemplateRegistry.setStartMap(result.data.startmap);
-          }
-        })
-        .catch(error => {
-          console.log(error.stack);
-          this.setState({error})
-        });
-  }
+  // getNavigationFromDb() {
+  //   return fetch('/api/navigation')
+  //       .then(handleResponse)
+  //       .then(result => {
+  //         if (result && result.data) {
+  //           TemplateRegistry.registerNavigationMaps(result.data.maps);
+  //           TemplateRegistry.setStartMap(result.data.startmap);
+  //         }
+  //       })
+  //       .catch(error => {
+  //         console.log(error.stack);
+  //         this.setState({error})
+  //       });
+  // }
 
   getViewsFromDb() {
     return fetch('/api/views')
@@ -129,18 +125,22 @@ export default class App extends Component {
   }
 
   updateContents(props) {
-    const {dataLoaded, error, focusMap, windowWidth, windowHeight} = this.state;
+    const {dataLoaded, error, windowWidth, windowHeight} = this.state;
     // const backgroundColor = (map && map.backColor) || '#ffffff';
-    const {width, height, currentMap} = this.state;
+    const {currentMap} = this.state;
+    const template = dataLoaded && TemplateRegistry.getTemplate('root');
+    if (template) {
+      document.body.style.backgroundColor = template.background.color;
+    }
 
     this.createChildren([
       error && Div_({}, `An error occurred: ${error.message}`)._Div,
 
       dataLoaded && Card_({
         key: 'navigation',
-        spatial: fit(windowWidth, windowHeight, currentMap.width, currentMap.height),
+        spatial: fit(windowWidth, windowHeight, template.background.w, template.background.h),
         data: Cache.rootNode,
-        template: TemplateRegistry.getTemplate('root'),
+        template,
         onClick: null
       })._Card]);
 

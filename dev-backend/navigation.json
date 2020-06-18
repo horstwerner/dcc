@@ -5,7 +5,6 @@
       "width": 1200,
       "height": 700,
       "backColor": "#E3EDEE",
-      "backdrop": "/images/Toplevelmap.svg",
       "elements": [
         {
           "key": "tickets",

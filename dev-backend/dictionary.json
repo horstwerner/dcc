@@ -1,6 +1,12 @@
 {
   "TypeDictionary": [
     {
+      "uri": "core:name",
+      "dataType": "STRING",
+      "name": "Name",
+      "isAssociation": false
+    },
+    {
       "uri": "jira:ticket",
       "dataType": "ENTITY",
       "name": "Ticket",
@@ -22,6 +28,50 @@
       "uri": "jira:status",
       "dataType": "STRING",
       "name": "Status",
+      "isAssociation": false
+    },
+    {
+      "uri": "jira:storypoints",
+      "dataType": "INTEGER",
+      "name": "Story Points",
+      "isAssociation": false
+    },
+    {
+      "uri": "jira:depends-on",
+      "dataType": "ENTITY",
+      "name": "depends on",
+      "isAssociation": true,
+      "inverseType": "jira:is-prerequisite-for"
+    },
+    {
+      "uri": "jira:is-prerequisite-for",
+      "dataType": "ENTITY",
+      "name": "is prerequisite for",
+      "isAssociation": true,
+      "inverseType": "jira:depends-on"
+    },
+    {
+      "uri": "jira:team",
+      "dataType": "STRING",
+      "name": "Team",
+      "isAssociation": false
+    },
+    {
+      "uri": "jira:feature",
+      "dataType": "STRING",
+      "name": "Feature",
+      "isAssociation": false
+    },
+    {
+      "uri": "jira:sprint",
+      "dataType": "STRING",
+      "name": "Sprint",
+      "isAssociation": false
+    },
+    {
+      "uri": "jira:release",
+      "dataType": "FLOAT",
+      "name": "Release Number",
       "isAssociation": false
     }
   ]

@@ -3,14 +3,17 @@ import isEqual from 'lodash/isEqual';
 import Component, {setStyle} from '@symb/Component';
 import css from './CardSet.css';
 import {Card_} from "./Card";
-import GridArrangement from "../arrangement/GridArrangement";
 import ComponentFactory from "@symb/ComponentFactory";
 import GraphNode from "@/graph/GraphNode";
 import Template from "@/templates/Template";
 import {ARRANGEMENT_DEFAULT} from "@/templates/TemplateRegistry";
+import Arrangement from "@/arrangement/Arrangement";
 
 const CARDSET = 'card-set';
 const PADDING = 0.2;
+
+export const LOD_RECT = 'rect';
+export const LOD_FULL = 'full';
 
 class CardSet extends Component {
 
@@ -21,13 +24,12 @@ class CardSet extends Component {
   static propTypes = {
     nodes: P.arrayOf(P.instanceOf(GraphNode)),
     template: P.instanceOf(Template).isRequired,
-    arrangement: P.object,
+    arrangement: P.instanceOf(Arrangement),
     onClick: P.func,
   };
 
   constructor(props, div) {
     super(props, div);
-    this.arrangement = new GridArrangement(PADDING);
   }
 
   createChildrenForLod(lod) {
@@ -79,7 +81,7 @@ class CardSet extends Component {
     }
     this.innerProps = props;
     const { arrangement } = props;
-    const {lod} = arrangement;
+    const { lod } = arrangement;
 
     this.createChildrenForLod(lod);
 
@@ -98,10 +100,10 @@ class CardSet extends Component {
   // }
 
   updateArrangement(newArrangement, tween) {
-    const {lod} = newArrangement;
-    if (this.lod === 'rect' && lod === 'full') {
+    const { lod } = newArrangement;
+    if (this.lod === LOD_RECT && lod === LOD_FULL) {
       this.createChildrenForLod(lod);
-    } else if (this.lod === 'full' && lod === 'rect') {
+    } else if (this.lod === LOD_FULL && lod === LOD_RECT) {
       tween.onEndCall(()=>{this.createChildrenForLod(lod)});
     }
     const children = Object.keys(this.childByKey).map(key => this.childByKey[key]);
