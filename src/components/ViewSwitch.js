@@ -4,11 +4,11 @@ import ComponentFactory from "@symb/ComponentFactory";
 import { FlexBox_} from "@symb/Div";
 import {Button_} from "@/components/Button";
 
-export const VIEWSWITCH = 'viewswitch';
+export const VIEW_SWITCH = 'viewswitch';
 
 export default class ViewSwitch extends Component {
 
-  static type = VIEWSWITCH;
+  static type = VIEW_SWITCH;
 
   static propTypes = {
     views: P.arrayOf(P.string)
@@ -21,11 +21,9 @@ export default class ViewSwitch extends Component {
           views.map(view => Button_({text: view, onClick: () => onViewSelect(view)})._Button)
         )._FlexBox
     );
-
-    this.createChildren(children);
   };
 }
 
 ComponentFactory.registerType(ViewSwitch);
 
-export const ViewSwitch_ = (props) => ({_ViewSwitch: {type: VIEWSWITCH, ...props}});
+export const ViewSwitch_ = (props) => ({_ViewSwitch: {type: VIEW_SWITCH, ...props}});

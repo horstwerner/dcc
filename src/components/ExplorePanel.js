@@ -9,6 +9,7 @@ import GridArrangement from "@/arrangement/GridArrangement";
 import {sliceBy} from "@/graph/GroupedSet";
 import {Div_} from "@symb/Div";
 import Arrangement from "@/arrangement/Arrangement";
+import {TYPE_NAME, TYPE_NODES} from "@/graph/Cache";
 
 const EXPLOREPANEL = 'explorepanel';
 
@@ -62,7 +63,8 @@ export default class ExplorePanel extends Component {
 
   subGroups({nodes, groupBy, template, }) {
     const slices = sliceBy(nodes, groupBy);
-    const groupCount = slices.getNumOfSlices();
+    const groupKeys = slices.getKeys();
+    const groupCount = groupKeys.length;
     const { width, height } = this.spatial;
     const result = [];
 
@@ -73,13 +75,14 @@ export default class ExplorePanel extends Component {
     let idx = 0;
     const labelStyle = {width: childW, height: 16, fontSize: 12, fontWeight: bold };
     const childSetArrangement = new Arrangement(0.1, template.getSize()).setArea(childW, childH - labelH);
-    slices.forEachEntry((key, nodes) => {
+    groupKeys.forEach((key) => {
+      const group = slices.getGroup(key);
       const row = Math.floor(i / cols);
       const col = i % cols;
       const x = col * childW + VIEWSWITCH_W;
       const y = row * childH + TOPBAR_H;
-      result.push(Div_({spatial: {x, y }, style: labelStyle},key)._Div);
-      result.push(CardSet_({spatial: {x, y: y + labelH }, nodes, template, arrangement: childSetArrangement, onClick: null})._CardSet);
+      result.push(Div_({spatial: {x, y }, style: labelStyle}, group.get(TYPE_NAME))._Div);
+      result.push(CardSet_({spatial: {x, y: y + labelH }, nodes: group.get(TYPE_NODES), template, arrangement: childSetArrangement, onClick: null})._CardSet);
     });
 
     return result;

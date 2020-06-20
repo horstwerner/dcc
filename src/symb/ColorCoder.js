@@ -6,7 +6,10 @@ const restAfter = function(string, prefix) {
   for (let i = 0; i < prefix.length; i++) {
     if (string.charAt(i) !== prefix.charAt(i)) return null;
   }
-  return string.substr(prefix.length);
+  const rest = string.substr(prefix.length);
+  if (!isNaN(rest)) {
+    return Number(rest)
+  } else return rest;
 };
 
 const comparisons = [
@@ -14,10 +17,10 @@ const comparisons = [
   {symbol: "=", matches: (testValue, value) => value.toLowerCase().includes(testValue.toLowerCase())},
   {symbol: "!==", matches: (testValue, value) => testValue !== value},
   {symbol: "!=", matches: (testValue, value) => !(value.toLowerCase().includes(testValue.toLowerCase()))},
+  {symbol: "<=", matches: (testValue, value) => value <= testValue},
+  {symbol: ">=", matches: (testValue, value) => { debugger; return value >= testValue}},
   {symbol: "<", matches: (testValue, value) => value < testValue},
   {symbol: ">", matches: (testValue, value) => value > testValue},
-  {symbol: "<=", matches: (testValue, value) => value <= testValue},
-  {symbol: ">=", matches: (testValue, value) => value >= testValue},
 ];
 
 

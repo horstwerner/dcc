@@ -7,6 +7,7 @@ import ComponentFactory from "@symb/ComponentFactory";
 import Template from "@/templates/Template";
 import {Background, Caption, Chart, Trellis, ChildSet} from "@/components/Generators";
 import {fillIn} from "@symb/util";
+import {preprocess} from "@/graph/Preprocessors";
 
 const CARD = 'card';
 
@@ -45,7 +46,11 @@ export default class Card extends Component {
     }
     this.innerProps = props;
 
-    const {template, data, onClick} = props;
+    const { template, onClick } = props;
+    const { preprocessing } = template;
+
+    let data = preprocessing ? preprocess(props.data, preprocessing) : props.data;
+
     const {background, elements} = template;
     const color = template.getCardColor(data);
 

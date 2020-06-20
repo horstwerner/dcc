@@ -3,7 +3,7 @@ import {resolveAttribute, TYPE_NAME, TYPE_NODES} from "@/graph/Cache";
 import Aggregator, {DEFAULT_AGGREGATOR} from "@/Aggregator";
 
 
-const EMPTY = '__empty__';
+export const EMPTY = '__empty__';
 
 
 /**

@@ -15,7 +15,8 @@ import TemplateRegistry from "@/templates/TemplateRegistry";
 import {fit, flexContentAlign} from "@symb/util";
 import {CardSet_, LOD_FULL, LOD_RECT} from "@/components/CardSet";
 import {Card_} from "@/components/Card";
-import {sliceBy} from "@/graph/GroupedSet";
+import {EMPTY, sliceBy} from "@/graph/GroupedSet";
+import Filter from "@/graph/Filter";
 
 const SORT_ASC = 'asc';
 const SORT_DESC = 'desc';
@@ -91,13 +92,26 @@ function calcStyle(styleDescriptor, h) {
   return result;
 }
 
-//TODO: separate generators
 export const Chart = function Chart({key, data, descriptor}) {
 
-  const {chartType, x, y, source, ...chartProps} = descriptor;
+  const {chartType, x, y, source, inputSelector, overlay, ...chartProps} = descriptor;
   const spatial = { x, y, scale: 1};
 
-  const chartData = (source && source !== 'this') ? resolveAttribute(data, source) : data;
+  let chartData = (source && source !== 'this') ? resolveAttribute(data, source) : data;
+  const filter = inputSelector ? Filter.fromDescriptor(inputSelector): null;
+  chartData = filter ? chartData.filter(filter.matches) : chartData;
+
+  if (overlay) {
+    if (!Array.isArray(chartData)) {
+      throw new Error(`Overlay (${overlay}) only allowed for node sets. ${source} is not a node set`);
+    }
+    const overlayData = resolveAttribute(data, [overlay,TYPE_NODES]);
+    const overlayNodeByKey = {};
+    // transform list into map
+    overlayData.forEach(node => {overlayNodeByKey[node.getUniqueKey()] = node;})
+    // all nodes in overlayData substitute the originals in data
+    chartData = chartData.map(node => overlayNodeByKey[node.getUniqueKey()] || node);
+  }
 
   switch (chartType) {
     case 'rect':
@@ -250,6 +264,7 @@ export const Trellis = function Trellis(data, descriptor, onClick) {
 
   const childSets = groupedSet
       .getKeys()
+      .filter(key => key !== EMPTY)
       .sort()
       .map(key => groupedSet.getGroup(key));
 
@@ -267,6 +282,7 @@ export const Trellis = function Trellis(data, descriptor, onClick) {
     maxValues[name] = bracketAggregation[`max-${name}`];
   })
   childSets.forEach(aggNode => aggNode.setAttributes({minValues, maxValues}));
+  childSets.forEach(aggNode => aggNode.setBulkAssociation('core:allNodes', nodes));
 
   const arrangementDescriptor = {type: GRID, x: 0, y: 0, w, h, padding: PADDING, ...arrangement};
 
@@ -293,6 +309,10 @@ export const StackedBarChart = function StackedBarChart(props) {
 
   const {data, spatial, w, h, maxValues, colorAttribute, widthAttribute, totalWidthAttribute, colors, defaultColor, fragmentStroke, sortSequence} = props;
   const colorCoder = new ColorCoder({type: 'selection', attribute: 'colorVal', cases: colors, default: defaultColor});
+
+  if (colorAttribute === 'upstream-storypoints') {
+    debugger
+  }
 
   const maxValue = maxValues[totalWidthAttribute];
   if (!maxValue) {
@@ -326,7 +346,7 @@ export const StackedBarChart = function StackedBarChart(props) {
   const children = nodes.map(node => {
     const x = xCursor;
     xCursor += node.width;
-    return Rect_({x, y: 0, width: node.width + 1, height: h-2, style: {stroke: fragmentStroke, fill: colorCoder.getColor(node)}})._Rect;
+    return Rect_({id: node.uri, value: node.colorVal, x, y: 0, width: node.width + 1, height: h-2, style: { stroke: fragmentStroke, fill: colorCoder.getColor(node)}})._Rect;
   });
 
   return Svg_({width: w, height: h, children, spatial})._Svg;

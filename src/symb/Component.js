@@ -40,8 +40,13 @@ export default class Component {
           document.createElement(this.constructor.elementType || this.constructor.baseTag);
     }
     this.className = props.className || this.constructor.className;
+
     if (this.className) {
-      this.dom.className = this.className;
+      if (props.nameSpace) {
+        this.dom.setAttribute('class', this.className);
+      } else {
+        this.dom.className = this.className;
+      }
     }
     this.key = props.key;
     this.alpha = 1;

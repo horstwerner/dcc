@@ -42,9 +42,10 @@ const mapToObject = function mapToObject(array,  value) {
  *
  * @param {Array<Object>} subset
  * @param {Array<{sourceField: string, targetField: string, method: string}>} aggregations
+ * @param {String?} nodeCountName
  * @return {Object} keys are targetFields, values the respective aggregated values
  */
-export const aggregateNodes = function aggregateNodes(subset, aggregations) {
+export const aggregateNodes = function aggregateNodes(subset, aggregations, nodeCountName) {
 
   // efficient aggregation in two phases:  first, all required source fields are aggregated
   // then, the required
@@ -52,7 +53,7 @@ export const aggregateNodes = function aggregateNodes(subset, aggregations) {
 
   for (let i = 0; i < subset.length; i++) {
     Object.keys(sourceFieldAggregates).forEach(sourceField => {
-      const value = Number(subset[i][sourceField] || 0);
+      const value = Number(subset[i].get(sourceField) || 0);
       const aggregator = sourceFieldAggregates[sourceField];
       aggregator.min = Math.min(aggregator.min, value);
       aggregator.max = Math.max(aggregator.max, value);
@@ -63,7 +64,7 @@ export const aggregateNodes = function aggregateNodes(subset, aggregations) {
     });
   }
 
-  const result = {[TYPE_NODE_COUNT]: subset.length};
+  const result = {[nodeCountName || TYPE_NODE_COUNT]: subset.length};
   for (let aggIdx = 0; aggIdx < aggregations.length; aggIdx++) {
     const aggregation = aggregations[aggIdx];
     switch (aggregation.method) {
@@ -86,18 +87,10 @@ export const aggregateNodes = function aggregateNodes(subset, aggregations) {
 
 export default class Aggregator {
 
-  // sampleTemplate = {
-  //   aggregations:
-  //     {total: {attribute: 'revenue', method: 'sum'},
+  // aggregate: {
+  //      total: {attribute: 'revenue', method: 'sum'},
   //      average: {attribute: 'revenue', method: 'avg'}
-  //     },
-  //   derived: {
-  //      caption: '{{count}} Items',
-  //      totalText: '{{total}}$ total revenue',
-  //      avgText: '{{average}}$ average revenue'
-  //   }
-  // }
-
+  //     }
 
   static propTypes = P.objectOf(P.shape({attribute: P.string, calculate: P.string})).isRequired;
 
@@ -127,10 +120,11 @@ export default class Aggregator {
   /**
    *
    * @param {GraphNode[]} nodes
+   * @param {String?} nodeCountName
    * @return {GraphNode}
    */
-  aggregate(nodes) {
-    const aggregated = aggregateNodes(nodes, this.fieldAggregations);
+  aggregate(nodes, nodeCountName) {
+    const aggregated = aggregateNodes(nodes, this.fieldAggregations, nodeCountName);
 
     return new GraphNode(TYPE_AGGREGATOR, Cache.createUri())
         .setAttributes(aggregated)

@@ -22,7 +22,6 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 const csv2array = function (csvString) {
-
   const lines = csvString.indexOf('\r\n') > -1 ?
       csvString.split('\r\n') :
       csvString.split('\n');
