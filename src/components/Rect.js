@@ -13,6 +13,7 @@ export default class Rect extends Component {
   static type = RECT;
 
   static propTypes = {
+    id: P.string,
     x: P.number.isRequired,
     y: P.number.isRequired,
     width: P.number.isRequired,
@@ -24,9 +25,13 @@ export default class Rect extends Component {
       return;
     }
     this.innerProps = props;
-    const { x, y, width, height} = props;
+    const { id, x, y, width, height, value} = props;
     if (DEBUG_MODE && (isNaN(width) || isNaN(height) || isNaN(x) || isNaN(y))) {
       debugger
+    }
+    if (id) {
+      this.dom.setAttribute('id', id);
+      this.dom.setAttribute('data-value', value);
     }
     this.dom.setAttribute('shape-rendering','crispEdges');
     this.dom.setAttribute('width', width);

@@ -1,4 +1,5 @@
 import P from 'prop-types';
+import css from './Card.css';
 import ComponentFactory from '@symb/ComponentFactory';
 import Component from "@symb/Component";
 import isEqual from "lodash/isEqual";
@@ -10,6 +11,7 @@ export default class Svg extends Component {
 
   static baseTag = 'svg';
   static type = SVG;
+  static className = css.card;
 
   static propTypes = {
     width: P.number.isRequired,
