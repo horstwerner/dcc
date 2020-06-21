@@ -18,7 +18,7 @@ const comparisons = [
   {symbol: "!==", matches: (testValue, value) => testValue !== value},
   {symbol: "!=", matches: (testValue, value) => !(value.toLowerCase().includes(testValue.toLowerCase()))},
   {symbol: "<=", matches: (testValue, value) => value <= testValue},
-  {symbol: ">=", matches: (testValue, value) => { debugger; return value >= testValue}},
+  {symbol: ">=", matches: (testValue, value) =>  value >= testValue},
   {symbol: "<", matches: (testValue, value) => value < testValue},
   {symbol: ">", matches: (testValue, value) => value > testValue},
 ];
