@@ -6,7 +6,7 @@ import {Card_} from "./Card";
 import isEqual from "lodash/isEqual";
 import {getAssociated} from "@/graph/Analysis";
 import {Svg_} from "@/components/Svg";
-import {fit} from "@symb/util";
+import {fit, roundCorners} from "@symb/util";
 import P from "prop-types";
 import Template from "@/templates/Template";
 import GraphNode from "@/graph/GraphNode";
@@ -19,6 +19,22 @@ const inspect = function inspect(associationName) {
   } else {
     return {edgeType: associationName, recursive: false};
   }
+}
+
+const bumpSuccessorDepth = function bumpSuccessorDepth(edgeList, depth, vizNodesByKey, touchedKeyMap) {
+  if (!edgeList) return;
+  let maxDepth = depth;
+  edgeList.forEach(edge => {
+    console.log(`bumping ${edge.targetKey} to ${depth}`);
+    if (!touchedKeyMap[edge.targetKey]) {
+      touchedKeyMap[edge.targetKey] = true;
+      const targetVizNode = vizNodesByKey[edge.targetKey];
+      targetVizNode.depth = depth;
+      bumpSuccessorDepth(targetVizNode.outEdges, depth + 1, vizNodesByKey, touchedKeyMap);
+    } else {
+      console.log(`not... already touched`);
+    }
+  })
 }
 
 const traverseGraph = function traverseGraph(startNodes, path) {
@@ -47,14 +63,16 @@ const traverseGraph = function traverseGraph(startNodes, path) {
         let targetVizNode = vizNodesByKey[targetKey];
         if (!targetVizNode) {
           // new node added to analysis
-          vizNodesByKey[targetKey] = { graphNode: targetNode, depth, inEdges:[{sourceKey}] };
+          vizNodesByKey[targetKey] = { graphNode: targetNode, depth: sourceVizNode.depth + 1, inEdges:[{sourceKey}] };
           nextNodeMap[targetKey] = targetNode;
           if (recursive) {
             accumulatedNextNodeMap[targetKey] = targetNode;
           }
         } else {
-          targetVizNode.depth = depth;
-          targetVizNode.inEdges.push({ sourceKey });
+          console.log(`setting ${targetKey} to ${depth}`);
+          targetVizNode.depth = Math.max(targetVizNode.depth, sourceVizNode.depth + 1);
+          targetVizNode.inEdges.push({sourceKey});
+          bumpSuccessorDepth(targetVizNode.outEdges, targetVizNode.depth + 1, vizNodesByKey, {[sourceKey]: true, [targetKey] : true});
         }
       });
     });
@@ -70,17 +88,19 @@ const traverseGraph = function traverseGraph(startNodes, path) {
     }
     nextNodeList = Object.values(nextNodeMap);
   }
-  return {vizNodesByKey, depth};
+  return vizNodesByKey;
 }
 
-const EDGE_COLOR = 'rgba(0,0,0,0.7)';
+const EDGE_COLOR = 'rgba(0,0,0,0.3)';
 
-const createSvgPath = function createSvgPath(points) {
-  const segments = [`M${points[0].x} ${points[0].y}`];
-  for (let idx = 1; idx < points.length; idx++) {
-    segments.push(`L${points[idx].x} ${points[idx].y}`);
-  }
-  return Path_({d: segments.join(), style: {fill: 'none', stroke: EDGE_COLOR, strokeWidth: 2}})._Path;
+const createSvgPath = function createSvgPath(points, dist) {
+
+  const d = roundCorners(points, dist, false)
+  // const segments = [`M${points[0].x} ${points[0].y}`];
+  // for (let idx = 1; idx < points.length; idx++) {
+  //   segments.push(`L${points[idx].x} ${points[idx].y}`);
+  // }
+  return Path_({d, style: {fill: 'none', stroke: EDGE_COLOR, strokeWidth: 2}})._Path;
 }
 
 const GRAPH_VIZ = 'graph-viz';
@@ -106,7 +126,8 @@ export default class GraphViz extends Component {
 
     const {startNodes, w, h, path, nodeTemplate} = props;
 
-    const {vizNodesByKey, depth} = traverseGraph(startNodes, path.split('/'));
+    const vizNodesByKey = traverseGraph(startNodes, path.split('/'));
+    const depth = Math.max(...Object.values(vizNodesByKey).map(node => node.depth));
 
     const lanes = [];
     for (let i = 0; i <= depth; i++) {
@@ -115,17 +136,19 @@ export default class GraphViz extends Component {
     const vizNodes = Object.values(vizNodesByKey);
     vizNodes.forEach(vizNode => lanes[vizNode.depth].push(vizNode));
     const maxNodesPerLane = Math.max(...lanes.map(lane => lane.length));
-    const childSize =  Math.min(0.8 * w / (lanes.length || 1), 0.7 * h / (maxNodesPerLane || 1));
+    const childSize =  Math.min(0.5 * w / (lanes.length || 1), 0.7 * h / (maxNodesPerLane || 1));
     const netLaneH = h - childSize;
+    const rasterH = netLaneH / maxNodesPerLane;
 
     const xStep = (w - 2 * childSize) / ((lanes.length - 1) || 1);
     let xCursor = childSize;
 
     lanes.forEach(lane => {
-          let yCursor = lane.length === 1 ? h / 2 : childSize / 2;
-          const yStep = netLaneH / ((lane.length - 1) || 1);
+          let yCursor = (netLaneH - rasterH * (lane.length - 1)) / 2
+          const yStep = rasterH; //netLaneH / ((lane.length - 1) || 1);
           lane.forEach(node => {
             node.rank = sum(node.inEdges.map(edge => get(vizNodesByKey[edge.sourceKey],'pos.y'))) / (node.inEdges.length || 1);
+            console.log(`node ${node.graphNode.uri} has rank ${node.rank}: ${JSON.stringify(node.inEdges.map(edge => get(vizNodesByKey[edge.sourceKey],'pos.y')))}`);
           });
           lane.sort((a, b) => a.rank - b.rank);
           lane.forEach(node => {
@@ -137,32 +160,36 @@ export default class GraphViz extends Component {
     );
 
     const lines = [];
+    const edgeDist = 0.7 * childSize;
+    // ####################### C R E A T E   E D G E S #################################################
     vizNodes.forEach(vizNode => {
       if (!vizNode.outEdges) return;
       vizNode.outEdges.forEach(({targetKey}) => {
         const targetNode = vizNodesByKey[targetKey];
         if (targetNode.pos.x > vizNode.pos.x) { // forward edge
           lines.push([vizNode.pos,
-            {x: vizNode.pos.x + childSize, y: vizNode.pos.y},
-            {x: targetNode.pos.x - childSize, y: targetNode.pos.y},
+            {x: vizNode.pos.x + edgeDist, y: vizNode.pos.y},
+            {x: targetNode.pos.x - edgeDist, y: targetNode.pos.y},
             targetNode.pos
           ]);
         } else { // backward edge
-          const dySrc = Math.sign(targetNode.pos.y - vizNode.pos.y) * childSize;
-          const dyTrg = Math.abs(targetNode.pos.y - vizNode.pos.y) < childSize ? dySrc : - dySrc;
+          const dySrc = Math.sign(targetNode.pos.y - vizNode.pos.y) * 0.3 * childSize;
+          const dyTrg = Math.abs(targetNode.pos.y - vizNode.pos.y) < childSize ? dySrc : -dySrc;
           lines.push([vizNode.pos,
-            {x: vizNode.pos.x + childSize, y: vizNode.pos.y},
-            {x: vizNode.pos.x + childSize, y: vizNode.pos.y + dySrc},
-            {x: targetNode.pos.x - childSize, y: targetNode.pos.y + dyTrg},
-            {x: targetNode.pos.x - childSize, y: targetNode.pos.y},
+            {x: vizNode.pos.x + edgeDist, y: vizNode.pos.y},
+            {x: vizNode.pos.x + edgeDist, y: vizNode.pos.y + dySrc},
+            {x: targetNode.pos.x - edgeDist, y: targetNode.pos.y + dyTrg},
+            {x: targetNode.pos.x - edgeDist, y: targetNode.pos.y},
             targetNode.pos
           ]);
         }
       });
     });
 
+
+    const roundDist = 0.3 * edgeDist;
     const children = [];
-    children.push(Svg_({width: w, height: h, children: lines.map(line => createSvgPath(line))})._Svg);
+    children.push(Svg_({width: w, height: h, children: lines.map(line => createSvgPath(line, roundDist))})._Svg);
     const {width, height} = nodeTemplate.getSize();
 
     vizNodes.forEach(vizNode => {children.push(Card_({data: vizNode.graphNode, template: nodeTemplate, spatial: fit(childSize, childSize, width, height, vizNode.pos.x - 0.5 * childSize, vizNode.pos.y - 0.5 * childSize)})._Card)});

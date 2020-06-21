@@ -54,3 +54,31 @@ export const flexContentAlign = function flexContentAlign(hAlign) {
     case 'center': return 'center';
   }
 }
+
+const dist = function dist (p1, p2) {
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+const interpolate = function interpolate(p1, p2, length) {
+  if (!p1 || !p2) {
+    debugger
+  }
+  const d = Math.max(dist(p1, p2), 2 * length);
+  return {x: p1.x + length / d * (p2.x - p1.x), y: p1.y + length / d * (p2.y - p1.y)};
+
+}
+
+export const roundCorners = function roundCorners(polygon, dist, closed) {
+  const startP = closed ? interpolate(polygon[0], polygon[1], dist) : polygon[0];
+  const segments = [`M${startP.x} ${startP.y}`];
+  const maxI = closed ? polygon.length : (polygon.length - 1);
+  for (let i = 1; i < maxI; i++) {
+    const cornerP = polygon[i];
+    const before = interpolate(cornerP, polygon[i - 1], dist);
+    const after = interpolate(cornerP, polygon[(i + 1) % polygon.length], dist);
+    segments.push(`L${before.x} ${before.y}Q${cornerP.x} ${cornerP.y} ${after.x} ${after.y}`);
+  }
+  return segments.join();
+}

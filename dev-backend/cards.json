@@ -190,8 +190,8 @@
       "type": "root",
       "background": {
         "type": "rect",
-        "w": 1600,
-        "h": 800,
+        "w": 1300,
+        "h": 500,
         "color": "#F0F0F0"
       },
       "elements": [
@@ -206,7 +206,7 @@
             }
           },
           "template": "trellis",
-          "x": 10,
+          "x": -1000,
           "y": 10,
           "w": 400,
           "h": 500
@@ -222,9 +222,9 @@
             }
           },
           "template": "graphAnalysis",
-          "x": 450,
+          "x": 20,
           "y": 10,
-          "w": 1100,
+          "w": 1200,
           "h": 500
         }
       ]
@@ -518,7 +518,7 @@
     {
       "type": "graphAnalysis",
       "background": {
-        "type": "rect", "w": 1100, "h": 500, "color": "#FEFEFE"},
+        "type": "rect", "w": 1200, "h": 500, "color": "#FEFEFE"},
       "elements": [
         {
           "key": "label_impact",
@@ -538,7 +538,7 @@
           "key": "trellis",
           "type": "trellis",
           "source": "core:subNodes",
-          "x": 20, "y": 80, "w": 360, "h": 400,
+          "x": 20, "y": 80, "w": 260, "h": 400,
           "arrangement": {"type": "grid", "compact": true, "padding": 0.1},
           "aggregate": {
             "storyPointSum": {
@@ -555,7 +555,7 @@
           "source": "core:subNodes",
           "inputSelector": {"jira:release": {"=": 1.2}},
           "chartType": "graph",
-          "x": 600, "y": 50, "w": 550, "h": 400,
+          "x": 450, "y": 50, "w": 750, "h": 400,
           "path": "jira:is-prerequisite-for*",
           "template": "jira:ticket"
         }
