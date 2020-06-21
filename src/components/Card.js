@@ -91,7 +91,7 @@ export default class Card extends Component {
 
     this.createChildren(children);
     //TODO: remove dependency to 'root' literal
-    this.updateStyle({...this.style, width: background.w, height: background.h, pointerEvents: onClick || template.getType() === 'root' ? '': 'none'});
+    this.updateStyle({...this.style, width: background.w, height: background.h});
   };
 
   // morph(arrangementName, tween, onClick) {

@@ -25,3 +25,11 @@
   pointer-events: none;
   transform-origin: 0 0;
 }
+
+.hoverElement {
+}
+
+.hoverElement:hover {
+  stroke: rgba(0,0,0,0.5);
+  stroke-width: 1;
+}

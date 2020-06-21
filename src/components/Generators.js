@@ -17,6 +17,7 @@ import {CardSet_, LOD_FULL, LOD_RECT} from "@/components/CardSet";
 import {Card_} from "@/components/Card";
 import {EMPTY, sliceBy} from "@/graph/GroupedSet";
 import Filter from "@/graph/Filter";
+import GraphViz, {GraphViz_} from "@/components/GraphViz";
 
 const SORT_ASC = 'asc';
 const SORT_DESC = 'desc';
@@ -139,6 +140,9 @@ export const Chart = function Chart({key, data, descriptor}) {
       const {totalWidthAttribute, widthAttribute} = chartProps;
       const maxValues = data.maxValues || {[totalWidthAttribute]: widthAttribute ? sum(chartData, widthAttribute) : chartData.count}
       return StackedBarChart({data: chartData, spatial, maxValues, ...chartProps})
+    case 'graph':
+      const nodeTemplate = TemplateRegistry.getTemplate(descriptor.template);
+      return GraphViz_({spatial, startNodes: chartData, ...chartProps, nodeTemplate})._GraphViz;
     default:
       throw new Error(`Unknown chart type ${chartType}`);
   }
@@ -309,10 +313,6 @@ export const StackedBarChart = function StackedBarChart(props) {
 
   const {data, spatial, w, h, maxValues, colorAttribute, widthAttribute, totalWidthAttribute, colors, defaultColor, fragmentStroke, sortSequence} = props;
   const colorCoder = new ColorCoder({type: 'selection', attribute: 'colorVal', cases: colors, default: defaultColor});
-
-  if (colorAttribute === 'upstream-storypoints') {
-    debugger
-  }
 
   const maxValue = maxValues[totalWidthAttribute];
   if (!maxValue) {

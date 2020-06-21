@@ -9,20 +9,18 @@ import Cache, {
 } from "@/graph/Cache";
 import Aggregator from "@/Aggregator";
 
-const getAssociatedMap = function getAssociatedMap(node, association) {
-  const map = {};
+export const getAssociated = function getAssociated(node, association) {
+
   const associated = node.get(association);
   if (associated == null) {
-    return null;
+    return [];
   }
 
   if (Array.isArray(associated)) {
-     associated.forEach(target =>
-         map[target.getUniqueKey()] = target);
-  } else if (associated.constructor === GraphNode) {
-    map[associated.getUniqueKey()] = associated;
+    return associated;
+  } else {
+    return [associated];
   }
-  return map;
 };
 
 /**
@@ -58,30 +56,22 @@ export const pathAnalysis = function pathAnalysis(sourceNodes, associationType, 
 
   while (nextLevel.length > 0) {
     const nextLevelMap = {};
-    nextLevel.forEach(sourceNode => {
-      const sourceKey = sourceNode.getUniqueKey();
-      console.log(`processing ${sourceKey}`);
-      const associatedMap = getAssociatedMap(sourceNode, associationType);
-      // dead end
-      if (!associatedMap) {
-        successorSetByUri[sourceKey]={};
-        console.log(`no associations`);
-        return;
-      }
-      successorSetByUri[sourceKey] = associatedMap;
-      Object.keys(associatedMap).forEach(targetKey => {
+    nextLevel.forEach(sourceContextNode => {
+      const sourceKey = sourceContextNode.getUniqueKey();
+      const associated = getAssociated(sourceContextNode, associationType);
+      successorSetByUri[sourceKey]={};
+
+      associated.forEach(targetNode => {
+        const targetKey = targetNode.getUniqueKey();
         // ignore circular references
         if (targetKey === sourceKey || get(predecessorSetByUri,[sourceKey, targetKey])) return;
-        let targetNode = allTouchedNodes[targetKey];
-        if (!targetNode) {
+        let targetContextNode = allTouchedNodes[targetKey];
+        if (!targetContextNode) {
           // new node added to analysis
-          console.log(`adding ${targetKey}`);
-          targetNode = associatedMap[targetKey].createContextual();
-          allTouchedNodes[targetKey] = targetNode;
-          nextLevelMap[targetKey] = targetNode;
+          targetContextNode = targetNode.createContextual();
+          allTouchedNodes[targetKey] = targetContextNode;
+          nextLevelMap[targetKey] = targetContextNode;
           predecessorSetByUri[targetKey] = {};
-        } else {
-          console.log(`found ${targetKey}`);
         }
         const allPredecessorsOfTarget = predecessorSetByUri[targetKey];
 
@@ -89,17 +79,16 @@ export const pathAnalysis = function pathAnalysis(sourceNodes, associationType, 
         Object.assign(allPredecessorsOfTarget, predecessorSetByUri[sourceKey]);
 
         // register target with all _indirect_ predecessors
-        Object.keys(allPredecessorsOfTarget).forEach(predecessorKey => successorSetByUri[predecessorKey][targetKey] = targetNode);
+        Object.keys(allPredecessorsOfTarget).forEach(predecessorKey => successorSetByUri[predecessorKey][targetKey] = targetContextNode);
 
         //successorMap for direct predecessor was already set above in bulk, therefore we add sourceNode only now
-        allPredecessorsOfTarget[sourceKey] = sourceNode;
+        allPredecessorsOfTarget[sourceKey] = sourceContextNode;
 
         // can be overwritten - always tells the maximal depth of a node
-        targetNode[TYPE_DEPTH] = depth;
+        targetContextNode[TYPE_DEPTH] = depth;
 
       });
     });
-    console.log(`Nextlevel = ${JSON.stringify(Object.keys(nextLevelMap))}`)
     depth++;
     nextLevel = Object.values(nextLevelMap);
   }

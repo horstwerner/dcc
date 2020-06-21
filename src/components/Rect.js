@@ -1,4 +1,5 @@
 import P from 'prop-types';
+import css from './Card.css';
 import ComponentFactory from '@symb/ComponentFactory';
 import Component from "@symb/Component";
 import isEqual from "lodash/isEqual";
@@ -32,6 +33,9 @@ export default class Rect extends Component {
     if (id) {
       this.dom.setAttribute('id', id);
       this.dom.setAttribute('data-value', value);
+      this.dom.addEventListener('click', () => alert(`${id}: ${value}`));
+      this.dom.setAttribute('title', `${id}: ${value}`);
+      this.dom.setAttribute('class', css.hoverElement);
     }
     this.dom.setAttribute('shape-rendering','crispEdges');
     this.dom.setAttribute('width', width);

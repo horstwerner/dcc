@@ -190,8 +190,8 @@
       "type": "root",
       "background": {
         "type": "rect",
-        "w": 1400,
-        "h": 1000,
+        "w": 1300,
+        "h": 500,
         "color": "#F0F0F0"
       },
       "elements": [
@@ -206,11 +206,10 @@
             }
           },
           "template": "trellis",
-          "x": 10,
+          "x": -1000,
           "y": 10,
           "w": 400,
-          "h": 500,
-          "clickAction": "focusAlerts"
+          "h": 500
         },
         {
           "key": "storiesgrid",
@@ -223,11 +222,10 @@
             }
           },
           "template": "graphAnalysis",
-          "x": 550,
+          "x": 20,
           "y": 10,
-          "w": 800,
-          "h": 500,
-          "clickAction": "focusAlerts"
+          "w": 1200,
+          "h": 500
         }
       ]
     },
@@ -465,30 +463,16 @@
     },
     {
       "type": "storyBarByImpact",
-      "background": {
-        "type": "rect",
-        "w": 400,
-        "h": 70
-      },
+      "background": {"type": "rect", "w": 400, "h": 70},
       "preprocessing": {
         "algorithm": "path-analysis",
-        "inputSelector": {
-          "jira:release": {
-            "=": 1.2
-          }
-        },
+        "inputSelector": {"jira:release": {"=": 1.2}},
         "associationType": "jira:is-prerequisite-for",
         "upstreamAggregate": {
-          "upstream-storypoints": {
-            "attribute": "jira:storypoints",
-            "calculate": "sum"
-          }
+          "upstream-storypoints": {"attribute": "jira:storypoints", "calculate": "sum"}
         },
         "downstreamAggregate": {
-          "downstream-storypoints": {
-            "attribute": "jira:storypoints",
-            "calculate": "sum"
-          }
+          "downstream-storypoints": {"attribute": "jira:storypoints", "calculate": "sum"}
         },
         "result": "dependencies"
       },
@@ -497,26 +481,18 @@
           "key": "label",
           "type": "textfield",
           "attribute": "core:name",
-          "x": 0,
-          "y": 0,
-          "w": 400,
-          "h": 25,
-          "style": {
-            "$": "GROUP_HEADING_STYLE"
-          }
+          "x": 0, "y": 0, "w": 400, "h": 25,
+          "style": {"$": "GROUP_HEADING_STYLE"}
         },
         {
           "key": "sourceBar",
           "type": "chart",
           "source": "core:subNodes",
-          "inputSelector": {"jira:release": {"=": 1.2}},
           "overlay": "dependencies",
+          "inputSelector": {"jira:release": {"=": 1.2}},
           "sortSequence": "byUri",
           "chartType": "stackedBar",
-          "x": 0,
-          "y": 30,
-          "w": 400,
-          "h": 30,
+          "x": 0, "y": 30, "w": 400, "h": 30,
           "totalWidthAttribute": "storyPointSum",
           "widthAttribute": "jira:storypoints",
           "colorAttribute": "downstream-storypoints",
@@ -530,10 +506,7 @@
           "overlay": "dependencies",
           "sortSequence": "byUri",
           "chartType": "stackedBar",
-          "x": 200,
-          "y": 30,
-          "w": 400,
-          "h": 30,
+          "x": 200, "y": 30, "w": 400, "h": 30,
           "totalWidthAttribute": "storyPointSum",
           "widthAttribute": "jira:storypoints",
           "colorAttribute": "upstream-storypoints",
@@ -545,45 +518,28 @@
     {
       "type": "graphAnalysis",
       "background": {
-        "type": "rect",
-        "w": 800,
-        "h": 500,
-        "color": "#FEFEFE"
-      },
+        "type": "rect", "w": 1200, "h": 500, "color": "#FEFEFE"},
       "elements": [
         {
           "key": "label_impact",
           "type": "caption",
           "style": {"$": "GROUP_HEADING_STYLE"},
-          "x": 30,
-          "y": 20,
-          "w": 150,
-          "h": 32,
+          "x": 30, "y": 20, "w": 150, "h": 32,
           "text": "Stories in 1.2\nColor by Impact"
         },
         {
           "key": "label_dependency",
           "type": "caption",
           "style": {"$": "GROUP_HEADING_STYLE"},
-          "x": 200,
-          "y": 20,
-          "w": 300,
-          "h": 32,
+          "x": 200, "y": 20, "w": 300, "h": 32,
           "text": "All Stories\nColor by Dependency"
         },
         {
           "key": "trellis",
           "type": "trellis",
           "source": "core:subNodes",
-          "x": 20,
-          "y": 80,
-          "w": 360,
-          "h": 400,
-          "arrangement": {
-            "type": "grid",
-            "compact": true,
-            "padding": 0.1
-          },
+          "x": 20, "y": 80, "w": 260, "h": 400,
+          "arrangement": {"type": "grid", "compact": true, "padding": 0.1},
           "aggregate": {
             "storyPointSum": {
               "attribute": "jira:storypoints",
@@ -592,6 +548,16 @@
           },
           "template": "storyBarByImpact",
           "groupAttribute": "jira:team"
+        },
+        {
+          "key": "graph",
+          "type": "chart",
+          "source": "core:subNodes",
+          "inputSelector": {"jira:release": {"=": 1.2}},
+          "chartType": "graph",
+          "x": 450, "y": 50, "w": 750, "h": 400,
+          "path": "jira:is-prerequisite-for*",
+          "template": "jira:ticket"
         }
       ]
     }
