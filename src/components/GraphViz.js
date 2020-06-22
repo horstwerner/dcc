@@ -23,7 +23,6 @@ const inspect = function inspect(associationName) {
 
 const bumpSuccessorDepth = function bumpSuccessorDepth(edgeList, depth, vizNodesByKey, touchedKeyMap) {
   if (!edgeList) return;
-  let maxDepth = depth;
   edgeList.forEach(edge => {
     console.log(`bumping ${edge.targetKey} to ${depth}`);
     if (!touchedKeyMap[edge.targetKey]) {
@@ -148,7 +147,6 @@ export default class GraphViz extends Component {
           const yStep = rasterH; //netLaneH / ((lane.length - 1) || 1);
           lane.forEach(node => {
             node.rank = sum(node.inEdges.map(edge => get(vizNodesByKey[edge.sourceKey],'pos.y'))) / (node.inEdges.length || 1);
-            console.log(`node ${node.graphNode.uri} has rank ${node.rank}: ${JSON.stringify(node.inEdges.map(edge => get(vizNodesByKey[edge.sourceKey],'pos.y')))}`);
           });
           lane.sort((a, b) => a.rank - b.rank);
           lane.forEach(node => {

@@ -5,7 +5,9 @@ import {resolveAttribute} from "@/graph/Cache";
 import isEqual from "lodash/isEqual";
 import ComponentFactory from "@symb/ComponentFactory";
 import Template from "@/templates/Template";
-import {Background, Caption, Chart, Trellis, ChildSet} from "@/components/Generators";
+import {Background, Caption, ChildSet} from "@/components/Generators";
+import Chart from "@/generators/Chart";
+import Trellis from "@/generators/Trellis"
 import {fillIn} from "@symb/util";
 import {preprocess} from "@/graph/Preprocessors";
 

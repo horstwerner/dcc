@@ -7,8 +7,8 @@
     "concurrently": "^4.1.0",
     "lodash": "^4.17.13",
     "npm": "^6.14.5",
-    "prop-types": "^15.6.2",
-    "webpack": "^4.29.5"
+    "webpack": "^4.29.5",
+    "prop-types": "^15.6.2"
   },
   "scripts": {
     "start": "concurrently \"cd dev-backend && node server.js\" \"webpack-dev-server -d --open --env.development\"",
@@ -46,6 +46,6 @@
     "url": "https://mabuse.xp-dev.com/git/dcc-git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "author": "Horst Werner",
+  "license": "MIT"
 }

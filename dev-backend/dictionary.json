@@ -52,7 +52,7 @@
     },
     {
       "uri": "jira:team",
-      "dataType": "STRING",
+      "dataType": "ENTITY",
       "name": "Team",
       "isAssociation": false
     },

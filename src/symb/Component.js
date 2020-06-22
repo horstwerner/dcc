@@ -36,7 +36,7 @@ export default class Component {
       this.dom = domNode;
     } else {
       this.dom = props.nameSpace ?
-          this.svg = document.createElementNS(props.nameSpace, this.constructor.elementType || this.constructor.baseTag) :
+          document.createElementNS(props.nameSpace, this.constructor.elementType || this.constructor.baseTag) :
           document.createElement(this.constructor.elementType || this.constructor.baseTag);
     }
     this.className = props.className || this.constructor.className;

@@ -4,7 +4,7 @@ const API_PORT = 3001;
 const bodyParser = require('body-parser');
 const router = express.Router();
 let tickets;
-let tests;
+let teams;
 let dictionary;
 
 const NUM_CARDS = 30;
@@ -50,8 +50,8 @@ router.get("/data", (req, res) => {
   switch (type) {
     case 'jira:ticket':
       return res.json({success: true, data: tickets});
-    case 'dcc:test':
-      return res.json({success: true, data: tests});
+    case 'jira:team':
+      return res.json({success: true, data: teams});
     default:
       return res.json({success: false, message: `unknown entity type: ${type}`});
   }
@@ -141,10 +141,10 @@ try {
 }
 
 try {
-  const testdata = fs.readFileSync(path.join(__dirname, 'tests.csv'), {encoding: 'utf-8'});
-  tests = csv2array(testdata);
+  const teamData = fs.readFileSync(path.join(__dirname, 'teams.csv'), {encoding: 'utf-8'});
+  teams = csv2array(teamData);
 } catch (err) {
-  throw new Error(`Couldn't load tests: ${err}`);
+  throw new Error(`Couldn't load teams: ${err}`);
 }
 
 app.listen(API_PORT, function(){

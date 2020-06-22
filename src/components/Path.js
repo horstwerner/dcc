@@ -21,10 +21,16 @@ export default class Path extends Component {
       return;
     }
     this.innerProps = props;
-    const { id, d } = props;
+    const { id, d, fill, stroke } = props;
 
     if (id) {
       this.dom.setAttribute('id', id);
+    }
+    if (fill) {
+      this.dom.setAttribute('fill', fill);
+    }
+    if (stroke) {
+      this.dom.setAttribute('stroke', stroke);
     }
     this.dom.setAttribute('d', d);
   }
