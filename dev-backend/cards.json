@@ -236,10 +236,10 @@
           "y": 100,
           "diameter": 300,
           "dimensions": ["dcc:bugs", "dcc:speed", "dcc:downstream"],
-          "maxValues": {"dcc:bugs": 200, "dcc:speed": 38, "dcc:downstream": 160},
+          "maxValues": {"dcc:bugs": 140, "dcc:speed": 38, "dcc:downstream": 100},
           "colorStops": [{"percent": "0", "color":  "#548546"}, {"percent": "25", "color":  "#7ea550"}, {"percent":  "35", "color":  "#a3b630"}, {"percent":  "50", "color":  "#cfc726"},{"percent":  "60", "color":  "#cfc726"}, {
             "percent": "90", "color": "#b65b56"} ],
-          "labels": ["Bugs", "Slowness", "Downstream"],
+          "labels": ["Bugs", "Load", "Downstream"],
           "labelStyle": {"$": "LABEL_STYLE"}
         }
       ]
@@ -250,7 +250,7 @@
         "type": "rect",
         "w": 1200,
         "h": 600,
-        "color": "#F0F0F0"
+        "color": "#8C8C8C"
       },
       "elements": [
         {
@@ -258,6 +258,9 @@
           "type": "childcards",
           "source": "jira:team",
           "template": "jira:team",
+          "arrangement": {
+          "padding": 0.05,
+          "compact": true},
           "x": 20,
           "y": 0,
           "w": 1200,
