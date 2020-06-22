@@ -70,6 +70,27 @@ const interpolate = function interpolate(p1, p2, length) {
 
 }
 
+export const rotate = function rotate(points, angle) {
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  return points.map(({x, y}) => ({x: x * cos - y * sin, y: x * sin + y * cos}));
+}
+
+export const translate = function translate(points, delta) {
+  return points.map(({x, y})=> ({x: x + delta.x, y: y + delta.y}));
+}
+
+export const polygonPath = function polygonPath(points, closed) {
+  const segments = [`M${points[0].x} ${points[0].y}`];
+  for (let i = 1; i < points.length; i++) {
+    segments.push(`L${points[i].x} ${points[i].y}`);
+  }
+  if (closed) {
+    segments.push('Z');
+  }
+  return segments.join('');
+}
+
 export const roundCorners = function roundCorners(polygon, dist, closed) {
   const startP = closed ? interpolate(polygon[0], polygon[1], dist) : polygon[0];
   const segments = [`M${startP.x} ${startP.y}`];
@@ -80,5 +101,5 @@ export const roundCorners = function roundCorners(polygon, dist, closed) {
     const after = interpolate(cornerP, polygon[(i + 1) % polygon.length], dist);
     segments.push(`L${before.x} ${before.y}Q${cornerP.x} ${cornerP.y} ${after.x} ${after.y}`);
   }
-  return segments.join();
+  return segments.join('');
 }
