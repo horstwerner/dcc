@@ -128,19 +128,22 @@ export default class GraphViz extends Component {
     const vizNodesByKey = traverseGraph(startNodes, path.split('/'));
     const depth = Math.max(...Object.values(vizNodesByKey).map(node => node.depth));
 
-    const lanes = [];
+    let lanes = [];
     for (let i = 0; i <= depth; i++) {
       lanes[i] = [];
     }
     const vizNodes = Object.values(vizNodesByKey);
     vizNodes.forEach(vizNode => lanes[vizNode.depth].push(vizNode));
+    lanes = lanes.filter(lane => lane && lane.length > 0);
+
     const maxNodesPerLane = Math.max(...lanes.map(lane => lane.length));
-    const childSize =  Math.min(0.5 * w / (lanes.length || 1), 0.7 * h / (maxNodesPerLane || 1));
-    const netLaneH = h - childSize;
+    const maxChildH = 0.9 * h / (maxNodesPerLane || 1);
+    const maxChildW = 0.5 * w / (lanes.length || 1);
+    const netLaneH = h - maxChildH;
     const rasterH = netLaneH / maxNodesPerLane;
 
-    const xStep = (w - 2 * childSize) / ((lanes.length - 1) || 1);
-    let xCursor = childSize;
+    const xStep = (w - 2 * maxChildW) / ((lanes.length - 1) || 1);
+    let xCursor = maxChildW;
 
     lanes.forEach(lane => {
           let yCursor = (netLaneH - rasterH * (lane.length - 1)) / 2
@@ -158,7 +161,7 @@ export default class GraphViz extends Component {
     );
 
     const lines = [];
-    const edgeDist = 0.7 * childSize;
+    const edgeDist = 0.7 * maxChildW;
     // ####################### C R E A T E   E D G E S #################################################
     vizNodes.forEach(vizNode => {
       if (!vizNode.outEdges) return;
@@ -171,8 +174,8 @@ export default class GraphViz extends Component {
             targetNode.pos
           ]);
         } else { // backward edge
-          const dySrc = Math.sign(targetNode.pos.y - vizNode.pos.y) * 0.3 * childSize;
-          const dyTrg = Math.abs(targetNode.pos.y - vizNode.pos.y) < childSize ? dySrc : -dySrc;
+          const dySrc = Math.sign(targetNode.pos.y - vizNode.pos.y) * 0.28 * maxChildH
+          const dyTrg = Math.abs(targetNode.pos.y - vizNode.pos.y) < 0.6 * maxChildH ? dySrc : -dySrc;
           lines.push([vizNode.pos,
             {x: vizNode.pos.x + edgeDist, y: vizNode.pos.y},
             {x: vizNode.pos.x + edgeDist, y: vizNode.pos.y + dySrc},
@@ -184,13 +187,12 @@ export default class GraphViz extends Component {
       });
     });
 
-
     const roundDist = 0.3 * edgeDist;
     const children = [];
     children.push(Svg_({width: w, height: h, children: lines.map(line => createSvgPath(line, roundDist))})._Svg);
     const {width, height} = nodeTemplate.getSize();
 
-    vizNodes.forEach(vizNode => {children.push(Card_({data: vizNode.graphNode, template: nodeTemplate, spatial: fit(childSize, childSize, width, height, vizNode.pos.x - 0.5 * childSize, vizNode.pos.y - 0.5 * childSize)})._Card)});
+    vizNodes.forEach(vizNode => {children.push(Card_({data: vizNode.graphNode, template: nodeTemplate, spatial: fit(maxChildW, maxChildH, width, height, vizNode.pos.x - 0.5 * maxChildW, vizNode.pos.y - 0.5 * maxChildH)})._Card)});
 
     this.createChildren(children);
 
