@@ -254,17 +254,20 @@
       },
       "elements": [
         {
-          "key": "teamGrid",
+          "key": "storiesgrid",
           "type": "childcards",
-          "source": "jira:team",
-          "template": "jira:team",
-          "arrangement": {
-          "padding": 0.05,
-          "compact": true},
+          "source": "jira:ticket",
+          "aggregate": {
+            "total-storypoints": {
+              "attribute": "jira:storypoints",
+              "calculate": "sum"
+            }
+          },
+          "template": "graphAnalysis",
           "x": 20,
-          "y": 0,
+          "y": 10,
           "w": 1200,
-          "h": 600
+          "h": 500
         }
       ]
     },
