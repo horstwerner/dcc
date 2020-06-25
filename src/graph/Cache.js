@@ -71,6 +71,13 @@ class Cache {
     return node;
   };
 
+  getNodeByUniqueKey(key) {
+    //separate first segment of path from rest
+    const parts = key.split(/\/(.+)/);
+
+    return this.getNode(parts[0], parts[1]);
+  }
+
   getEntityTypes() {
     return Object.keys(this.rootNode);
   }

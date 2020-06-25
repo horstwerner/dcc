@@ -1,7 +1,7 @@
 {
   "constants": [
     {
-      "TEXT_COLOR": "rgba(0,0,0,0.55"
+      "TEXT_COLOR": "rgba(0,0,0,0.65"
     },
     {
       "HEADING_COLOR": "rgba(0,0,0,0.4"
@@ -100,10 +100,7 @@
         }
       },
       "template": "trellis",
-      "x": -1000,
-      "y": 10,
-      "w": 400,
-      "h": 500
+      "x": -1000, "y": 10, "w": 400, "h": 500
     }},
     {"USE_CARD_GRAPH_ANALYSIS":     {
       "key": "storiesgrid",
@@ -249,25 +246,30 @@
       "background": {
         "type": "rect",
         "w": 1200,
-        "h": 600,
-        "color": "#8C8C8C"
+        "h": 800,
+        "color": "#FAFAFA",
+        "cornerRadius": "6px"
       },
       "elements": [
         {
-          "key": "storiesgrid",
-          "type": "childcards",
+          "key": "features",
+          "type": "trellis",
           "source": "jira:ticket",
+          "x": 12, "y": 40, "w": 276, "h": 748,
+          "arrangement": {
+            "type": "grid",
+            "compact": true,
+            "padding": 0.1
+          },
+          "inputSelector": {"jira:release": {"=": "1.3"}},
           "aggregate": {
-            "total-storypoints": {
+            "storyPointSum": {
               "attribute": "jira:storypoints",
               "calculate": "sum"
             }
           },
-          "template": "graphAnalysis",
-          "x": 20,
-          "y": 10,
-          "w": 1200,
-          "h": 500
+          "template": "storyBarWithTitle",
+          "groupAttribute": "jira:feature"
         }
       ]
     },
@@ -367,6 +369,49 @@
         }
       ]
     },
+    {
+      "type": "storyBarWithTitle",
+      "background": {
+        "type": "rect",
+        "w": 280,
+        "h": 40
+      },
+      "elements": [
+        {
+          "key": "label",
+          "type": "textfield",
+          "attribute": "core:name",
+          "x": 0, "y": 0, "w": 148, "h": 20,
+          "style": {
+            "$": "LABEL_STYLE",
+            "h-align": "right"
+          }
+        },
+        {
+          "key": "storybar",
+          "type": "chart",
+          "source": "core:subNodes",
+          "sortSequence": {
+            "$": "STATUS_SEQUENCE"
+          },
+          "chartType": "stackedBar",
+          "x": 160,
+          "y": 0,
+          "w": 120,
+          "h": 20,
+          "totalWidthAttribute": "storyPointSum",
+          "widthAttribute": "jira:storypoints",
+          "colorAttribute": "jira:status",
+          "colors": {
+            "$": "COLOR_BY_STATUS"
+          },
+          "defaultColor": {
+            "$": "DEFAULT_TICKET_COLOR"
+          }
+        }
+      ]
+    },
+
     {
       "type": "storyBarByStatus",
       "background": {

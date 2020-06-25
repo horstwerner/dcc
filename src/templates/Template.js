@@ -41,7 +41,7 @@ export default class Template extends CheckedObject{
   }
 
   getCardColor(node) {
-    if (this.colorCoder) {
+    if (node && this.colorCoder) {
       return this.colorCoder.getColor(node);
     } else {
       return this.background.color;

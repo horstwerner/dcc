@@ -15,8 +15,8 @@ export default class Filter {
   constructor(attribute, comparator, comparand) {
     this.attribute = attribute;
     this.comparator = comparator;
-    this.comparand = comparand;
     this.isNumeric = !isNaN(comparand);
+    this.comparand = this.isNumeric ? Number(comparand): comparand;
     this.matches = this.matches.bind(this);
   }
 

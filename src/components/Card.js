@@ -23,7 +23,6 @@ export default class Card extends Component {
   // noinspection JSUnusedGlobalSymbols
   static propTypes = {
     template: P.instanceOf(Template),
-    arrangement: P.string,
     data: P.object
   };
 
@@ -51,12 +50,12 @@ export default class Card extends Component {
     const { template, onClick } = props;
     const { preprocessing } = template;
 
-    let data = preprocessing ? preprocess(props.data, preprocessing) : props.data;
+    const data = preprocessing ? preprocess(props.data, preprocessing) : props.data;
 
     const {background, elements} = template;
     const color = template.getCardColor(data);
 
-    const children = [Background(background, color, onClick ?  () => onClick(this) : null)];
+    const children = [Background(background, color)];
     elements.forEach(element => {
       const { key } = element;
       switch (element.type) {
@@ -75,16 +74,15 @@ export default class Card extends Component {
           }
           break;
         case 'trellis': {
-          children.push(Trellis( data, element));
+          children.push(Trellis( data, element, onClick));
           break;
         }
         case "chart":
-          children.push(Chart({key, data, descriptor: element}));
+          children.push(Chart({key, data, descriptor: element, onClick}));
           break;
         case "childcards":
-          this.childClickAction[element.key] = element.clickAction;
-          children.push(ChildSet(data, element,
-              element.clickAction ? () => {this.handleChildClick(key, element.clickAction)} : null));
+          // this.childClickAction[element.key] = element.clickAction;
+          children.push(ChildSet(data, element, onClick));
           break;
         default:
           throw new Error(`Unsupported Element type: ${element.type}`);

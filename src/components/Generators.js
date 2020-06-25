@@ -1,20 +1,15 @@
 import P from "prop-types";
 import {DEBUG_MODE} from "@/Config";
-import {resolveAttribute, TYPE_NODES} from "@/graph/Cache";
-import {Rect_} from "@/components/Rect";
-import {Svg_} from "@/components/Svg";
+import {resolveAttribute} from "@/graph/Cache";
 import css from "@/components/Card.css";
 import {Div_, FlexBox_} from "@symb/Div";
 import {Image_} from "@symb/Image";
 import GridArrangement, {GRID} from "@/arrangement/GridArrangement";
-import Aggregator, {sum} from "@/Aggregator";
+import Aggregator from "@/Aggregator";
 import TemplateRegistry from "@/templates/TemplateRegistry";
 import {fit, flexContentAlign} from "@symb/util";
 import {CardSet_, LOD_FULL, LOD_RECT} from "@/components/CardSet";
 import {Card_} from "@/components/Card";
-import Filter from "@/graph/Filter";
-import {GraphViz_} from "@/components/GraphViz";
-import StackedBarChart from "@/generators/StackedBarChart";
 
 
 const PADDING = 0.2;
@@ -90,7 +85,7 @@ export const Caption = function Caption(props) {
   }
 
   const {key, x, y, w, h, text, style} = props;
-  return FlexBox_({key, className: css.caption, spatial:{ x, y, scale: 1}, style: {width: w, height: h, justifyContent: (style && flexContentAlign(style['h-align'])) || 'left'}},
+  return FlexBox_({key, className: css.caption, spatial:{ x, y, scale: 1}, style: {width: w, height: h, justifyContent: (style && flexContentAlign(style['h-align'])) || 'flex-start'}},
       Div_({key: 'innertext', style: calcStyle(style, h)}, text)._Div
   )._FlexBox;
 }

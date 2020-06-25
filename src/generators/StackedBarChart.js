@@ -19,10 +19,11 @@ const StackedBarChart = function StackedBarChart(props) {
     P.checkPropTypes(StackedBarChart.propTypes, props, 'prop', 'StackedBarChart');
   }
 
-  const {data, spatial, w, h, maxValues, colorAttribute, widthAttribute, totalWidthAttribute, colors, defaultColor, fragmentStroke, sortSequence} = props;
+  const {data, spatial, w, h, maxValues, colorAttribute, widthAttribute, totalWidthAttribute, colors, defaultColor, fragmentStroke, sortSequence, onRectClick} = props;
   const colorCoder = new ColorCoder({type: 'selection', attribute: 'colorVal', cases: colors, default: defaultColor});
 
   const maxValue = maxValues[totalWidthAttribute];
+  console.log(`max ${totalWidthAttribute} is ${maxValue}`);
   if (!maxValue) {
     return null;
   }
@@ -31,7 +32,7 @@ const StackedBarChart = function StackedBarChart(props) {
   const nodes = data.map(node => {
     const colorVal= resolveAttribute(node, colorAttribute);
     const width = (widthAttribute ? (resolveAttribute(node, widthAttribute) || 0) : 1)/ maxValue * w;
-    return {uri: node.uri, colorVal, width};
+    return {id: node.getUniqueKey(), colorVal, width};
   });
 
 
@@ -42,7 +43,7 @@ const StackedBarChart = function StackedBarChart(props) {
   } else if (sortSequence === SORT_DESC) {
     compare = (a, b) => b.colorVal - a.colorVal;
   } else if (sortSequence === SORT_URI) {
-    compare = (a, b) => strcmp(a.uri, b.uri)
+    compare = (a, b) => strcmp(a.id, b.id)
   } else {
     for (let idx = 0; idx < sortSequence.length; idx++) {
       rankLookup[sortSequence[idx]] = idx;
@@ -54,7 +55,7 @@ const StackedBarChart = function StackedBarChart(props) {
   const children = nodes.map(node => {
     const x = xCursor;
     xCursor += node.width;
-    return Rect_({id: node.uri, value: node.colorVal, x, y: 0, width: node.width + 1, height: h-2, style: { stroke: fragmentStroke, fill: colorCoder.getColor(node)}})._Rect;
+    return Rect_({key: node.id, id: node.id, value: node.colorVal, onClick: onRectClick, x, y: 0, width: node.width + 1, height: h-2, style: { stroke: fragmentStroke, fill: colorCoder.getColor(node)}})._Rect;
   });
 
   return Svg_({width: w, height: h, children, spatial})._Svg;
@@ -72,7 +73,8 @@ StackedBarChart.propTypes = {
   colors: P.arrayOf(P.shape({condition: P.string.isRequired, color: P.string.isRequired})),
   fragmentStroke: P.string,
   defaultColor: P.string,
-  sortSequence: P.oneOfType([P.oneOf([SORT_ASC, SORT_DESC, SORT_URI]), P.array])
+  sortSequence: P.oneOfType([P.oneOf([SORT_ASC, SORT_DESC, SORT_URI]), P.array]),
+  onRectClick: P.func
 }
 
 export default StackedBarChart;

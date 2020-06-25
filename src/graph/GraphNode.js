@@ -22,8 +22,7 @@ export default class GraphNode {
     this.type = Cache.typeDic[typeUri];
     if (this.type === undefined) throw new Error("Can't find type " + typeUri);
     this.uri = uri;
-    this.uniqueKey = originalNode ? originalNode.getUniqueKey() :
-        this.uri.startsWith(this.type.uri) ? this.uri : `${this.type.uri}/${this.uri}`;
+    this.uniqueKey = originalNode ? originalNode.getUniqueKey() : `${this.type.uri}/${this.uri}`;
   }
 
   createContextual() {
