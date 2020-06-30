@@ -1,4 +1,11 @@
-import Cache, {TYPE_CONTEXTUAL_NODE, TYPE_NAME} from './Cache';
+import Cache, {
+  DATATYPE_BOOLEAN,
+  DATATYPE_FLOAT,
+  DATATYPE_INTEGER,
+  DATATYPE_STRING,
+  TYPE_CONTEXTUAL_NODE,
+  TYPE_NAME
+} from './Cache';
 
 export default class GraphNode {
 
@@ -90,14 +97,14 @@ export default class GraphNode {
   setAttribute(propType, value) {
 
     switch (propType.dataType) {
-      case "INTEGER":
-      case "FLOAT":
+      case DATATYPE_INTEGER:
+      case DATATYPE_FLOAT:
         this[propType.uri] = Number(value);
         break;
-      case "STRING":
+      case DATATYPE_STRING:
         this[propType.uri] = String(value);
         break;
-      case "BOOLEAN":
+      case DATATYPE_BOOLEAN:
         this[propType.uri] = Boolean(value);
         break;
       default:
@@ -107,9 +114,9 @@ export default class GraphNode {
 
   setAttributes(object) {
     Object.keys(object).forEach(prop => {
-      const propType = Cache.getType(key);
+      const propType = Cache.getType(prop);
       if (!propType) {
-        console.warn(`Ignoring property of unknown type ${key} at import`);
+        console.warn(`Ignoring property of unknown type ${prop} at import`);
         return;
       }
       this.setAttribute(propType, object[prop]);

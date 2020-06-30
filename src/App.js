@@ -3,12 +3,13 @@ import { omit } from 'lodash';
 import Component from '@symb/Component';
 import css from './App.css';
 import ComponentFactory from "@symb/ComponentFactory";
-import Cache from './graph/Cache';
+import Cache, {TYPE_AGGREGATOR, TYPE_CONTEXT} from './graph/Cache';
 import TemplateRegistry from './templates/TemplateRegistry';
 import {Div_} from '@symb/Div';
 import {fit} from "@symb/util";
 import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
+import GraphNode from "@/graph/GraphNode";
 
 const APP = 'app';
 export const MARGIN = 24;
@@ -92,8 +93,8 @@ export default class App extends Component {
   constructor(props, domNode) {
     super(props, domNode);
 
+
     this.state = {
-      mainCard: {data: Cache.rootNode, template: 'root'},
       currentData: Cache.rootNode,
       currentTemplate: 'root',
       dataLoaded: false,
@@ -105,8 +106,15 @@ export default class App extends Component {
         .then(() => Promise.all([...Cache.getEntityTypes().map(type => this.getDataFromDb(type)), this.getCardDescriptorsFromDb()]))
         .then(() => {
           if (!this.state.error) {
+            const startData = new GraphNode(TYPE_AGGREGATOR, Cache.createUri());
+            Object.keys(Cache.rootNode).forEach(entityType => {
+              startData.setBulkAssociation(entityType, Cache.rootNode[entityType]);
+            })
+            startData[TYPE_CONTEXT] = {}
+
             this.setState({
               dataLoaded: true,
+              mainCard: {data: startData, template: 'root'},
               backgroundColor: TemplateRegistry.getTemplate('root').getCardColor
               // currentMap: TemplateRegistry.getStartMap()
             })

@@ -1,7 +1,7 @@
 import P from "prop-types";
 import {mapValues, omit} from 'lodash';
 import {DEBUG_MODE} from "@/Config";
-import {resolveAttribute, TYPE_NODE_COUNT} from "@/graph/Cache";
+import {resolveAttribute, TYPE_CONTEXT, TYPE_NODE_COUNT} from "@/graph/Cache";
 import css from "@/components/Card.css";
 import {Div_, FlexBox_} from "@symb/Div";
 import {Image_} from "@symb/Image";
@@ -106,7 +106,7 @@ export function createArrangement(descriptor, childSize) {
   // console.log(`rendering cardset with ${width}/${height}`);
   switch (type) {
     case GRID:
-      const {x, y, w, h, padding, compact } = descriptor;
+      const {x, y, w, h, padding } = descriptor;
       return new CompactGridArrangement(padding || PADDING, childSize)
           .setArea(w, h)
           .setOffset(x, y)
@@ -122,26 +122,24 @@ createArrangement.propTypes = {
   padding: P.number
 }
 
-// FIXME
-function createAggregatedNode(nodes, aggregations) {
-  return new Aggregator(aggregations).aggregate(nodes);
-}
-
 /**
  *
  * @param {GraphNode || GraphNode[]} data
+ * @param {Object} context
  * @param {Template} template
  */
-const createPreprocessedCardNode = function createPreprocessedCardNode(data, template) {
+const createPreprocessedCardNode = function createPreprocessedCardNode(data, context, template) {
   const result = createCardNode(data);
+  const newContext = {...context};
+  result[TYPE_CONTEXT] = newContext;
   const { preprocessing } = template;
   if (preprocessing) {
-    preprocess(result, preprocessing)
+    preprocess(result, newContext, preprocessing)
   }
   return result;
 }
 
-export const ChildSet = function ChildSet(data, descriptor, onClick) {
+export const ChildSet = function ChildSet(data, context, descriptor, aggregate, onClick) {
 
   if (DEBUG_MODE) {
     P.checkPropTypes(ChildSet.propTypes, descriptor, 'prop', 'ChildSet');
@@ -158,8 +156,8 @@ export const ChildSet = function ChildSet(data, descriptor, onClick) {
       resolveAttribute(data, source);
   if (!nodes) return null;
 
-  if (!Array.isArray(nodes)) {
-    const cardNode = createPreprocessedCardNode(nodes, template)
+  if (aggregate) {
+    const cardNode = createPreprocessedCardNode(nodes, context, template)
     return Card_({
       key,
       template,
@@ -171,7 +169,8 @@ export const ChildSet = function ChildSet(data, descriptor, onClick) {
   }
 
   const arrangementDescriptor = {type: GRID, x: 0, y: 0, w, h, padding: PADDING, ...arrangement};
-  const cardNodes = nodes.map(node => createPreprocessedCardNode(node, template));
+  debugger
+  const cardNodes = nodes.map(node => createPreprocessedCardNode(node, context, template));
   if (align) {
     const aggregate = mapValues(align, (calculate, key) => ({attribute: key, calculate}));
     const aligned = omit(new Aggregator(aggregate).aggregate(cardNodes), TYPE_NODE_COUNT);

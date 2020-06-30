@@ -94,27 +94,15 @@
     ]},
     {"USE_CARD_TRELLIS": {
       "key": "stories",
-      "type": "childcards",
+      "type": "card",
       "source": "jira:ticket",
-      "aggregate": {
-        "total-storypoints": {
-          "attribute": "jira:storypoints",
-          "calculate": "sum"
-        }
-      },
       "template": "trellis",
       "x": -1000, "y": 10, "w": 400, "h": 500
     }},
     {"USE_CARD_GRAPH_ANALYSIS":     {
       "key": "storiesgrid",
-      "type": "childcards",
+      "type": "card",
       "source": "jira:ticket",
-      "aggregate": {
-        "total-storypoints": {
-          "attribute": "jira:storypoints",
-          "calculate": "sum"
-        }
-      },
       "template": "graphAnalysis",
       "x": 20,
       "y": 10,
@@ -216,7 +204,7 @@
         "w": 300,
         "h": 110
       },
-      "preprocessing": [{"algorithm":  "aggregate", "input": "jira:ticket", "results": {"storyPointSum":  {"attribute":  "jira:storypoints", "calculate": "sum"}}}],
+      "preprocessing": [{"method":  "aggregate", "input": "jira:ticket", "results": {"storyPointSum":  {"attribute":  "jira:storypoints", "calculate": "sum"}}}],
       "elements": [
         {
           "key": "heading",
@@ -293,6 +281,13 @@
           "groupAttribute": "jira:feature"
         },
         {
+          "key": "graphanalysis",
+          "type": "card",
+          "source": "jira:ticket",
+          "template": "graphAnalysis",
+          "x": 320, "y": 20, "w": 500, "h": 600
+        },
+        {
           "key": "label_teams",
           "type": "caption",
           "style": {"$": "GROUP_HEADING_STYLE"},
@@ -301,7 +296,7 @@
         },
         {
           "key": "teams",
-          "type": "childcards",
+          "type": "cards",
           "source": "jira:team",
           "align": {"storyPointSum": "max"},
           "x": 850, "y": 60, "w": 380, "h": 748,
@@ -395,7 +390,7 @@
         },
         {
           "key": "nodes",
-          "type": "childcards",
+          "type": "cards",
           "source": "core:subNodes",
           "x": 20,
           "y": 80,
@@ -413,7 +408,7 @@
     {
       "type": "storyBarWithTitle",
       "background": {"type": "rect", "w": 280, "h": 40},
-      "preprocessing": [{"algorithm":  "aggregate", "results":  {"storyPointSum":  {"attribute": "jira:storypoints", "calculate":  "sum"}}}],
+      "preprocessing": [{"method":  "aggregate", "results":  {"storyPointSum":  {"attribute": "jira:storypoints", "calculate":  "sum"}}}],
       "elements": [
         {
           "key": "label",
@@ -451,7 +446,7 @@
       "type": "storyBarByStatus",
       "background": { "type": "rect", "w": 400, "h": 70},
       "preprocessing": [
-        {"algorithm":  "aggregate",
+        {"method":  "aggregate",
          "results": {
           "storyPointSum": {
             "attribute": "jira:storypoints",
@@ -570,15 +565,15 @@
       "type": "storyBarByImpact",
       "background": {"type": "rect", "w": 260, "h": 70},
       "preprocessing": [
-        {"algorithm":  "aggregate",
+        {"method":  "aggregate",
           "results": {"storyPointSum":  {"attribute":  "jira:storypoints", "calculate":  "sum"}}
         },
-        {"algorithm":  "aggregate",
-          "input": "core:allNodes",
+        {"method":  "aggregate",
+          "input": "core:context/allNodes",
           "results": {"totalStoryPointSum":  {"attribute":  "jira:storypoints", "calculate":  "sum"}}
         },
         {
-        "algorithm": "path-analysis",
+        "method": "path-analysis",
         "inputSelector": {"jira:release": {"=": 1.2}},
         "associationType": "jira:is-prerequisite-for",
         "upstreamAggregate": {
@@ -615,7 +610,7 @@
         {
           "key": "storybar",
           "type": "chart",
-          "source": "core:allNodes",
+          "source": "core:context/allNodes",
           "overlay": "dependencies",
           "sortSequence": "byUri",
           "chartType": "stackedBar",
@@ -631,7 +626,8 @@
     {
       "type": "graphAnalysis",
       "background": {
-        "type": "rect", "w": 1200, "h": 500, "color": "#FEFEFE"},
+        "type": "rect", "w": 500, "h": 600, "color": "#FEFEFE"},
+      "preprocessing": [{"method":  "set-context", "values":  {"allNodes": "core:subNodes"}}],
       "elements": [
         {
           "key": "label_impact",
@@ -653,24 +649,9 @@
           "source": "core:subNodes",
           "x": 20, "y": 80, "w": 260, "h": 400,
           "arrangement": {"type": "grid", "compact": true, "padding": 0.1},
-          "aggregate": {
-            "storyPointSum": {
-              "attribute": "jira:storypoints",
-              "calculate": "sum"
-            }
-          },
+          "align": {"storyPointSum": "max"},
           "template": "storyBarByImpact",
           "groupAttribute": "jira:team"
-        },
-        {
-          "key": "graph",
-          "type": "chart",
-          "source": "core:subNodes",
-          "inputSelector": {"jira:release": {"=": 1.2}},
-          "chartType": "graph",
-          "x": 450, "y": 50, "w": 750, "h": 400,
-          "path": "jira:is-prerequisite-for*",
-          "template": "jira:ticket"
         }
       ]
     }
