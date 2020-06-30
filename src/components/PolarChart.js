@@ -52,7 +52,7 @@ export default class PolarChart extends Component {
 
     const labelHeight = 0.08 * diameter;
     const labelWidth = 3.5 * labelHeight;
-    const labelRadius = 0.5 * diameter + 0.8 *labelHeight;
+    const labelRadius = 0.55 * diameter + labelHeight;
     const labelChildren = [];
     const corners = [];
     const lines = [];
@@ -69,7 +69,7 @@ export default class PolarChart extends Component {
       const lineEnd = {x: center.x + lineRadius * cos, y: center.y + lineRadius * sin};
       lines.push(polygonPath([center, lineEnd], false));
       arrows.push(polygonPath(translate(rotate(arrowTip, angle), lineEnd), true));
-      const labelPos = {x: Math.max(0, Math.min(diameter - labelWidth, center.x + cos * labelRadius - 0.5 * labelWidth)), y: center.y + sin * labelRadius - 0.3 * labelHeight};
+      const labelPos = {x: Math.max(0, Math.min(diameter - labelWidth, center.x + cos * labelRadius - 0.5 * labelWidth)), y: center.y + sin * labelRadius - 0.2 * labelHeight};
       const labelText = labels ? labels[dimensionIdx] : Cache.getType(dimension).name;
       labelChildren.push(Caption({key: `label${dimension}`, x: labelPos.x, y: labelPos.y, w: labelWidth, h: labelHeight, text: labelText, style: {...labelStyle, 'h-align': 'center'}}))
 

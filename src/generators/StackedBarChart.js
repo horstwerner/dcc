@@ -19,19 +19,16 @@ const StackedBarChart = function StackedBarChart(props) {
     P.checkPropTypes(StackedBarChart.propTypes, props, 'prop', 'StackedBarChart');
   }
 
-  const {data, spatial, w, h, maxValues, colorAttribute, widthAttribute, totalWidthAttribute, colors, defaultColor, fragmentStroke, sortSequence, onRectClick} = props;
+  const {data, spatial, w, h, totalWidthVal, colorAttribute, widthAttribute, colors, defaultColor, fragmentStroke, sortSequence, onRectClick} = props;
   const colorCoder = new ColorCoder({type: 'selection', attribute: 'colorVal', cases: colors, default: defaultColor});
 
-  const maxValue = maxValues[totalWidthAttribute];
-  console.log(`max ${totalWidthAttribute} is ${maxValue}`);
-  if (!maxValue) {
-    return null;
-  }
+  if (totalWidthVal === 0) debugger
+  let sum = totalWidthVal || data.reduce((acc, node) => acc + (widthAttribute ? (resolveAttribute(node, widthAttribute) || 0) : 1), 0) || 1;
 
   // create copy with only needed values for sorting
   const nodes = data.map(node => {
     const colorVal= resolveAttribute(node, colorAttribute);
-    const width = (widthAttribute ? (resolveAttribute(node, widthAttribute) || 0) : 1)/ maxValue * w;
+    const width = (widthAttribute ? (resolveAttribute(node, widthAttribute) || 0) : 1) / sum * w;
     return {id: node.getUniqueKey(), colorVal, width};
   });
 
@@ -66,7 +63,7 @@ StackedBarChart.propTypes = {
   spatial: P.shape({x: P.number.isRequired, y: P.number.isRequired, scale: P.number.isRequired}).isRequired,
   w: P.number.isRequired,
   h: P.number.isRequired,
-  maxValues: P.objectOf(P.number).isRequired,
+  totalWidthValue: P.oneOfType([P.string, P.number]).isRequired,
   colorAttribute: P.string,
   widthAttribute: P.string,
   totalWidthAttribute: P.string,

@@ -1,15 +1,18 @@
 import P from "prop-types";
+import {mapValues, omit} from 'lodash';
 import {DEBUG_MODE} from "@/Config";
-import {resolveAttribute} from "@/graph/Cache";
+import {resolveAttribute, TYPE_NODE_COUNT} from "@/graph/Cache";
 import css from "@/components/Card.css";
 import {Div_, FlexBox_} from "@symb/Div";
 import {Image_} from "@symb/Image";
-import GridArrangement, {GRID} from "@/arrangement/GridArrangement";
+import {GRID} from "@/arrangement/GridArrangement";
 import Aggregator from "@/Aggregator";
 import TemplateRegistry from "@/templates/TemplateRegistry";
-import {fit, flexContentAlign} from "@symb/util";
+import {createCardNode, fit, flexContentAlign} from "@symb/util";
 import {CardSet_, LOD_FULL, LOD_RECT} from "@/components/CardSet";
 import {Card_} from "@/components/Card";
+import CompactGridArrangement from "@/arrangement/CompactGridArrangement";
+import {preprocess} from "@/graph/Preprocessors";
 
 
 const PADDING = 0.2;
@@ -104,10 +107,9 @@ export function createArrangement(descriptor, childSize) {
   switch (type) {
     case GRID:
       const {x, y, w, h, padding, compact } = descriptor;
-      return new GridArrangement(padding || PADDING, childSize)
+      return new CompactGridArrangement(padding || PADDING, childSize)
           .setArea(w, h)
           .setOffset(x, y)
-          .setCompact(compact)
   }
 }
 
@@ -120,9 +122,23 @@ createArrangement.propTypes = {
   padding: P.number
 }
 
-
+// FIXME
 function createAggregatedNode(nodes, aggregations) {
   return new Aggregator(aggregations).aggregate(nodes);
+}
+
+/**
+ *
+ * @param {GraphNode || GraphNode[]} data
+ * @param {Template} template
+ */
+const createPreprocessedCardNode = function createPreprocessedCardNode(data, template) {
+  const result = createCardNode(data);
+  const { preprocessing } = template;
+  if (preprocessing) {
+    preprocess(result, preprocessing)
+  }
+  return result;
 }
 
 export const ChildSet = function ChildSet(data, descriptor, onClick) {
@@ -131,34 +147,40 @@ export const ChildSet = function ChildSet(data, descriptor, onClick) {
     P.checkPropTypes(ChildSet.propTypes, descriptor, 'prop', 'ChildSet');
   }
 
-  const { key, source, lod, aggregate, arrangement, x, y, w, h } = descriptor;
+  const { key, source, lod, align, arrangement, x, y, w, h } = descriptor;
 
   const templateName = descriptor.template;
   const template = TemplateRegistry.getTemplate(templateName);
   const nativeChildSize = template.getSize();
 
-  let nodes = source === 'this' ?
+  let nodes = (!source || source === 'this') ?
       data :
       resolveAttribute(data, source);
   if (!nodes) return null;
 
-  const childData = aggregate ? createAggregatedNode(nodes, aggregate) : nodes;
-
-  if (!Array.isArray(childData)) {
+  if (!Array.isArray(nodes)) {
+    const cardNode = createPreprocessedCardNode(nodes, template)
     return Card_({
       key,
       template,
       lod,
       spatial: fit(w, h, nativeChildSize.width, nativeChildSize.height, x, y),
-      data:  childData,
+      data:  cardNode,
       onClick
     })._Card;
   }
 
   const arrangementDescriptor = {type: GRID, x: 0, y: 0, w, h, padding: PADDING, ...arrangement};
+  const cardNodes = nodes.map(node => createPreprocessedCardNode(node, template));
+  if (align) {
+    const aggregate = mapValues(align, (calculate, key) => ({attribute: key, calculate}));
+    const aligned = omit(new Aggregator(aggregate).aggregate(cardNodes), TYPE_NODE_COUNT);
+    cardNodes.forEach(cardNode => Object.assign(cardNode, aligned));
+  }
+
 
   return CardSet_({key,
-    nodes: childData,
+    nodes: cardNodes,
     template,
     lod,
     spatial: {x, y, scale: 1},

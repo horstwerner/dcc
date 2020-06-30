@@ -15,7 +15,7 @@ export default class Template extends CheckedObject{
       color: P.string,
       ...sizeType
     }),
-    preprocessing: P.shape({algorithm: P.string.isRequired, result: P.string.isRequired, inputSelector: P.object}),
+    preprocessing: P.arrayOf(P.shape({algorithm: P.string.isRequired, result: P.string, inputSelector: P.object})),
     colorcoding: P.shape(ColorCoder.propTypes),
     elements: P.arrayOf(P.shape(
         {

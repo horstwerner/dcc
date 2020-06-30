@@ -7,7 +7,6 @@ export default class Arrangement {
     this.areah = 0;
     this.padding = padding;
     this.outerpadding = 0;
-    this.maxChildsize = undefined;
     this.childSize = childSize;
     this.compact = false;
   };
@@ -43,11 +42,6 @@ export default class Arrangement {
 
   setInnerPadding = function (value) {
     this.padding = value;
-    return this;
-  };
-
-  setMaxChildsize = function (size) {
-    this.maxChildsize = size;
     return this;
   };
 

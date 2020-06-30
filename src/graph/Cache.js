@@ -125,7 +125,11 @@ class Cache {
           newNode.addAssociation(propType, target, targetType);
         }
         else {
-          newNode[prop] = row[colIdx];
+          if (propType) {
+            newNode.setAttribute(propType, row[colIdx]);
+          } else {
+            console.warn(`Ignoring attribute of unknown type ${prop}`);
+          }
         }
       }
     }

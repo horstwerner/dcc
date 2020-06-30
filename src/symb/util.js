@@ -1,12 +1,13 @@
-import {resolveAttribute} from "@/graph/Cache";
+import Cache, {resolveAttribute, TYPE_AGGREGATOR, TYPE_NODES} from "@/graph/Cache";
+import GraphNode from "@/graph/GraphNode";
 
 export function getTransformString(x, y, scale) {
   return `translate(${x}px, ${y}px) scale(${scale})`;
 }
 
-export const fit = function fit(parentWidth, parentHeight, childWidth, childHeight, xOffset, yOffset) {
+export const fit = function fit(parentWidth, parentHeight, childWidth, childHeight, xOffset, yOffset, maxScale) {
 
-  const scale = Math.min(parentWidth / childWidth, parentHeight / childHeight);
+  const scale = Math.min(parentWidth / childWidth, parentHeight / childHeight, (maxScale || 100));
   if (isNaN(scale) || scale === 0) {
     throw new Error('Invalid parameters for fit');
   }
@@ -102,4 +103,23 @@ export const roundCorners = function roundCorners(polygon, dist, closed) {
     segments.push(`L${before.x} ${before.y}Q${cornerP.x} ${cornerP.y} ${after.x} ${after.y}`);
   }
   return segments.join('');
+}
+
+/**
+ * @param {GraphNode | GraphNode[]} contents
+ *
+ * creates a data node for a card representing either a single node or a node set
+ * the data node carries aggregated/derived attributes for use in the visualization
+ */
+export const createCardNode = function createCardNode(contents) {
+  if (Array.isArray(contents)) {
+    const result = new GraphNode(TYPE_AGGREGATOR, Cache.createUri());
+    result.setBulkAssociation(TYPE_NODES, contents);
+    return result;
+  } else {
+    if (contents.getTypeUri() === TYPE_AGGREGATOR) {
+      return contents;
+    }
+    return contents.createContextual();
+  }
 }

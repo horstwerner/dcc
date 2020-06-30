@@ -66,16 +66,14 @@ class CardSet extends Component {
         }
         arrangement.forEachRasterpos(nodes, (node, rasterPos) => {
           childDescriptors.push(
-              Card_({key: node.getUniqueKey(), spatial: rasterPos, data: node, onClick, template})._Card
+              Card_({key: node.getUniqueKey(), spatial: rasterPos, data: node, parentSet: this, onClick, template})._Card
           );
         });
         this.createChildren(childDescriptors);
     }
   };
 
-
   updateContents(props) {
-
     if (isEqual(this.innerProps, props)) {
       return;
     }
@@ -86,7 +84,6 @@ class CardSet extends Component {
     this.createChildrenForLod(lod);
 
   }
-
 
   // onResize(width, height) {
   //   if (this.resizeTween) {

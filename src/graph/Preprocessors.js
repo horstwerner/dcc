@@ -24,31 +24,41 @@ import Filter from "@/graph/Filter";
 import {pathAnalysis} from "@/graph/Analysis";
 
 export const PATH_ANALYSIS = "path-analysis";
+export const AGGREGATE = "aggregate";
 
 /**
  *
- * @param data
- * @param descriptor
- * @return {Object} extends the ingoing data object by the results of the specified preprocessor
+ * @param {GraphNode} data: modified during operation
+ * @param {Object[]} preprocessors
  */
-export const preprocess = function preprocess(data, descriptor) {
-  const {inputSelector, algorithm, result} = descriptor;
+export const preprocess = function preprocess(data, preprocessors) {
 
-  const filter = inputSelector ? Filter.fromDescriptor(inputSelector): null;
+  preprocessors.forEach(descriptor => {
+    const {input, inputSelector, algorithm, result} = descriptor;
 
-  const input = filter ? data[TYPE_NODES].filter(filter.matches) : data[TYPE_NODES];
+    const filter = inputSelector ? Filter.fromDescriptor(inputSelector) : null;
 
-  let output;
+    const source = filter ? data.get(input || TYPE_NODES).filter(filter.matches) : data.get(input || TYPE_NODES);
+    if (source == null) {
+      if (!input) {
+        throw new Error(`Can't preprocess data: no subNodes property and input undefined in ${JSON.stringify(data)}`);
+      } else {
+        throw new Error(`Can't preprocess data: input ${input} not present in ${JSON.stringify(data)}`);
+      }
+    }
 
-  switch (algorithm) {
-    case PATH_ANALYSIS:
-      const {associationType, upstreamAggregate, downstreamAggregate} = descriptor;
-      output =  pathAnalysis(input, associationType, new Aggregator(upstreamAggregate), new Aggregator(downstreamAggregate));
-      break;
-    default:
-      throw new Error(`Unknown preprocessing algorithm ${algorithm}`);
-  }
-
-  return {...data, [result]: output};
-
+    switch (algorithm) {
+      case PATH_ANALYSIS:
+        const {associationType, upstreamAggregate, downstreamAggregate} = descriptor;
+        data[result] = pathAnalysis(source, associationType, new Aggregator(upstreamAggregate), new Aggregator(downstreamAggregate));
+        break;
+      case AGGREGATE:
+        const { results } = descriptor;
+        const aggregator = new Aggregator(results);
+        Object.assign(data , aggregator.aggregate(source));
+        break;
+      default:
+        throw new Error(`Unknown preprocessing algorithm ${algorithm}`);
+    }
+  });
 }

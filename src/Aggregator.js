@@ -1,5 +1,5 @@
 import P from 'prop-types';
-import Cache, {resolveAttribute, TYPE_AGGREGATOR, TYPE_NODE_COUNT, TYPE_NODES} from './graph/Cache';
+import {resolveAttribute, TYPE_NODE_COUNT} from './graph/Cache';
 import GraphNode from "@/graph/GraphNode";
 import clone from "lodash/clone";
 import {DEBUG_MODE} from "@/Config";
@@ -88,8 +88,8 @@ export const aggregateNodes = function aggregateNodes(subset, aggregations, node
 export default class Aggregator {
 
   // aggregate: {
-  //      total: {attribute: 'revenue', method: 'sum'},
-  //      average: {attribute: 'revenue', method: 'avg'}
+  //      total: {attribute: 'revenue', calculate: 'sum'},
+  //      average: {attribute: 'revenue', calculate: 'avg'}
   //     }
 
   static propTypes = P.objectOf(P.shape({attribute: P.string, calculate: P.string})).isRequired;
@@ -121,14 +121,14 @@ export default class Aggregator {
    *
    * @param {GraphNode[]} nodes
    * @param {String?} nodeCountName
-   * @return {GraphNode}
+   * @return {Object}
    */
   aggregate(nodes, nodeCountName) {
-    const aggregated = aggregateNodes(nodes, this.fieldAggregations, nodeCountName);
+    return aggregateNodes(nodes, this.fieldAggregations, nodeCountName);
 
-    return new GraphNode(TYPE_AGGREGATOR, Cache.createUri())
-        .setAttributes(aggregated)
-        .setBulkAssociation(TYPE_NODES, nodes);
+    // return new GraphNode(TYPE_AGGREGATOR, Cache.createUri())
+    //     .setAttributes(aggregated)
+    //     .setBulkAssociation(TYPE_NODES, nodes);
   }
 
 }

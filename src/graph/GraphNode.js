@@ -87,8 +87,33 @@ export default class GraphNode {
     return name === undefined ? this.uri : name;
   };
 
+  setAttribute(propType, value) {
+
+    switch (propType.dataType) {
+      case "INTEGER":
+      case "FLOAT":
+        this[propType.uri] = Number(value);
+        break;
+      case "STRING":
+        this[propType.uri] = String(value);
+        break;
+      case "BOOLEAN":
+        this[propType.uri] = Boolean(value);
+        break;
+      default:
+        throw new Error(`Data type ${propType.dataType} of ${propType.name} is not an attribute`);
+    }
+  }
+
   setAttributes(object) {
-    Object.assign(this, object);
+    Object.keys(object).forEach(prop => {
+      const propType = Cache.getType(key);
+      if (!propType) {
+        console.warn(`Ignoring property of unknown type ${key} at import`);
+        return;
+      }
+      this.setAttribute(propType, object[prop]);
+    });
     return this;
   }
 
@@ -107,6 +132,10 @@ export default class GraphNode {
    * @param graphNode
    */
   addAssociatedNode(associationTypeUri, graphNode) {
+
+    if (typeof associationTypeUri !== 'string') {
+      debugger
+    }
 
     if(this.originalNode) {
       console.log(`Contextual:`);
@@ -147,7 +176,7 @@ export default class GraphNode {
       throw new Error(`No valid entity type specified for association ${associationtype.uri}`);
     }
 
-    const inverseTypeUri = associationtype.getInverseType(this.type);
+    const inverseTypeUri = associationtype.getInverseType(this.type.uri);
 
     const nodeType = targetTypeUri || associationtype.uri;
 
@@ -163,7 +192,7 @@ export default class GraphNode {
       return this;
     }
 
-    if (typeof target === 'object' && target.constructor === Array) {
+    if (Array.isArray(target)) {
       for (let i = 0; i < target.length; i++) {
         let element = target[i];
         if (typeof element === 'string') {

@@ -91,21 +91,15 @@ export default class App extends Component {
 
   constructor(props, domNode) {
     super(props, domNode);
-    const mainHeight = 8 / 9 * window.innerHeight;
-    const mainWidth = 3 / 2 * mainHeight;
-    const sideBarWidth = window.innerWidth - mainWidth;
+
     this.state = {
       mainCard: {data: Cache.rootNode, template: 'root'},
       currentData: Cache.rootNode,
       currentTemplate: 'root',
       dataLoaded: false,
       error: null,
-      windowWidth: window.innerWidth,
-      windowHeight: window.innerHeight,
-      mainWidth,
-      mainHeight,
-      sideBarWidth
     };
+    this.onResize(window.innerWidth, window.innerHeight);
 
     this.getDictionaryFromDb()
         .then(() => Promise.all([...Cache.getEntityTypes().map(type => this.getDataFromDb(type)), this.getCardDescriptorsFromDb()]))
@@ -123,7 +117,6 @@ export default class App extends Component {
   }
 
   handleNodeClick({id}) {
-    debugger
     const node = Cache.getNodeByUniqueKey(id);
     const template = TemplateRegistry.getTemplate(node.type.uri);
     this.setState({inspectionCard: {template, data: node}});
@@ -177,7 +170,7 @@ export default class App extends Component {
 
     // const backgroundColor = (map && map.backColor) || '#ffffff';
     const mainTemplate = dataLoaded && TemplateRegistry.getTemplate(mainCard.template);
-    const sidebar = Sidebar_({w: sideBarWidth - MARGIN, h: windowHeight - MARGIN, selectedCard: inspectionCard, spatial: {x: mainWidth + 0.5 * MARGIN, y: 0.5 * MARGIN, scale: 1}})._Sidebar;
+    const sidebar = Sidebar_({w: sideBarWidth, h: windowHeight, selectedCard: inspectionCard, spatial: {x: mainWidth, y: 0, scale: 1}})._Sidebar;
 
     const children = [sidebar];
     if (error) {children.push(Div_({}, `An error occurred: ${error.message}`)._Div);}
@@ -200,8 +193,9 @@ export default class App extends Component {
   }
 
   onResize(width, height) {
+    console.log(`onResize:${width}-${height}`);
     const sideBarWidth = Math.min(0.23 * width, 4 * height);
-    const mainHeight = 8 / 9 * height;
+    const mainHeight = 9 / 10 * height;
     const mainWidth = width - sideBarWidth;
 
     this.setState({windowWidth: width, windowHeight: height, mainWidth, mainHeight, sideBarWidth});

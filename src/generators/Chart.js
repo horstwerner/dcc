@@ -10,6 +10,19 @@ import {GraphViz_} from "@/components/GraphViz";
 import {DEBUG_MODE} from "@/Config";
 import {PolarChart_} from "@/components/PolarChart";
 
+const fillInNumber = function fillInNumber(data, valueString) {
+  if (isNaN(valueString)) {
+    const result = resolveAttribute(data, valueString);
+    if (result == null || isNaN(result)) {
+      debugger
+    } else {
+      return result;
+    }
+  } else {
+    return Number(valueString);
+  }
+}
+
 const Chart = function Chart({key, data, descriptor, onClick}) {
   const {chartType, x, y, source, inputSelector, overlay, ...chartProps} = descriptor;
 
@@ -27,7 +40,7 @@ const Chart = function Chart({key, data, descriptor, onClick}) {
     if (!Array.isArray(chartData)) {
       throw new Error(`Overlay (${overlay}) only allowed for node sets. ${source} is not a node set`);
     }
-    const overlayData = resolveAttribute(data, [overlay,TYPE_NODES]);
+    const overlayData = resolveAttribute(data, [overlay, TYPE_NODES]);
     const overlayNodeByKey = {};
     // transform list into map
     overlayData.forEach(node => {overlayNodeByKey[node.getUniqueKey()] = node;})
@@ -58,9 +71,8 @@ const Chart = function Chart({key, data, descriptor, onClick}) {
         })._Rect]
       })._Svg
     case 'stackedBar':
-      const {totalWidthAttribute, widthAttribute} = chartProps;
-      const maxValues = data.maxValues || {[totalWidthAttribute]: widthAttribute ? sum(chartData, widthAttribute) : chartData.count}
-      return StackedBarChart({data: chartData, spatial, maxValues, ...chartProps, onRectClick: onClick})
+      const {totalWidthValue} = chartProps;
+      return StackedBarChart({data: chartData, spatial, totalWidthVal: fillInNumber(data, totalWidthValue), ...chartProps, onRectClick: onClick})
     case 'graph':
       const nodeTemplate = TemplateRegistry.getTemplate(descriptor.template);
       return GraphViz_({spatial, startNodes: chartData, ...chartProps, nodeTemplate})._GraphViz;

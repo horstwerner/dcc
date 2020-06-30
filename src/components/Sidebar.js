@@ -34,14 +34,12 @@ class Sidebar extends Component {
     this.dom.style.height = `${h}px`;
 
     const netW = w - MARGIN;
-
-
     const children = [];
-
 
     if (selectedCard) {
       const size = selectedCard.template.getSize();
-      const spatial = fit(netW, h, size.width, size.height, MARGIN / 2, SELECTED_TOP);
+      const spatial = fit(netW, h, size.width, size.height, MARGIN / 2, SELECTED_TOP, 1);
+      spatial.y = SELECTED_TOP;
       children.push( Card_({...selectedCard, key: 'selected', spatial})._Card);
     }
 

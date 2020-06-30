@@ -47,10 +47,7 @@ export default class Card extends Component {
     }
     this.innerProps = props;
 
-    const { template, onClick } = props;
-    const { preprocessing } = template;
-
-    const data = preprocessing ? preprocess(props.data, preprocessing) : props.data;
+    const { data, template, onClick } = props;
 
     const {background, elements} = template;
     const color = template.getCardColor(data);
@@ -78,7 +75,7 @@ export default class Card extends Component {
           break;
         }
         case "chart":
-          children.push(Chart({key, data, descriptor: element, onClick}));
+          children.push(Chart({key, data, descriptor: element, onClick }));
           break;
         case "childcards":
           // this.childClickAction[element.key] = element.clickAction;
