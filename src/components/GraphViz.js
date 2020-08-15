@@ -28,8 +28,10 @@ const bumpSuccessorDepth = function bumpSuccessorDepth(edgeList, depth, vizNodes
     if (!touchedKeyMap[edge.targetKey]) {
       touchedKeyMap[edge.targetKey] = true;
       const targetVizNode = vizNodesByKey[edge.targetKey];
-      targetVizNode.depth = depth;
-      bumpSuccessorDepth(targetVizNode.outEdges, depth + 1, vizNodesByKey, touchedKeyMap);
+      if (targetVizNode.depth < depth) {
+        targetVizNode.depth = depth;
+        bumpSuccessorDepth(targetVizNode.outEdges, depth + 1, vizNodesByKey, touchedKeyMap);
+      }
     } else {
       console.log(`not... already touched`);
     }
@@ -58,20 +60,25 @@ const traverseGraph = function traverseGraph(startNodes, path) {
       associated.forEach(targetNode => {
         // ignore circular references
         const targetKey = targetNode.getUniqueKey();
-        sourceVizNode.outEdges.push({targetKey});
+
         let targetVizNode = vizNodesByKey[targetKey];
         if (!targetVizNode) {
           // new node added to analysis
-          vizNodesByKey[targetKey] = { graphNode: targetNode, depth: sourceVizNode.depth + 1, inEdges:[{sourceKey}] };
+          sourceVizNode.outEdges.push({targetKey});
+          vizNodesByKey[targetKey] = {graphNode: targetNode, depth: sourceVizNode.depth + 1, inEdges: [{sourceKey}]};
           nextNodeMap[targetKey] = targetNode;
           if (recursive) {
             accumulatedNextNodeMap[targetKey] = targetNode;
           }
         } else {
-          console.log(`setting ${targetKey} to ${depth}`);
-          targetVizNode.depth = Math.max(targetVizNode.depth, sourceVizNode.depth + 1);
+          sourceVizNode.outEdges.push({targetKey});
           targetVizNode.inEdges.push({sourceKey});
-          bumpSuccessorDepth(targetVizNode.outEdges, targetVizNode.depth + 1, vizNodesByKey, {[sourceKey]: true, [targetKey] : true});
+          // console.log(`setting ${targetKey} to ${depth}`);
+          if (targetVizNode.depth < sourceVizNode.depth + 1) {
+            targetVizNode.depth = sourceVizNode.depth + 1;
+            bumpSuccessorDepth(targetVizNode.outEdges, targetVizNode.depth + 1, vizNodesByKey,
+                {[sourceKey]: true, [targetKey]: true});
+          }
         }
       });
     });
@@ -137,7 +144,7 @@ export default class GraphViz extends Component {
     lanes = lanes.filter(lane => lane && lane.length > 0);
 
     const maxNodesPerLane = Math.max(...lanes.map(lane => lane.length));
-    const maxChildH = 0.9 * h / (maxNodesPerLane || 1);
+    const maxChildH = 0.85 * h / (maxNodesPerLane || 1);
     const maxChildW = 0.5 * w / (lanes.length || 1);
     const maxAR = maxChildW / (maxChildH || 1);
     const childAR = nodeTemplate.getAspectRatio();
@@ -185,7 +192,7 @@ export default class GraphViz extends Component {
             targetNode.pos
           ]);
         } else { // backward edge
-          const dySrc = Math.sign(targetNode.pos.y - vizNode.pos.y) * 0.6 * childH
+          const dySrc = Math.sign(targetNode.pos.y - vizNode.pos.y) * 0.28 * childH
           const dyTrg = Math.abs(targetNode.pos.y - vizNode.pos.y) < 0.6 * childH ? dySrc : -dySrc;
           lines.push([vizNode.pos,
             {x: vizNode.pos.x + edgeDist, y: vizNode.pos.y},
