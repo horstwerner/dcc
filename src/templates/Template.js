@@ -15,12 +15,12 @@ export default class Template extends CheckedObject{
       color: P.string,
       ...sizeType
     }),
-    preprocessing: P.shape({algorithm: P.string.isRequired, result: P.string.isRequired, inputSelector: P.object}),
+    preprocessing: P.arrayOf(P.shape({method: P.string.isRequired, result: P.string, inputSelector: P.object})),
     colorcoding: P.shape(ColorCoder.propTypes),
     elements: P.arrayOf(P.shape(
         {
           key: P.string.isRequired,
-          type: P.oneOf(["caption","textfield","childcards","chart","trellis"]).isRequired,
+          type: P.oneOf(["caption","textfield","card","cards","chart","trellis"]).isRequired,
           source: P.string,
           aggregate: P.object,
           template: P.string,
@@ -41,7 +41,7 @@ export default class Template extends CheckedObject{
   }
 
   getCardColor(node) {
-    if (this.colorCoder) {
+    if (node && this.colorCoder) {
       return this.colorCoder.getColor(node);
     } else {
       return this.background.color;

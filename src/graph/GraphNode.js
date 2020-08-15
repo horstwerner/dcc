@@ -1,4 +1,11 @@
-import Cache, {TYPE_CONTEXTUAL_NODE, TYPE_NAME} from './Cache';
+import Cache, {
+  DATATYPE_BOOLEAN,
+  DATATYPE_FLOAT,
+  DATATYPE_INTEGER,
+  DATATYPE_STRING,
+  TYPE_CONTEXTUAL_NODE,
+  TYPE_NAME
+} from './Cache';
 
 export default class GraphNode {
 
@@ -22,8 +29,7 @@ export default class GraphNode {
     this.type = Cache.typeDic[typeUri];
     if (this.type === undefined) throw new Error("Can't find type " + typeUri);
     this.uri = uri;
-    this.uniqueKey = originalNode ? originalNode.getUniqueKey() :
-        this.uri.startsWith(this.type.uri) ? this.uri : `${this.type.uri}/${this.uri}`;
+    this.uniqueKey = originalNode ? originalNode.getUniqueKey() : `${this.type.uri}/${this.uri}`;
   }
 
   createContextual() {
@@ -88,8 +94,33 @@ export default class GraphNode {
     return name === undefined ? this.uri : name;
   };
 
+  setAttribute(propType, value) {
+
+    switch (propType.dataType) {
+      case DATATYPE_INTEGER:
+      case DATATYPE_FLOAT:
+        this[propType.uri] = Number(value);
+        break;
+      case DATATYPE_STRING:
+        this[propType.uri] = String(value);
+        break;
+      case DATATYPE_BOOLEAN:
+        this[propType.uri] = Boolean(value);
+        break;
+      default:
+        throw new Error(`Data type ${propType.dataType} of ${propType.name} is not an attribute`);
+    }
+  }
+
   setAttributes(object) {
-    Object.assign(this, object);
+    Object.keys(object).forEach(prop => {
+      const propType = Cache.getType(prop);
+      if (!propType) {
+        console.warn(`Ignoring property of unknown type ${prop} at import`);
+        return;
+      }
+      this.setAttribute(propType, object[prop]);
+    });
     return this;
   }
 
@@ -108,6 +139,10 @@ export default class GraphNode {
    * @param graphNode
    */
   addAssociatedNode(associationTypeUri, graphNode) {
+
+    if (typeof associationTypeUri !== 'string') {
+      debugger
+    }
 
     if(this.originalNode) {
       console.log(`Contextual:`);
@@ -148,7 +183,7 @@ export default class GraphNode {
       throw new Error(`No valid entity type specified for association ${associationtype.uri}`);
     }
 
-    const inverseTypeUri = associationtype.getInverseType(this.type);
+    const inverseTypeUri = associationtype.getInverseType(this.type.uri);
 
     const nodeType = targetTypeUri || associationtype.uri;
 
@@ -164,7 +199,7 @@ export default class GraphNode {
       return this;
     }
 
-    if (typeof target === 'object' && target.constructor === Array) {
+    if (Array.isArray(target)) {
       for (let i = 0; i < target.length; i++) {
         let element = target[i];
         if (typeof element === 'string') {

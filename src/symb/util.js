@@ -1,12 +1,13 @@
-import {resolveAttribute} from "@/graph/Cache";
+import Cache, {resolveAttribute, TYPE_AGGREGATOR, TYPE_NODES} from "@/graph/Cache";
+import GraphNode from "@/graph/GraphNode";
 
 export function getTransformString(x, y, scale) {
   return `translate(${x}px, ${y}px) scale(${scale})`;
 }
 
-export const fit = function fit(parentWidth, parentHeight, childWidth, childHeight, xOffset, yOffset) {
+export const fit = function fit(parentWidth, parentHeight, childWidth, childHeight, xOffset, yOffset, maxScale) {
 
-  const scale = Math.min(parentWidth / childWidth, parentHeight / childHeight);
+  const scale = Math.min(parentWidth / childWidth, parentHeight / childHeight, (maxScale || 100));
   if (isNaN(scale) || scale === 0) {
     throw new Error('Invalid parameters for fit');
   }
@@ -94,12 +95,35 @@ export const polygonPath = function polygonPath(points, closed) {
 export const roundCorners = function roundCorners(polygon, dist, closed) {
   const startP = closed ? interpolate(polygon[0], polygon[1], dist) : polygon[0];
   const segments = [`M${startP.x} ${startP.y}`];
-  const maxI = closed ? polygon.length : (polygon.length - 1);
+  const maxI = closed ? polygon.length + 1 : (polygon.length - 1);
   for (let i = 1; i < maxI; i++) {
     const cornerP = polygon[i];
     const before = interpolate(cornerP, polygon[i - 1], dist);
     const after = interpolate(cornerP, polygon[(i + 1) % polygon.length], dist);
     segments.push(`L${before.x} ${before.y}Q${cornerP.x} ${cornerP.y} ${after.x} ${after.y}`);
   }
+  if (!closed) {
+    const last = polygon[polygon.length -1];
+    segments.push(`L${last.x} ${last.y}`);
+  }
   return segments.join('');
+}
+
+/**
+ * @param {GraphNode | GraphNode[]} contents
+ *
+ * creates a data node for a card representing either a single node or a node set
+ * the data node carries aggregated/derived attributes for use in the visualization
+ */
+export const createCardNode = function createCardNode(contents) {
+  if (Array.isArray(contents)) {
+    const result = new GraphNode(TYPE_AGGREGATOR, Cache.createUri());
+    result.setBulkAssociation(TYPE_NODES, contents);
+    return result;
+  } else {
+    if (contents.getTypeUri() === TYPE_AGGREGATOR) {
+      return contents;
+    }
+    return contents.createContextual();
+  }
 }

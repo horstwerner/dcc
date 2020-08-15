@@ -1,6 +1,7 @@
 import {mapValues} from 'lodash';
 import {resolveAttribute, TYPE_NAME, TYPE_NODES} from "@/graph/Cache";
 import Aggregator, {DEFAULT_AGGREGATOR} from "@/Aggregator";
+import {createCardNode} from "@symb/util";
 
 
 export const EMPTY = '__empty__';
@@ -13,12 +14,10 @@ export const EMPTY = '__empty__';
  * @param {Aggregator || undefined} aggregator, will be modified
  * @return {GroupedSet} non-aggregated slices, each slice contains node array
  */
-export const sliceBy = function sliceBy(aggNode, dimension, aggregator = DEFAULT_AGGREGATOR) {
+export const sliceBy = function sliceBy(nodes, dimension) {
 
   const subsets = {};
   const keyArray = [];
-  const nodes = aggNode[TYPE_NODES];
-  aggNode.removeBulkAssociation(TYPE_NODES);
 
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
@@ -33,12 +32,12 @@ export const sliceBy = function sliceBy(aggNode, dimension, aggregator = DEFAULT
     }
     group.push(node);
   }
-  return new GroupedSet(aggNode, dimension, keyArray,
+  return new GroupedSet(dimension, keyArray,
       mapValues(subsets,(nodes, key) => {
-        const agg = aggregator.aggregate(nodes);
-        agg[dimension] = key;
-        agg[TYPE_NAME] = (key === EMPTY ? 'unspecified' : key);
-        return agg;})
+        const cardNode = createCardNode(nodes);
+        cardNode[dimension] = key;
+        cardNode[TYPE_NAME] = (key === EMPTY ? 'unspecified' : key);
+        return cardNode;})
   );
 };
 
@@ -75,21 +74,15 @@ const diceBy = function diceBy(aggNode, dimensions, aggregator) {
 export class GroupedSet {
   /**
    *
-   * @param {GraphNode} wholeSetAgg
    * @param {String} dimension - name of the property by which grouped
    * @param {Array<String>} keys discrete values = keys of the subsets map
-   * @param {{[key]: GraphNode | GroupedSet}} groupAggByKey maps keys to content (agg nodes or Groupings)
+   * @param {{[key]: GraphNode | GroupedSet}} groupNodeByKey maps keys to content (agg nodes or Groupings)
    * @constructor
    */
-  constructor (wholeSetAgg, dimension, keys, groupAggByKey) {
-    this.wholeSetAgg = wholeSetAgg;
+  constructor ( dimension, keys, groupNodeByKey) {
     this.dimension = dimension;
     this.keys = keys;
-    this.groupAggByKey = groupAggByKey;
-  }
-
-  getWholeSetAggregation() {
-    return this.wholeSetAgg;
+    this.groupNodeByKey = groupNodeByKey;
   }
 
   getDimension() {
@@ -110,17 +103,17 @@ export class GroupedSet {
    * @return {GraphNode | GroupedSet} aggregated node, pointing to subnodes with association TYPE_NODES or Grouping
    */
   getGroup(key) {
-    return this.groupAggByKey[key];
+    return this.groupNodeByKey[key];
   };
 
   // for dicing purposes only
   replaceGroup(key, groupedSet) {
-    this.groupAggByKey[key] = groupedSet;
+    this.groupNodeByKey[key] = groupedSet;
   }
 
   forEachKey(callback) {
     for (let i = 0; i < this.keys.length; i++) {
-      callback(this.keys[i], this.groupAggByKey[this.keys[i]]);
+      callback(this.keys[i], this.groupNodeByKey[this.keys[i]]);
     }
   };
 }

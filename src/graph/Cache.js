@@ -13,7 +13,7 @@ export const TYPE_CONTEXTUAL_NODE = 'core:contextual';
 export const TYPE_PREDECESSOR_COUNT = 'core:predecessorCount';
 export const TYPE_SUCCESSOR_COUNT = 'core:successorCount';
 export const TYPE_NODES = 'core:subNodes';
-export const TYPE_ALL_NODES = 'core:allNodes';
+export const TYPE_CONTEXT = 'core:context';
 export const TYPE_NODE_COUNT = 'core:nodeCount';
 export const TYPE_DEPTH = 'core:depth';
 export const TYPE_MIN_VALUES = 'core:minValues';
@@ -71,6 +71,13 @@ class Cache {
     return node;
   };
 
+  getNodeByUniqueKey(key) {
+    //separate first segment of path from rest
+    const parts = key.split(/\/(.+)/);
+
+    return this.getNode(parts[0], parts[1]);
+  }
+
   getEntityTypes() {
     return Object.keys(this.rootNode);
   }
@@ -118,7 +125,11 @@ class Cache {
           newNode.addAssociation(propType, target, targetType);
         }
         else {
-          newNode[prop] = row[colIdx];
+          if (propType) {
+            newNode.setAttribute(propType, row[colIdx]);
+          } else {
+            console.warn(`Ignoring attribute of unknown type ${prop}`);
+          }
         }
       }
     }

@@ -19,6 +19,23 @@ export default class Rect extends Component {
     y: P.number.isRequired,
     width: P.number.isRequired,
     height: P.number.isRequired,
+    onClick: P.func
+  };
+
+  constructor(props, domNode) {
+    super(props, domNode);
+    this.handleClick = this.handleClick.bind(this);
+    // only at beginning lifespan
+    if (props.onClick) {
+      this.dom.addEventListener('click', this.handleClick);
+    }
+  }
+
+  handleClick () {
+    const {id, value, onClick} = this.innerProps;
+    if (onClick) {
+      onClick({id, value});
+    }
   };
 
   updateContents(props) {
@@ -33,7 +50,6 @@ export default class Rect extends Component {
     if (id) {
       this.dom.setAttribute('id', id);
       this.dom.setAttribute('data-value', value);
-      this.dom.addEventListener('click', () => alert(`${id}: ${value}`));
       this.dom.setAttribute('title', `${id}: ${value}`);
       this.dom.setAttribute('class', css.hoverElement);
     }

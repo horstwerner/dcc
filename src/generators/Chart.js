@@ -8,15 +8,28 @@ import StackedBarChart from "@/generators/StackedBarChart";
 import TemplateRegistry from "@/templates/TemplateRegistry";
 import {GraphViz_} from "@/components/GraphViz";
 import {DEBUG_MODE} from "@/Config";
-import PolarChart, {PolarChart_} from "@/components/PolarChart";
+import {PolarChart_} from "@/components/PolarChart";
 
-const Chart = function Chart({key, data, descriptor}) {
+const fillInNumber = function fillInNumber(data, valueString) {
+  if (isNaN(valueString)) {
+    const result = resolveAttribute(data, valueString);
+    if (result == null || isNaN(result)) {
+      debugger
+    } else {
+      return result;
+    }
+  } else {
+    return Number(valueString);
+  }
+}
+
+const Chart = function Chart({key, data, descriptor, onClick}) {
+  const {chartType, x, y, source, inputSelector, overlay, ...chartProps} = descriptor;
 
   if (DEBUG_MODE) {
     P.checkPropTypes(Chart.propTypes, descriptor, 'prop', `Chart - ${chartType}`);
   }
 
-  const {chartType, x, y, source, inputSelector, overlay, ...chartProps} = descriptor;
   const spatial = { x, y, scale: 1};
 
   let chartData = (source && source !== 'this') ? resolveAttribute(data, source) : data;
@@ -27,7 +40,7 @@ const Chart = function Chart({key, data, descriptor}) {
     if (!Array.isArray(chartData)) {
       throw new Error(`Overlay (${overlay}) only allowed for node sets. ${source} is not a node set`);
     }
-    const overlayData = resolveAttribute(data, [overlay,TYPE_NODES]);
+    const overlayData = resolveAttribute(data, [overlay, TYPE_NODES]);
     const overlayNodeByKey = {};
     // transform list into map
     overlayData.forEach(node => {overlayNodeByKey[node.getUniqueKey()] = node;})
@@ -58,9 +71,8 @@ const Chart = function Chart({key, data, descriptor}) {
         })._Rect]
       })._Svg
     case 'stackedBar':
-      const {totalWidthAttribute, widthAttribute} = chartProps;
-      const maxValues = data.maxValues || {[totalWidthAttribute]: widthAttribute ? sum(chartData, widthAttribute) : chartData.count}
-      return StackedBarChart({data: chartData, spatial, maxValues, ...chartProps})
+      const {totalWidthValue} = chartProps;
+      return StackedBarChart({data: chartData, spatial, totalWidthVal: fillInNumber(data, totalWidthValue), ...chartProps, onRectClick: onClick})
     case 'graph':
       const nodeTemplate = TemplateRegistry.getTemplate(descriptor.template);
       return GraphViz_({spatial, startNodes: chartData, ...chartProps, nodeTemplate})._GraphViz;

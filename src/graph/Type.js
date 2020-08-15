@@ -12,7 +12,9 @@ export default class Type extends CheckedObject{
   };
 
   getInverseType (fallbackTargettype) {
-    // noinspection JSUnresolvedVariable
+    if (!this.isAssociation && !fallbackTargettype) {
+      throw new Error(`Inverse type to entity ${this.name} requested without fallback target type`)
+    }
     return this.inverseType || fallbackTargettype;
   }
 

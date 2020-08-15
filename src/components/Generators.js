@@ -1,20 +1,18 @@
 import P from "prop-types";
+import {mapValues, omit} from 'lodash';
 import {DEBUG_MODE} from "@/Config";
-import {resolveAttribute, TYPE_NODES} from "@/graph/Cache";
-import {Rect_} from "@/components/Rect";
-import {Svg_} from "@/components/Svg";
+import {resolveAttribute, TYPE_CONTEXT, TYPE_NODE_COUNT} from "@/graph/Cache";
 import css from "@/components/Card.css";
 import {Div_, FlexBox_} from "@symb/Div";
 import {Image_} from "@symb/Image";
-import GridArrangement, {GRID} from "@/arrangement/GridArrangement";
-import Aggregator, {sum} from "@/Aggregator";
+import {GRID} from "@/arrangement/GridArrangement";
+import Aggregator from "@/Aggregator";
 import TemplateRegistry from "@/templates/TemplateRegistry";
-import {fit, flexContentAlign} from "@symb/util";
+import {createCardNode, fit, flexContentAlign} from "@symb/util";
 import {CardSet_, LOD_FULL, LOD_RECT} from "@/components/CardSet";
 import {Card_} from "@/components/Card";
-import Filter from "@/graph/Filter";
-import {GraphViz_} from "@/components/GraphViz";
-import StackedBarChart from "@/generators/StackedBarChart";
+import CompactGridArrangement from "@/arrangement/CompactGridArrangement";
+import {preprocess} from "@/graph/Preprocessors";
 
 
 const PADDING = 0.2;
@@ -90,7 +88,7 @@ export const Caption = function Caption(props) {
   }
 
   const {key, x, y, w, h, text, style} = props;
-  return FlexBox_({key, className: css.caption, spatial:{ x, y, scale: 1}, style: {width: w, height: h, justifyContent: (style && flexContentAlign(style['h-align'])) || 'left'}},
+  return FlexBox_({key, className: css.caption, spatial:{ x, y, scale: 1}, style: {width: w, height: h, justifyContent: (style && flexContentAlign(style['h-align'])) || 'flex-start'}},
       Div_({key: 'innertext', style: calcStyle(style, h)}, text)._Div
   )._FlexBox;
 }
@@ -108,11 +106,10 @@ export function createArrangement(descriptor, childSize) {
   // console.log(`rendering cardset with ${width}/${height}`);
   switch (type) {
     case GRID:
-      const {x, y, w, h, padding, compact } = descriptor;
-      return new GridArrangement(padding || PADDING, childSize)
+      const {x, y, w, h, padding } = descriptor;
+      return new CompactGridArrangement(padding || PADDING, childSize)
           .setArea(w, h)
           .setOffset(x, y)
-          .setCompact(compact)
   }
 }
 
@@ -125,45 +122,64 @@ createArrangement.propTypes = {
   padding: P.number
 }
 
-
-function createAggregatedNode(nodes, aggregations) {
-  return new Aggregator(aggregations).aggregate(nodes);
+/**
+ *
+ * @param {GraphNode || GraphNode[]} data
+ * @param {Object} context
+ * @param {Template} template
+ */
+const createPreprocessedCardNode = function createPreprocessedCardNode(data, context, template) {
+  const result = createCardNode(data);
+  const newContext = {...context};
+  result[TYPE_CONTEXT] = newContext;
+  const { preprocessing } = template;
+  if (preprocessing) {
+    preprocess(result, newContext, preprocessing)
+  }
+  return result;
 }
 
-export const ChildSet = function ChildSet(data, descriptor, onClick) {
+export const ChildSet = function ChildSet(data, context, descriptor, aggregate, onClick) {
 
   if (DEBUG_MODE) {
     P.checkPropTypes(ChildSet.propTypes, descriptor, 'prop', 'ChildSet');
   }
 
-  const { key, source, lod, aggregate, arrangement, x, y, w, h } = descriptor;
+  const { key, source, lod, align, arrangement, x, y, w, h } = descriptor;
 
   const templateName = descriptor.template;
   const template = TemplateRegistry.getTemplate(templateName);
   const nativeChildSize = template.getSize();
 
-  let nodes = source === 'this' ?
+  let nodes = (!source || source === 'this') ?
       data :
       resolveAttribute(data, source);
   if (!nodes) return null;
 
-  const childData = aggregate ? createAggregatedNode(nodes, aggregate) : nodes;
-
-  if (!Array.isArray(childData)) {
+  if (aggregate) {
+    const cardNode = createPreprocessedCardNode(nodes, context, template)
     return Card_({
       key,
       template,
       lod,
       spatial: fit(w, h, nativeChildSize.width, nativeChildSize.height, x, y),
-      data:  childData,
+      data:  cardNode,
       onClick
     })._Card;
   }
 
   const arrangementDescriptor = {type: GRID, x: 0, y: 0, w, h, padding: PADDING, ...arrangement};
+  debugger
+  const cardNodes = nodes.map(node => createPreprocessedCardNode(node, context, template));
+  if (align) {
+    const aggregate = mapValues(align, (calculate, key) => ({attribute: key, calculate}));
+    const aligned = omit(new Aggregator(aggregate).aggregate(cardNodes), TYPE_NODE_COUNT);
+    cardNodes.forEach(cardNode => Object.assign(cardNode, aligned));
+  }
+
 
   return CardSet_({key,
-    nodes: childData,
+    nodes: cardNodes,
     template,
     lod,
     spatial: {x, y, scale: 1},

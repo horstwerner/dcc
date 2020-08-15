@@ -1,37 +1,12 @@
 import P from 'prop-types';
 import CheckedObject from "@/CheckedObject";
 import {Gradient} from "@symb/ColorUtil";
-
-const restAfter = function(string, prefix) {
-  for (let i = 0; i < prefix.length; i++) {
-    if (string.charAt(i) !== prefix.charAt(i)) return null;
-  }
-  const rest = string.substr(prefix.length);
-  if (!isNaN(rest)) {
-    return Number(rest)
-  } else return rest;
-};
-
-const comparisons = [
-  {symbol: "==", matches: (testValue, value) => testValue === value},
-  {symbol: "=", matches: (testValue, value) => value.toLowerCase().includes(testValue.toLowerCase())},
-  {symbol: "!==", matches: (testValue, value) => testValue !== value},
-  {symbol: "!=", matches: (testValue, value) => !(value.toLowerCase().includes(testValue.toLowerCase()))},
-  {symbol: "<=", matches: (testValue, value) => value <= testValue},
-  {symbol: ">=", matches: (testValue, value) =>  value >= testValue},
-  {symbol: "<", matches: (testValue, value) => value < testValue},
-  {symbol: ">", matches: (testValue, value) => value > testValue},
-];
+import {parseComparison} from "@/graph/Filter";
 
 
 const createTest = function (condition, color) {
-  for (let i = 0; i < comparisons.length; i++) {
-    const testValue = restAfter(condition, comparisons[i].symbol);
-    if (testValue) {
-      return {testValue, matches: comparisons[i].matches, color};
-    }
-  }
-  throw new Error(`Couldn't interpret condition ${condition}`);
+  const comparison = parseComparison(condition);
+  return {...comparison, color};
 };
 
 export default class ColorCoder extends CheckedObject{

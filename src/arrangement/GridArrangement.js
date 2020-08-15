@@ -31,21 +31,13 @@ export default class GridArrangement extends Arrangement{
 
     const xstep = (this.areaw - 2 * this.outerpadding) / cols;
     let ystep = (this.areah - 2 * this.outerpadding) / rows;
-    let maxh = ystep * (childcount === 1 ? 1 : (1 - this.padding));
-    if (this.maxChildsize) {
-      maxh = Math.min(maxh, this.maxChildsize);
-    }
-    let maxw = xstep * (childcount === 1 ? 1 : (1 - this.padding));
-    if (this.maxChildsize) {
-      maxw = Math.min(maxw, this.maxChildsize);
-    }
+    let maxh = ystep * (rows === 1 ? 1 : (1 - this.padding));
+    let maxw = xstep * (cols === 1 ? 1 : (1 - this.padding));
     const spacear = maxw / maxh;
     if (this.compact && childaspectratio >= spacear) {
+      debugger
       ystep *= spacear / childaspectratio;
       maxh = ystep * (childcount === 1 ? 1 : (1 - this.padding));
-      if (this.maxChildsize) {
-        maxh = Math.min(maxh, this.maxChildsize);
-      }
     }
 
     const xoffset = xstep / 2 + this.xOffset + this.outerpadding;
@@ -69,7 +61,7 @@ export default class GridArrangement extends Arrangement{
       const rasterpos = {
         x: centerx - 0.5 * childscale * width,
         y: centery - 0.5 * childscale * height,
-        scale: childscale
+        scale: Math.min(1, childscale)
       };
       callback(element, rasterpos);
       index++;

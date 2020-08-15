@@ -1,7 +1,7 @@
 import P from 'prop-types';
 import Component from '@symb/Component';
 import css from './Card.css';
-import {resolveAttribute} from "@/graph/Cache";
+import {resolveAttribute, TYPE_CONTEXT} from "@/graph/Cache";
 import isEqual from "lodash/isEqual";
 import ComponentFactory from "@symb/ComponentFactory";
 import Template from "@/templates/Template";
@@ -9,11 +9,10 @@ import {Background, Caption, ChildSet} from "@/components/Generators";
 import Chart from "@/generators/Chart";
 import Trellis from "@/generators/Trellis"
 import {fillIn} from "@symb/util";
-import {preprocess} from "@/graph/Preprocessors";
 
 const CARD = 'card';
 
-export default class Card extends Component {
+class Card extends Component {
 
   static type = CARD;
   // noinspection JSUnusedGlobalSymbols
@@ -23,8 +22,8 @@ export default class Card extends Component {
   // noinspection JSUnusedGlobalSymbols
   static propTypes = {
     template: P.instanceOf(Template),
-    arrangement: P.string,
-    data: P.object
+    data: P.object.isRequired,
+    onClick: P.func
   };
 
   constructor(descriptor, domNode) {
@@ -48,15 +47,12 @@ export default class Card extends Component {
     }
     this.innerProps = props;
 
-    const { template, onClick } = props;
-    const { preprocessing } = template;
-
-    let data = preprocessing ? preprocess(props.data, preprocessing) : props.data;
+    const { data, template, onClick } = props;
 
     const {background, elements} = template;
     const color = template.getCardColor(data);
 
-    const children = [Background(background, color, onClick ?  () => onClick(this) : null)];
+    const children = [Background(background, color)];
     elements.forEach(element => {
       const { key } = element;
       switch (element.type) {
@@ -75,16 +71,18 @@ export default class Card extends Component {
           }
           break;
         case 'trellis': {
-          children.push(Trellis( data, element));
+          children.push(Trellis( data,  element, onClick));
           break;
         }
         case "chart":
-          children.push(Chart({key, data, descriptor: element}));
+          children.push(Chart({key, data, descriptor: element, onClick }));
           break;
-        case "childcards":
-          this.childClickAction[element.key] = element.clickAction;
-          children.push(ChildSet(data, element,
-              element.clickAction ? () => {this.handleChildClick(key, element.clickAction)} : null));
+        case "card":
+          children.push(ChildSet(data, data.get(TYPE_CONTEXT), element, true, onClick));
+          break
+        case "cards":
+          // this.childClickAction[element.key] = element.clickAction;
+          children.push(ChildSet(data, data.get(TYPE_CONTEXT), element, false, onClick));
           break;
         default:
           throw new Error(`Unsupported Element type: ${element.type}`);

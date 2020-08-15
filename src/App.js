@@ -3,13 +3,16 @@ import { omit } from 'lodash';
 import Component from '@symb/Component';
 import css from './App.css';
 import ComponentFactory from "@symb/ComponentFactory";
-import Cache from './graph/Cache';
+import Cache, {TYPE_AGGREGATOR, TYPE_CONTEXT} from './graph/Cache';
 import TemplateRegistry from './templates/TemplateRegistry';
 import {Div_} from '@symb/Div';
 import {fit} from "@symb/util";
 import {Card_} from "@/components/Card";
+import {Sidebar_} from "@/components/Sidebar";
+import GraphNode from "@/graph/GraphNode";
 
 const APP = 'app';
+export const MARGIN = 24;
 
 const handleResponse = function (response) {
   if (response.ok) {
@@ -89,31 +92,42 @@ export default class App extends Component {
 
   constructor(props, domNode) {
     super(props, domNode);
+
+
     this.state = {
+      currentData: Cache.rootNode,
+      currentTemplate: 'root',
       dataLoaded: false,
       error: null,
-      windowWidth: window.innerWidth,
-      windowHeight: window.innerHeight,
     };
+    this.onResize(window.innerWidth, window.innerHeight);
 
     this.getDictionaryFromDb()
         .then(() => Promise.all([...Cache.getEntityTypes().map(type => this.getDataFromDb(type)), this.getCardDescriptorsFromDb()]))
         .then(() => {
           if (!this.state.error) {
+            const startData = new GraphNode(TYPE_AGGREGATOR, Cache.createUri());
+            Object.keys(Cache.rootNode).forEach(entityType => {
+              startData.setBulkAssociation(entityType, Cache.rootNode[entityType]);
+            })
+            startData[TYPE_CONTEXT] = {}
+
             this.setState({
               dataLoaded: true,
+              mainCard: {data: startData, template: 'root'},
+              backgroundColor: TemplateRegistry.getTemplate('root').getCardColor
               // currentMap: TemplateRegistry.getStartMap()
             })
           }
         });
-    this.onElementClick = this.onElementClick.bind(this);
+    this.handleNodeClick = this.handleNodeClick.bind(this);
 
   }
 
-  onElementClick(card, newArrangement) {
-    // const tween = new Tween(DURATION_REARRANGEMENT);
-    // card.morph(newArrangement, tween);
-    // tween.start();
+  handleNodeClick({id}) {
+    const node = Cache.getNodeByUniqueKey(id);
+    const template = TemplateRegistry.getTemplate(node.type.uri);
+    this.setState({inspectionCard: {template, data: node}});
   }
 
   getDictionaryFromDb() {
@@ -143,34 +157,6 @@ export default class App extends Component {
         });
   };
 
-  // getNavigationFromDb() {
-  //   return fetch('/api/navigation')
-  //       .then(handleResponse)
-  //       .then(result => {
-  //         if (result && result.data) {
-  //           TemplateRegistry.registerNavigationMaps(result.data.maps);
-  //           TemplateRegistry.setStartMap(result.data.startmap);
-  //         }
-  //       })
-  //       .catch(error => {
-  //         console.log(error.stack);
-  //         this.setState({error})
-  //       });
-  // }
-
-  getViewsFromDb() {
-    return fetch('/api/views')
-        .then(handleResponse)
-        .then(result => {
-          if (result && result.data) {
-            TemplateRegistry.registerViews(result.data);
-          }
-        })
-        .catch(error => {
-          console.log(error.stack);
-          this.setState({error})
-        });
-  }
 
   getDataFromDb(type) {
     return fetch(`/api/data?type=${encodeURI(type)}`, {})
@@ -187,55 +173,41 @@ export default class App extends Component {
   }
 
   updateContents(props) {
-    const {dataLoaded, error, windowWidth, windowHeight} = this.state;
+
+    const {dataLoaded, error, mainWidth, mainHeight, sideBarWidth, windowHeight, mainCard, inspectionCard} = this.state;
+
     // const backgroundColor = (map && map.backColor) || '#ffffff';
-    const {currentMap} = this.state;
-    const template = dataLoaded && TemplateRegistry.getTemplate('root');
-    if (template) {
-      document.body.style.backgroundColor = template.background.color;
+    const mainTemplate = dataLoaded && TemplateRegistry.getTemplate(mainCard.template);
+    const sidebar = Sidebar_({w: sideBarWidth, h: windowHeight, selectedCard: inspectionCard, spatial: {x: mainWidth, y: 0, scale: 1}})._Sidebar;
+
+    const children = [sidebar];
+    if (error) {children.push(Div_({}, `An error occurred: ${error.message}`)._Div);}
+    if (dataLoaded) {
+      const mainCardW = mainTemplate.background.w;
+      const mainCardH = mainTemplate.background.h;
+      children.push(...[
+      Card_({
+        key: 'mainCard',
+        spatial: fit(mainWidth - MARGIN, mainHeight - MARGIN, mainCardW, mainCardH, 0.5 * MARGIN, 0.5 * MARGIN),
+        data: mainCard.data,
+        template: mainTemplate,
+        onClick: this.handleNodeClick
+      })._Card,
+      inspectionCard && Card_()._Card
+      ]);
     }
 
-    this.createChildren([
-      error && Div_({}, `An error occurred: ${error.message}`)._Div,
-
-      dataLoaded && Card_({
-        key: 'navigation',
-        spatial: fit(windowWidth, windowHeight, template.background.w, template.background.h),
-        data: Cache.rootNode,
-        template,
-        onClick: null
-      })._Card]);
-
-    //   NavigationMap_({
-    //       key: 'navigation',
-    //       spatial: fit(windowWidth, windowHeight, currentMap.width, currentMap.height),
-    //       dataSource: Cache,
-    //       onElementClick: this.onElementClick,
-    //       ...currentMap
-    //     })._NavigationMap
-    // ]);
+    this.createChildren(children);
   }
 
   onResize(width, height) {
-    this.setState({windowWidth: width, windowHeight: height});
-  }
+    console.log(`onResize:${width}-${height}`);
+    const sideBarWidth = Math.min(0.23 * width, 4 * height);
+    const mainHeight = 9 / 10 * height;
+    const mainWidth = width - sideBarWidth;
 
-  // mapActorFocused(key, map) {
-  //   const {width, height} = this.state;
-  //   const scale = Math.min(width / map.width, height / map.height);
-  //   const xOffset = Math.floor((width - scale * map.width) / 2);
-  //   const yOffset = Math.floor((height - scale * map.height) / 2);
-  //
-  //   return new Actor({
-  //     key,
-  //     x: xOffset,
-  //     y: yOffset,
-  //     scale,
-  //     node: (<NavigationMap {...map} dataSource={Cache} onElementClick={(key, description) => {
-  //     this.createTransition(key, description);
-  //   }}/>)
-  // });
-  // };
+    this.setState({windowWidth: width, windowHeight: height, mainWidth, mainHeight, sideBarWidth});
+  }
 
 };
 

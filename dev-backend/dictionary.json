@@ -1,6 +1,30 @@
 {
   "TypeDictionary": [
     {
+      "uri": "id",
+      "dataType": "STRING",
+      "name": "id",
+      "isAssociation": false
+    },
+    {
+      "uri": "dcc:bugs",
+      "dataType": "INTEGER",
+      "name": "Bugs",
+      "isAssociation": false
+    },
+    {
+      "uri": "dcc:speed",
+      "dataType": "FLOAT",
+      "name": "Speed",
+      "isAssociation": false
+    },
+    {
+      "uri": "dcc:downstream",
+      "dataType": "INTEGER",
+      "name": "Downstream",
+      "isAssociation": false
+    },
+    {
       "uri": "core:name",
       "dataType": "STRING",
       "name": "Name",

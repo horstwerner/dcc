@@ -31,6 +31,8 @@ export default class Component {
 
   static baseTag = 'div';
 
+  updateScheduled = false;
+
   constructor(props, domNode) {
     if (domNode) {
       this.dom = domNode;
@@ -50,6 +52,7 @@ export default class Component {
     }
     this.key = props.key;
     this.alpha = 1;
+
   }
 
   checkProps(props) {
@@ -65,9 +68,9 @@ export default class Component {
     }
   }
 
-  fillTemplate() {
-      throw new Error(`Neither function update nor fillTemplate defined for component ${this.constructor.name}`);
-  }
+  // fillTemplate() {
+  //     throw new Error(`Neither function update nor fillTemplate defined for component ${this.constructor.name}`);
+  // }
 
   createChild(fallbackKey, childDescriptor) {
     if (typeof(childDescriptor) === 'string') {
@@ -99,23 +102,23 @@ export default class Component {
     return existing;
   }
 
-  /**
-   * includes an already instantiated Component into the list of child components
-   * However, if no child descriptor with the same key is passed in the next
-   * @param child
-   * @param spatial - position and scale in this component's local coordinate system
-   */
-  adoptChild(child, spatial) {
-    if (!this.childByKey) {
-      this.childByKey = {};
-    }
-    child.update({spatial});
-    this.addChild(child);
-  }
+  // /**
+  //  * includes an already instantiated Component into the list of child components
+  //  * However, if no child descriptor with the same key is passed in the next
+  //  * @param child
+  //  * @param spatial - position and scale in this component's local coordinate system
+  //  */
+  // adoptChild(child, spatial) {
+  //   if (!this.childByKey) {
+  //     this.childByKey = {};
+  //   }
+  //   child.update({spatial});
+  //   this.addChild(child);
+  // }
 
-  updateChild(key, descriptor) {
-    this.childByKey[key] = this.createChild(key, descriptor);
-  }
+  // updateChild(key, descriptor) {
+  //   this.childByKey[key] = this.createChild(key, descriptor);
+  // }
 
   createChildren(descriptor) {
     const updatedChildren = {};
@@ -153,6 +156,7 @@ export default class Component {
    * @param props
    */
   update(props) {
+
     if (props) {
       this.checkProps(props);
     }
@@ -192,7 +196,7 @@ export default class Component {
         this.innerProps = props;
         this.createChildren(children);
       } else {
-        this.dom.innerHTML = this.fillTemplate(props);
+        // this.dom.innerHTML = this.fillTemplate(props);
         this.innerProps = props;
       }
     }
@@ -205,10 +209,10 @@ export default class Component {
     }
   }
 
-  getNativeSize() {
-    const { width, height } = this.style;
-    return { width, height };
-  }
+  // getNativeSize() {
+  //   const { width, height } = this.style;
+  //   return { width, height };
+  // }
 
   updateSpatial(spatial) {
     if (!isEqual(this.spatial, spatial)) {
@@ -221,9 +225,9 @@ export default class Component {
     }
   }
 
-  getSpatial() {
-    return this.spatial || {x: 0, y: 0, scale: 1};
-  }
+  // getSpatial() {
+  //   return this.spatial || {x: 0, y: 0, scale: 1};
+  // }
 
   getAlpha() {
     return (this.alpha == null ? 1 : this.alpha);
@@ -254,7 +258,13 @@ export default class Component {
 
   setState(partialState) {
     this.state = {...this.state, ...partialState};
-    this.updateContents({...this.innerProps});
+    if (!this.updateScheduled) {
+      this.updateScheduled = true;
+      requestAnimationFrame(() => {
+        this.updateScheduled = false;
+        this.updateContents({...this.innerProps})
+      });
+    }
   }
 
   destroy() {
