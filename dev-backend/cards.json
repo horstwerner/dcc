@@ -1,6 +1,7 @@
 {
   "constants": [
     {"MARGIN":  12},
+    {"CARD_BACKGROUND_COLOR":  "#FEFEFE"},
     {"TEXT_COLOR": "rgb(43,43,43)"},
     {"HEADING_COLOR": "rgba(0,0,0,0.83)"},
     {"TEXT_STYLE": {
@@ -124,6 +125,7 @@
         "h": 120,
         "cornerRadius": 6
       },
+      "clickable": true,
       "colorcoding": {
         "type": "selection",
         "attribute": "jira:status",
@@ -249,12 +251,13 @@
       ]
     },
     {
-      "type": "root",
+      "type": "stories-by-feature",
+      "node-type": "jira:ticket",
       "background": {
         "type": "rect",
-        "w": 1200,
-        "h": 800,
-        "color": "#FAFAFA",
+        "w": 400,
+        "h": 870,
+        "color": {"$":  "CARD_BACKGROUND_COLOR"},
         "cornerRadius": "6px"
       },
       "elements": [
@@ -268,45 +271,111 @@
         {
           "key": "features",
           "type": "trellis",
-          "source": "jira:ticket",
-          "x": 12, "y": 60, "w": 500, "h": 748,
+          "source": "core:subNodes",
+          "inputSelector": {"jira:release": ">1.1"},
+          "x": 20, "y": 60, "w": 360, "h": 800,
           "arrangement": {
             "type": "grid",
             "compact": true,
             "padding": 0.1
           },
-          "inputSelector": {"jira:release": ">1.1"},
           "align": {"storyPointSum": "max"},
           "template": "storyBarWithTitle",
           "groupAttribute": "jira:feature"
-        },
+        }
+      ]
+    },
+    {
+      "type": "team-overview",
+      "node-type": "jira:team",
+      "background": {
+        "type": "rect",
+        "w": 400,
+        "h": 870,
+        "color": {"$":  "CARD_BACKGROUND_COLOR"},
+        "cornerRadius": "6px"
+      },
+      "elements": [
         {
-          "key": "graphanalysis",
-          "type": "card",
-          "source": "jira:ticket",
-          "template": "graphAnalysis",
-          "x": 320, "y": 20, "w": 500, "h": 600
-        },
-        {
-          "key": "label_teams",
+          "key": "label_features",
           "type": "caption",
           "style": {"$": "GROUP_HEADING_STYLE"},
-          "x": 850, "y": {"$": "MARGIN"}, "w": 100, "h": 32,
+          "x": {"$": "MARGIN"}, "y": {"$": "MARGIN"}, "w": 100, "h": 32,
           "text": "Teams"
         },
         {
           "key": "teams",
           "type": "cards",
-          "source": "jira:team",
+          "source": "core:subNodes",
           "align": {"storyPointSum": "max"},
-          "x": 850, "y": 60, "w": 380, "h": 748,
+          "x": {"$": "MARGIN"}, "y": 60, "w": 360, "h": 748,
           "arrangement": {
             "type": "grid",
             "padding": 0.1
           },
           "template": "jira:team"
         }
-
+      ]
+    },
+    {
+      "type": "root",
+      "background": {
+        "type": "rect",
+        "w": 1580,
+        "h": 900,
+        "color": "rgba(255,255,255,0.15)"
+      },
+      "elements": [
+        {
+          "key": "map-feature",
+          "type": "card",
+          "template": "stories-by-feature",
+          "source": "jira:ticket",
+          "x": 20, "y":15, "w": 400, "h": 870
+        },
+        {
+          "key": "dependencies",
+          "type": "card",
+          "source": "jira:ticket",
+          "template": "dependency-graph",
+          "x": 440, "y": 15, "w": 700, "h": 500
+        },
+        {
+          "key": "teams",
+          "type": "card",
+          "source": "jira:team",
+          "template": "team-overview",
+          "x": 1160, "y":15, "w": 400, "h": 870
+        }
+      ]
+    },
+    {"type":  "dependency-graph",
+      "background": {
+        "type": "rect",
+        "w": 700,
+        "h": 500,
+        "color": {"$": "CARD_BACKGROUND_COLOR"},
+        "cornerRadius": "6px"
+      },
+      "elements": [
+        {
+          "key": "label_features",
+          "type": "caption",
+          "style": {"$": "GROUP_HEADING_STYLE"},
+          "x": {"$": "MARGIN"}, "y": {"$": "MARGIN"}, "w": 100, "h": 32,
+          "text": "Dependencies"
+        },
+        {
+          "key": "graph",
+          "type": "chart",
+          "source": "core:subNodes",
+          "inputSelector": {"jira:release": "=1.2"},
+          "bounded": false,
+          "chartType": "graph",
+          "x": 20, "y": 20, "w": 680, "h": 480,
+          "path": "jira:is-prerequisite-for*",
+          "template": "jira:ticket"
+        }
       ]
     },
     {

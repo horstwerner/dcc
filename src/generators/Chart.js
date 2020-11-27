@@ -80,7 +80,7 @@ const Chart = function Chart({key, data, descriptor, onClick}) {
     case 'graph':
       const nodeTemplate = TemplateRegistry.getTemplate(descriptor.template);
       const scope = descriptor['bounded'] ? NodeArray(unfilteredData) : null;
-      return GraphViz_({spatial, startNodes: NodeArray(chartData), scope, ...chartProps, nodeTemplate})._GraphViz;
+      return GraphViz_({spatial, startNodes: NodeArray(chartData), scope, ...chartProps, nodeTemplate, onNodeClick: onClick})._GraphViz;
     case 'polar':
       return PolarChart_({data, ...chartProps, spatial:{x, y, scale:1}})._PolarChart
     default:

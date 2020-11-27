@@ -1,5 +1,5 @@
 import P from 'prop-types';
-import { omit } from 'lodash';
+import {omit} from 'lodash';
 import Component from '@symb/Component';
 import css from './App.css';
 import ComponentFactory from "@symb/ComponentFactory";
@@ -10,9 +10,9 @@ import {fit} from "@symb/util";
 import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
+import {MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
 
 const APP = 'app';
-export const MARGIN = 24;
 
 const handleResponse = function (response) {
   if (response.ok) {
@@ -200,7 +200,7 @@ export default class App extends Component {
 
   onResize(width, height) {
     console.log(`onResize:${width}-${height}`);
-    const sideBarWidth = Math.min(0.23 * width, 4 * height);
+    const sideBarWidth = Math.min(Math.min(SIDEBAR_PERCENT * width, SIDEBAR_MAX), 4 * height);
     const mainHeight = 9 / 10 * height;
     const mainWidth = width - sideBarWidth;
 

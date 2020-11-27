@@ -40,7 +40,7 @@ class Card extends Component {
 
   handleCardClick() {
     if (this.innerProps.onClick) {
-      this.innerProps.onClick({id: this.key});
+      this.innerProps.onClick({id: this.innerProps.data.getUniqueKey()});
     }
   }
 

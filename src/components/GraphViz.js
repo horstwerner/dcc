@@ -38,7 +38,7 @@ const bumpSuccessorDepth = function bumpSuccessorDepth(edgeList, depth, vizNodes
   })
 }
 
-const traverseGraph = function traverseGraph(startNodes, path) {
+const traverseGraph = function traverseGraph(startNodes, scopeKeys, path) {
   const vizNodesByKey = {};
 
   startNodes.forEach(node => {vizNodesByKey[node.getUniqueKey()] = {graphNode: node, depth: 0, inEdges: []}});
@@ -58,8 +58,9 @@ const traverseGraph = function traverseGraph(startNodes, path) {
       sourceVizNode.outEdges = [];
       const associated = getAssociated(node, edgeType);
       associated.forEach(targetNode => {
-        // ignore circular references
+
         const targetKey = targetNode.getUniqueKey();
+        if (scopeKeys && !scopeKeys[targetKey]) return;
 
         let targetVizNode = vizNodesByKey[targetKey];
         if (!targetVizNode) {
@@ -118,6 +119,8 @@ export default class GraphViz extends Component {
 
   static propTypes = {
     startNodes: P.arrayOf(P.instanceOf(GraphNode)).isRequired,
+    scope: P.arrayOf(P.instanceOf(GraphNode)),
+    onNodeClick: P.func.isRequired,
     path: P.string.isRequired,
     w: P.number.isRequired,
     h: P.number.isRequired,
@@ -130,9 +133,15 @@ export default class GraphViz extends Component {
     }
     this.innerProps = props;
 
-    const {startNodes, w, h, path, nodeTemplate} = props;
+    const {startNodes, scope, w, h, path, nodeTemplate, onNodeClick} = props;
 
-    const vizNodesByKey = traverseGraph(startNodes, path.split('/'));
+    let scopeKeys = null;
+    if (scope) {
+      scopeKeys = {};
+      scope.forEach(node => scopeKeys[node.getUniqueKey()] = true);
+    }
+
+    const vizNodesByKey = traverseGraph(startNodes, scopeKeys, path.split('/'));
     const depth = Math.max(...Object.values(vizNodesByKey).map(node => node.depth));
 
     let lanes = [];
@@ -144,7 +153,7 @@ export default class GraphViz extends Component {
     lanes = lanes.filter(lane => lane && lane.length > 0);
 
     const maxNodesPerLane = Math.max(...lanes.map(lane => lane.length));
-    const maxChildH = 0.85 * h / (maxNodesPerLane || 1);
+    const maxChildH = 0.85 * h / ((maxNodesPerLane || 1) + 1);
     const maxChildW = 0.5 * w / (lanes.length || 1);
     const maxAR = maxChildW / (maxChildH || 1);
     const childAR = nodeTemplate.getAspectRatio();
@@ -156,7 +165,7 @@ export default class GraphViz extends Component {
       childW = maxChildW;
       childH = childW / childAR;
     }
-    
+
     const netLaneH = h - childH;
     const rasterH = netLaneH / maxNodesPerLane;
 
@@ -192,7 +201,7 @@ export default class GraphViz extends Component {
             targetNode.pos
           ]);
         } else { // backward edge
-          const dySrc = Math.sign(targetNode.pos.y - vizNode.pos.y) * 0.28 * childH
+          const dySrc = (Math.sign(targetNode.pos.y - vizNode.pos.y) || -4) * 0.28 * childH
           const dyTrg = Math.abs(targetNode.pos.y - vizNode.pos.y) < 0.6 * childH ? dySrc : -dySrc;
           lines.push([vizNode.pos,
             {x: vizNode.pos.x + edgeDist, y: vizNode.pos.y},
@@ -210,7 +219,7 @@ export default class GraphViz extends Component {
     children.push(Svg_({width: w, height: h, children: lines.map(line => createSvgPath(line, roundDist))})._Svg);
     const {width, height} = nodeTemplate.getSize();
 
-    vizNodes.forEach(vizNode => {children.push(Card_({data: vizNode.graphNode, template: nodeTemplate, spatial: fit(childW, childH, width, height, vizNode.pos.x - 0.5 * childW, vizNode.pos.y - 0.5 * childH)})._Card)});
+    vizNodes.forEach(vizNode => {children.push(Card_({data: vizNode.graphNode, template: nodeTemplate, onClick: onNodeClick, spatial: fit(childW, childH, width, height, vizNode.pos.x - 0.5 * childW, vizNode.pos.y - 0.5 * childH)})._Card)});
 
     this.createChildren(children);
 

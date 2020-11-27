@@ -8,3 +8,7 @@ if (DEBUG_MODE) {
     error.apply(null, args);
   }
 }
+export const MARGIN = 24;
+
+export const SIDEBAR_PERCENT = 0.2;
+export const SIDEBAR_MAX = 250;

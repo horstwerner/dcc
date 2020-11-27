@@ -5,9 +5,9 @@ import Component from "@symb/Component";
 import ComponentFactory from "@symb/ComponentFactory";
 import Template from "@/templates/Template";
 import GraphNode from "@/graph/GraphNode";
-import {MARGIN} from "@/App";
 import {Card_} from "@/components/Card";
 import {fit} from "@symb/util";
+import {MARGIN} from "@/Config";
 
 const SIDEBAR = 'sidebar';
 
