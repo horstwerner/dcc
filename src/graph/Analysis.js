@@ -1,6 +1,7 @@
 import {get} from 'lodash';
 import GraphNode from "@/graph/GraphNode";
 import Cache, {
+  traverse,
   TYPE_AGGREGATOR,
   TYPE_DEPTH,
   TYPE_NODES,
@@ -113,4 +114,18 @@ export const pathAnalysis = function pathAnalysis(sourceNodes, associationType, 
   return new GraphNode(TYPE_AGGREGATOR, Cache.createUri())
       .setAttributes({maxDepth: depth - 1})
       .setBulkAssociation(TYPE_NODES, Object.values(allTouchedNodes));
+}
+
+export const deriveAssociations = function deriveAssociations(sourceNodes, path, derivedAssociation) {
+  const result = [];
+  console.log(`preprocessing ${sourceNodes.length} nodes`);
+  sourceNodes.forEach(node => {
+    const associated = traverse(node, path);
+    if (associated.size !== 0) {
+      const contextual = node.createContextual();
+      contextual.setBulkAssociation(derivedAssociation, associated);
+      result.push(contextual);
+    }
+  });
+  return result;
 }

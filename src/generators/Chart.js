@@ -1,5 +1,5 @@
 import P from 'prop-types';
-import {resolveAttribute, TYPE_NODES} from "@/graph/Cache";
+import {resolveAttribute, resolveProperty, TYPE_NODES} from "@/graph/Cache";
 import Filter from "@/graph/Filter";
 import {Svg_} from "@/components/Svg";
 import {Rect_} from "@/components/Rect";
@@ -23,6 +23,10 @@ const fillInNumber = function fillInNumber(data, valueString) {
   }
 }
 
+const NodeArray = function NodeArray(source) {
+  return Array.isArray(source) ? source : [source];
+}
+
 const Chart = function Chart({key, data, descriptor, onClick}) {
   const {chartType, x, y, source, inputSelector, overlay, ...chartProps} = descriptor;
 
@@ -32,15 +36,15 @@ const Chart = function Chart({key, data, descriptor, onClick}) {
 
   const spatial = { x, y, scale: 1};
 
-  let chartData = (source && source !== 'this') ? resolveAttribute(data, source) : data;
+  const unfilteredData = (source && source !== 'this') ? resolveProperty(data, source) : data;
   const filter = inputSelector ? Filter.fromDescriptor(inputSelector): null;
-  chartData = filter ? chartData.filter(filter.matches) : chartData;
+  let chartData = filter ? filter.process(unfilteredData) : unfilteredData;
 
   if (overlay) {
     if (!Array.isArray(chartData)) {
       throw new Error(`Overlay (${overlay}) only allowed for node sets. ${source} is not a node set`);
     }
-    const overlayData = resolveAttribute(data, [overlay, TYPE_NODES]);
+    const overlayData = resolveProperty(data, [overlay, TYPE_NODES]);
     const overlayNodeByKey = {};
     // transform list into map
     overlayData.forEach(node => {overlayNodeByKey[node.getUniqueKey()] = node;})
@@ -75,7 +79,8 @@ const Chart = function Chart({key, data, descriptor, onClick}) {
       return StackedBarChart({data: chartData, spatial, totalWidthVal: fillInNumber(data, totalWidthValue), ...chartProps, onRectClick: onClick})
     case 'graph':
       const nodeTemplate = TemplateRegistry.getTemplate(descriptor.template);
-      return GraphViz_({spatial, startNodes: chartData, ...chartProps, nodeTemplate})._GraphViz;
+      const scope = descriptor['bounded'] ? NodeArray(unfilteredData) : null;
+      return GraphViz_({spatial, startNodes: NodeArray(chartData), scope, ...chartProps, nodeTemplate})._GraphViz;
     case 'polar':
       return PolarChart_({data, ...chartProps, spatial:{x, y, scale:1}})._PolarChart
     default:

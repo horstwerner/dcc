@@ -29,12 +29,19 @@ class Card extends Component {
   constructor(descriptor, domNode) {
     super(descriptor, domNode);
     this.childClickAction = {};
+    this.handleCardClick = this.handleCardClick.bind(this);
   }
 
   handleChildClick(childKey, clickAction) {
     // const tween = new Tween(DURATION_REARRANGEMENT);
     // this.morph(clickAction, tween);
     // tween.start();
+  }
+
+  handleCardClick() {
+    if (this.innerProps.onClick) {
+      this.innerProps.onClick({id: this.key});
+    }
   }
 
   /**
@@ -52,7 +59,7 @@ class Card extends Component {
     const {background, elements} = template;
     const color = template.getCardColor(data);
 
-    const children = [Background(background, color)];
+    const children = [Background(background, color, template['clickable'] && this.handleCardClick)];
     elements.forEach(element => {
       const { key } = element;
       switch (element.type) {
@@ -68,7 +75,7 @@ class Card extends Component {
             text: String(resolveAttribute(data, attribute)),
             ...rest
           }));
-          }
+        }
           break;
         case 'trellis': {
           children.push(Trellis( data,  element, onClick));

@@ -169,7 +169,6 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
   }
 
   const arrangementDescriptor = {type: GRID, x: 0, y: 0, w, h, padding: PADDING, ...arrangement};
-  debugger
   const cardNodes = nodes.map(node => createPreprocessedCardNode(node, context, template));
   if (align) {
     const aggregate = mapValues(align, (calculate, key) => ({attribute: key, calculate}));

@@ -16,20 +16,18 @@ export const TYPE_NODES = 'core:subNodes';
 export const TYPE_CONTEXT = 'core:context';
 export const TYPE_NODE_COUNT = 'core:nodeCount';
 export const TYPE_DEPTH = 'core:depth';
-export const TYPE_MIN_VALUES = 'core:minValues';
-export const TYPE_MAX_VALUES = 'core:maxValues';
 
 class Cache {
 
   idCount = 0;
-  
+
   typeDic;
-  lookUpByType;
+  lookUpGlobal;
   rootNode = {};
 
   constructor () {
     this.typeDic = {};
-    this.lookUpByType = {};
+    this.lookUpGlobal = {};
     this.rootNode = {};
     this.createType({uri: TYPE_CONTEXTUAL_NODE, name: 'contextual', dataType: DATATYPE_ENTITY, isAssociation: false});
     this.createType({uri: TYPE_AGGREGATOR, name: 'aggregated', dataType: DATATYPE_ENTITY, isAssociation: false});
@@ -40,13 +38,12 @@ class Cache {
   createUri() {
     return `core:surrogate${this.idCount++}`;
   }
-  
+
   createType (descriptor) {
     let type = new Type(descriptor);
     this.typeDic[descriptor.uri] = type;
     if (type.dataType === DATATYPE_ENTITY && !type.isAssociation) {
       this.rootNode[descriptor.uri] = [];
-      this.lookUpByType[descriptor.uri] = {};
     }
     return type;
   };
@@ -56,16 +53,18 @@ class Cache {
   };
 
   getNode (typeUri, uri) {
-    let dictionary = this.lookUpByType[typeUri];
-    if (!dictionary) {
-      dictionary = {};
-      this.lookUpByType[typeUri] = dictionary;
+    if (typeUri && !this.rootNode[typeUri]) {
       this.rootNode[typeUri] = [];
     }
-    let node = dictionary[uri];
+    let node = this.lookUpGlobal[uri];
     if (!node) {
       node = new GraphNode(typeUri, uri);
-      dictionary[uri] = node;
+      this.lookUpGlobal[uri] = node;
+      if (typeUri) {
+        this.rootNode[typeUri].push(node);
+      }
+    } else if (!node.type && typeUri) { // node definition after importing reference
+      node.setType(typeUri);
       this.rootNode[typeUri].push(node);
     }
     return node;
@@ -81,7 +80,7 @@ class Cache {
   getEntityTypes() {
     return Object.keys(this.rootNode);
   }
-  
+
   getAllNodesOf (nodeType) {
     return this.rootNode[nodeType] || [];
   };
@@ -90,20 +89,41 @@ class Cache {
     return (this.rootNode[nodeType] || []).map(callback);
   };
 
-  findNode (typeUri, uri) {
-    const dictionary = this.lookUpByType[typeUri];
-    if (!dictionary) {
-      throw new Error("Unknown type: " + typeUri);
-    }
-    return dictionary[uri];
-  };
-  
+
   importTypes(typeArray) {
     for (let i = 0; i < typeArray.length; i++) {
       let typeDescriptor = typeArray[i];
       this.createType(typeDescriptor);
     }
   };
+
+  importNodes(nodeArray) {
+    nodeArray.forEach(rawNode => {
+      const { id, type } = rawNode;
+      const node = this.getNode(type, id);
+      Object.keys(rawNode).forEach(propUri => {
+        if (propUri === 'id' || propUri === 'type') return;
+        const propType = this.getType(propUri);
+        if (!propType) {
+          throw new Error(`Property type ${propUri} not declared in data dictionary`);
+        }
+        switch (propType.dataType) {
+          case DATATYPE_ENTITY:
+            node.addAssociation(propType, rawNode[propUri], null);
+            break;
+          case DATATYPE_INTEGER:
+          case DATATYPE_FLOAT:
+            node[propUri] = Number(rawNode[propUri]);
+            break;
+          case DATATYPE_BOOLEAN:
+            node[propUri] = Boolean(rawNode[propUri]);
+            break;
+          default:
+            node[propUri] = String(rawNode[propUri]);
+        }
+      })
+    });
+  }
 
   importNodeTable(typeUri, headerRow, valueRows) {
     const idIndex = Math.max(headerRow.indexOf('id'), 0);
@@ -134,7 +154,7 @@ class Cache {
       }
     }
   }
-  
+
   // importNodesJson(array) {
   //   for (let i = 0; i < array.length; i++) {
   //     const rawNode = array[i];
@@ -159,7 +179,7 @@ class Cache {
   //     }
   //   }
   // };
-  
+
   // loadTypeDic(wsname, callback) {
   //   const request = new XMLHttpRequest();
   //   request.onreadystatechange =  () => {
@@ -183,17 +203,7 @@ export default cacheInstance;
 
 export const traverse = function(source, path) {
   const steps = path.split('/');
-  let curSet = new Set();
-
-  if (source.constructor === Array) {
-    for (let i = 0; i < source.length; i++) {
-      let sourcenode = source[i];
-      curSet.add(sourcenode);
-    }
-  }
-  else {
-    curSet.add(source);
-  }
+  let curSet = new Set(Array.isArray(source) ? source : [source]);
 
   for (let i = 0; i < steps.length; i++) {
     const step = steps[i];
@@ -245,5 +255,32 @@ export const resolveAttribute = function (node, path) {
   return (result && result.constructor === GraphNode) ?
       result.displayName() :
       result;
+};
+
+/**
+ *
+ * @param {GraphNode} node
+ * @param {String[] | String} path
+ * @return {String | Number} resolved attribute or resolved node
+ */
+export const resolveProperty = function (node, path) {
+  let result;
+
+  if (Array.isArray(path) || path.includes('/')) {
+    const segments = Array.isArray(path) ? path : path.split('/');
+    let current = node;
+    for (let segIdx = 0; segIdx < segments.length; segIdx++) {
+      current = current.constructor === GraphNode ? current.get(segments[segIdx]) : current[segments[segIdx]];
+      // simplistic disambiguation - if multiple, select first
+      if (segIdx < segments.length - 1 && Array.isArray(current)) {
+        current = current[0];
+      }
+    }
+    result = current;
+  } else {
+    result = node.constructor === GraphNode ? node.get(path) : node[path];
+  }
+
+  return result;
 };
 

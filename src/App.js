@@ -186,17 +186,15 @@ export default class App extends Component {
       const mainCardW = mainTemplate.background.w;
       const mainCardH = mainTemplate.background.h;
       children.push(...[
-      Card_({
-        key: 'mainCard',
-        spatial: fit(mainWidth - MARGIN, mainHeight - MARGIN, mainCardW, mainCardH, 0.5 * MARGIN, 0.5 * MARGIN),
-        data: mainCard.data,
-        template: mainTemplate,
-        onClick: this.handleNodeClick
-      })._Card,
-      inspectionCard && Card_()._Card
+        Card_({
+          key: 'mainCard',
+          spatial: fit(mainWidth - MARGIN, mainHeight - MARGIN, mainCardW, mainCardH, 0.5 * MARGIN, 0.5 * MARGIN),
+          data: mainCard.data,
+          template: mainTemplate,
+          onClick: this.handleNodeClick
+        })._Card
       ]);
     }
-
     this.createChildren(children);
   }
 

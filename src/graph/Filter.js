@@ -1,3 +1,5 @@
+import GraphNode from "@/graph/GraphNode";
+
 export const restAfter = function(string, prefix) {
   for (let i = 0; i < prefix.length; i++) {
     if (string.charAt(i) !== prefix.charAt(i)) return null;
@@ -17,12 +19,14 @@ export const comparisons = [
   {symbol: ">=", matches: (testValue, value) =>  value >= testValue},
   {symbol: "<", matches: (testValue, value) => value < testValue},
   {symbol: ">", matches: (testValue, value) => value > testValue},
+  {symbol: "exists", matches: (testValue, value) => value != null},
+  {symbol: "empty", matches: (testValue, value) => value == null}
 ];
 
 export const parseComparison = function parseComparison(condition) {
   for (let i = 0; i < comparisons.length; i++) {
     const testValue = restAfter(condition, comparisons[i].symbol);
-    if (testValue) {
+    if (testValue !== null) {
       return {testValue, matches: comparisons[i].matches};
     }
   }
@@ -38,14 +42,9 @@ export default class Filter {
   static fromDescriptor(descriptor) {
     const attribute = Object.keys(descriptor)[0];
     const rest = descriptor[attribute];
-    const comparator = Object.keys(rest)[0];
-    const comparand = rest[comparator];
-    const comparison = comparisons.find(comp => comp.symbol === comparator);
-    if (!comparison) {
-      throw new Error(`Unknown comparator ${comparator}`);
-    }
+    const comparison = parseComparison(rest);
 
-    return new Filter(attribute, comparison.matches, comparand);
+    return new Filter(attribute, comparison.matches, comparison.testValue);
   }
 
   constructor(attribute, matchFunction, comparand) {
@@ -60,6 +59,15 @@ export default class Filter {
     const rawValue = graphNode.get(this.attribute);
     const value = this.isNumeric ? Number(rawValue) : rawValue;
     return this.matchFunction(this.comparand, value);
+  }
+
+  process(source) {
+    if (source.constructor === GraphNode) {
+      return this.matches(source) ? [source] : [];
+    } else if (Array.isArray(source)) {
+      return source.filter(this.matches);
+    }
+    throw new Error(`Can't apply filter to "${JSON.stringify(source)}"`);
   }
 
 }

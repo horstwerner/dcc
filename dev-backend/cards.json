@@ -275,7 +275,7 @@
             "compact": true,
             "padding": 0.1
           },
-          "inputSelector": {"jira:release": {">": "1.1"}},
+          "inputSelector": {"jira:release": ">1.1"},
           "align": {"storyPointSum": "max"},
           "template": "storyBarWithTitle",
           "groupAttribute": "jira:feature"
@@ -574,7 +574,7 @@
         },
         {
         "method": "path-analysis",
-        "inputSelector": {"jira:release": {"=": 1.2}},
+        "inputSelector": {"jira:release": "=1.2"},
         "associationType": "jira:is-prerequisite-for",
         "upstreamAggregate": {
           "upstream-storypoints": {"attribute": "jira:storypoints", "calculate": "sum"}
@@ -597,7 +597,7 @@
           "type": "chart",
           "source": "core:subNodes",
           "overlay": "dependencies",
-          "inputSelector": {"jira:release": {"=": 1.2}},
+          "inputSelector": {"jira:release": "=1.2"},
           "sortSequence": "byUri",
           "chartType": "stackedBar",
           "x": 0, "y": 30, "w": 150, "h": 30,
