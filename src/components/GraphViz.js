@@ -112,7 +112,7 @@ const createSvgPath = function createSvgPath(points, dist) {
 
 const GRAPH_VIZ = 'graph-viz';
 
-export default class GraphViz extends Component {
+class GraphViz extends Component {
 
   static type = GRAPH_VIZ;
   static className = css.card;
@@ -216,7 +216,7 @@ export default class GraphViz extends Component {
 
     const roundDist = 0.3 * edgeDist;
     const children = [];
-    children.push(Svg_({width: w, height: h, children: lines.map(line => createSvgPath(line, roundDist))})._Svg);
+    children.push(Svg_({style:{pointerEvents: 'none'}, width: w, height: h, children: lines.map(line => createSvgPath(line, roundDist))})._Svg);
     const {width, height} = nodeTemplate.getSize();
 
     vizNodes.forEach(vizNode => {children.push(Card_({data: vizNode.graphNode, template: nodeTemplate, onClick: onNodeClick, spatial: fit(childW, childH, width, height, vizNode.pos.x - 0.5 * childW, vizNode.pos.y - 0.5 * childH)})._Card)});

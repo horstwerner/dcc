@@ -1,0 +1,26 @@
+.workbook {
+    overflow-x: hidden;
+    overflow-y: scroll;
+    background-color: #acbcbf;
+}
+.workbook::-webkit-scrollbar {
+    width: 10px;
+}
+.workbook::-webkit-scrollbar-thumb {
+    background-color: #c5d4d4;
+    border-right: solid 1px #959595;
+    width: 100%;
+    border-radius: 5px;
+    cursor: grab;
+    transition: background-color 0.4s;
+}
+.workbook::-webkit-scrollbar-thumb:vertical:hover {
+    background-color: #EEEEEA;
+}
+.workbook::-webkit-scrollbar-track {
+    background-color: #acbcbf;
+    width: 100%;
+}
+.canvas {
+    transform-origin: 0 0;
+}

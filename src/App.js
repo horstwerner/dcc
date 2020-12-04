@@ -6,11 +6,11 @@ import ComponentFactory from "@symb/ComponentFactory";
 import Cache, {TYPE_AGGREGATOR, TYPE_CONTEXT} from './graph/Cache';
 import TemplateRegistry from './templates/TemplateRegistry';
 import {Div_} from '@symb/Div';
-import {fit} from "@symb/util";
 import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
-import {MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
+import {CANVAS_WIDTH, MARGIN, MAX_CARD_HEIGHT, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
+import {Workbook_} from "@/components/Workbook";
 
 const APP = 'app';
 
@@ -90,13 +90,17 @@ export default class App extends Component {
     title: P.string
   };
 
+
   constructor(props, domNode) {
     super(props, domNode);
 
-
     this.state = {
+      nextChildIndex: 1,
+      nextChildPos: MARGIN,
       currentData: Cache.rootNode,
       currentTemplate: 'root',
+      canvasCards: [],
+      hoverCards: [],
       dataLoaded: false,
       error: null,
     };
@@ -111,23 +115,28 @@ export default class App extends Component {
               startData.setBulkAssociation(entityType, Cache.rootNode[entityType]);
             })
             startData[TYPE_CONTEXT] = {}
-
             this.setState({
-              dataLoaded: true,
-              mainCard: {data: startData, template: 'root'},
-              backgroundColor: TemplateRegistry.getTemplate('root').getCardColor
-              // currentMap: TemplateRegistry.getStartMap()
-            })
+              dataLoaded: true
+            });
+            this.appendCard(startData, TemplateRegistry.getTemplate('root'));
           }
         });
     this.handleNodeClick = this.handleNodeClick.bind(this);
 
   }
 
-  handleNodeClick({id}) {
-    const node = Cache.getNodeByUniqueKey(id);
-    const template = TemplateRegistry.getTemplate(node.type.uri);
-    this.setState({inspectionCard: {template, data: node}});
+  handleNodeClick(clickData) {
+    // const {id} = clickData;
+    // const node = Cache.getNodeByUniqueKey(id);
+    // const template = TemplateRegistry.getTemplate(node.type.uri);
+    // this.setState({inspectionCard: {template, data: node}});
+
+    const {data, template} = clickData;
+
+    this.appendCard(data, template);
+    // const clone = Card_({data, template, spatial: magnified})._Card
+    // this.setState({hoverCards: [clone]});
+
   }
 
   getDictionaryFromDb() {
@@ -157,7 +166,6 @@ export default class App extends Component {
         });
   };
 
-
   getDataFromDb(type) {
     return fetch(`/api/data?type=${encodeURI(type)}`, {})
         .then(handleResponse)
@@ -172,27 +180,43 @@ export default class App extends Component {
         });
   }
 
+  appendCard(data, template) {
+    const { canvasCards, nextChildIndex, nextChildPos } = this.state;
+    const key = `card${nextChildIndex}`;
+    const {width, height} = template.getSize();
+    const scale = Math.min((CANVAS_WIDTH - MARGIN) / width, MAX_CARD_HEIGHT / height, 1.25);
+    const spatial = {x: MARGIN / 2, y: nextChildPos, scale};
+    const newCard = Card_({
+      key,
+      spatial,
+      data,
+      template,
+      onClick: this.handleNodeClick
+    })._Card
+    this.setState({canvasCards: [...canvasCards, newCard], nextChildIndex: nextChildIndex + 1, nextChildPos: nextChildPos + height * spatial.scale + MARGIN});
+  }
+
   updateContents(props) {
 
-    const {dataLoaded, error, mainWidth, mainHeight, sideBarWidth, windowHeight, mainCard, inspectionCard} = this.state;
+    const {dataLoaded, error, mainWidth, mainHeight, sideBarWidth, canvasCards, hoverCards, windowHeight, inspectionCard} = this.state;
 
     // const backgroundColor = (map && map.backColor) || '#ffffff';
-    const mainTemplate = dataLoaded && TemplateRegistry.getTemplate(mainCard.template);
     const sidebar = Sidebar_({w: sideBarWidth, h: windowHeight, selectedCard: inspectionCard, spatial: {x: mainWidth, y: 0, scale: 1}})._Sidebar;
 
     const children = [sidebar];
     if (error) {children.push(Div_({}, `An error occurred: ${error.message}`)._Div);}
     if (dataLoaded) {
-      const mainCardW = mainTemplate.background.w;
-      const mainCardH = mainTemplate.background.h;
       children.push(...[
-        Card_({
-          key: 'mainCard',
-          spatial: fit(mainWidth - MARGIN, mainHeight - MARGIN, mainCardW, mainCardH, 0.5 * MARGIN, 0.5 * MARGIN),
-          data: mainCard.data,
-          template: mainTemplate,
-          onClick: this.handleNodeClick
-        })._Card
+        Workbook_({
+          width: mainWidth,
+          height: mainHeight,
+          children: canvasCards
+        })._Workbook,
+        Div_({
+          key: 'overlay',
+          className: css.overlay,
+          children: hoverCards
+        })._Div
       ]);
     }
     this.createChildren(children);
@@ -201,7 +225,7 @@ export default class App extends Component {
   onResize(width, height) {
     console.log(`onResize:${width}-${height}`);
     const sideBarWidth = Math.min(Math.min(SIDEBAR_PERCENT * width, SIDEBAR_MAX), 4 * height);
-    const mainHeight = 9 / 10 * height;
+    const mainHeight = height;
     const mainWidth = width - sideBarWidth;
 
     this.setState({windowWidth: width, windowHeight: height, mainWidth, mainHeight, sideBarWidth});

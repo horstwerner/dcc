@@ -38,9 +38,9 @@ class Card extends Component {
     // tween.start();
   }
 
-  handleCardClick() {
+  handleCardClick(e) {
     if (this.innerProps.onClick) {
-      this.innerProps.onClick({id: this.innerProps.data.getUniqueKey()});
+      this.innerProps.onClick({event: e, data: this.innerProps.data, template: this.innerProps.template, spatial: this.spatial});
     }
   }
 
@@ -58,8 +58,12 @@ class Card extends Component {
 
     const {background, elements} = template;
     const color = template.getCardColor(data);
+    const hasBackground = background.type !== 'transparent';
 
-    const children = [Background(background, color, template['clickable'] && this.handleCardClick)];
+    const children = [];
+    if (hasBackground) {
+      children.push(Background(background, color, template['clickable'] && this.handleCardClick));
+    }
     elements.forEach(element => {
       const { key } = element;
       switch (element.type) {

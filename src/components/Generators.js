@@ -35,15 +35,14 @@ const BACKGROUND_RECT = 'rect';
 const BACKGROUND_IMAGE = 'image';
 
 export const Background = function Background(props, color, onClick) {
-  const {type, w, h, source, cornerRadius} = props;
+  const {type, w, h, source, cornerRadius, borderColor} = props;
   const className =  onClick ? css.clickable : css.background;
-  // if (onClick) {console.log(`${JSON.stringify(props)} is clickable`)}
   const spatial = props.spatial || {x: 0, y: 0, scale: 1};
 
   switch (type) {
     case BACKGROUND_RECT:
       return Div_({key: KEY_BACKGROUND, className, spatial,
-        style:{backgroundColor: color, width: w, height: h, borderRadius: cornerRadius},
+        style:{backgroundColor: color, width: w, height: h, borderRadius: cornerRadius, border: borderColor && `solid 1px ${borderColor}`},
         onClick})._Div;
     case BACKGROUND_IMAGE:
       return Image_({key: KEY_BACKGROUND, className, spatial, source, width: w, height: h, color, cornerRadius, onClick})._Image;

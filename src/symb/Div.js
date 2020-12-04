@@ -23,7 +23,7 @@ export class Div extends Component {
       this.createChildren(children);
     }
     if (onClick) {
-      this.dom.onClick = onClick;
+      this.dom.onclick = onClick;
     }
   }
 }

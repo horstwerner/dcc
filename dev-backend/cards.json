@@ -1,7 +1,8 @@
 {
   "constants": [
-    {"MARGIN":  12},
+    {"MARGIN":  20},
     {"CARD_BACKGROUND_COLOR":  "#FEFEFE"},
+    {"AREA_BACKGROUND_COLOR":  "#FAFAFA"},
     {"TEXT_COLOR": "rgb(43,43,43)"},
     {"HEADING_COLOR": "rgba(0,0,0,0.83)"},
     {"TEXT_STYLE": {
@@ -197,15 +198,18 @@
     {
       "type": "jira:team",
       "size": {
-        "w": 300,
-        "h": 110
+        "w": 400,
+        "h": 150
       },
       "background": {
         "type": "rect",
-        "color": "#FEFEFE",
-        "w": 300,
-        "h": 110
+        "color": {"$": "CARD_BACKGROUND_COLOR"},
+        "borderColor": "#E8E8E8",
+        "w": 400,
+        "h": 150,
+        "cornerRadius": "6px"
       },
+      "clickable": true,
       "preprocessing": [{"method":  "aggregate", "input": "jira:ticket", "results": {"storyPointSum":  {"attribute":  "jira:storypoints", "calculate": "sum"}}}],
       "elements": [
         {
@@ -216,6 +220,13 @@
           "style": {"$": "LABEL_STYLE"}
         },
         {
+          "key": "storycaption",
+          "type": "caption",
+          "x": 12, "y": 48, "w": 80, "h": 18,
+          "text": "Stories",
+          "style": {"$": "LABEL_SMALL_STYLE"}
+        },
+        {
           "key": "storybar",
           "type": "chart",
           "source": "jira:ticket",
@@ -223,7 +234,7 @@
             "$": "STATUS_SEQUENCE"
           },
           "chartType": "stackedBar",
-          "x": 20, "y": 60, "w": 140, "h": 20,
+          "x": 12, "y": 60, "w": 200, "h": 30,
           "widthAttribute": "jira:storypoints",
           "colorAttribute": "jira:status",
           "colors": {
@@ -238,9 +249,9 @@
           "key": "polarBear",
           "type": "chart",
           "chartType": "polar",
-          "x": 200,
-          "y": 20,
-          "diameter": 100,
+          "x": 250,
+          "y": 30,
+          "diameter": 130,
           "dimensions": ["dcc:bugs", "dcc:speed", "dcc:downstream"],
           "maxValues": {"dcc:bugs": 140, "dcc:speed": 38, "dcc:downstream": 100},
           "colorStops": [{"percent": "0", "color":  "#548546"}, {"percent": "25", "color":  "#7ea550"}, {"percent":  "35", "color":  "#a3b630"}, {"percent":  "50", "color":  "#cfc726"},{"percent":  "60", "color":  "#cfc726"}, {
@@ -255,11 +266,12 @@
       "node-type": "jira:ticket",
       "background": {
         "type": "rect",
-        "w": 400,
-        "h": 870,
-        "color": {"$":  "CARD_BACKGROUND_COLOR"},
+        "w": 420,
+        "h": 900,
+        "color": {"$":  "AREA_BACKGROUND_COLOR"},
         "cornerRadius": "6px"
       },
+      "clickable": true,
       "elements": [
         {
           "key": "label_features",
@@ -290,11 +302,12 @@
       "node-type": "jira:team",
       "background": {
         "type": "rect",
-        "w": 400,
-        "h": 870,
-        "color": {"$":  "CARD_BACKGROUND_COLOR"},
+        "w": 420,
+        "h": 900,
+        "color": {"$":  "AREA_BACKGROUND_COLOR"},
         "cornerRadius": "6px"
       },
+      "clickable": true,
       "elements": [
         {
           "key": "label_features",
@@ -308,7 +321,7 @@
           "type": "cards",
           "source": "core:subNodes",
           "align": {"storyPointSum": "max"},
-          "x": {"$": "MARGIN"}, "y": 60, "w": 360, "h": 748,
+          "x": 35, "y": 50, "w": 380, "h": 790,
           "arrangement": {
             "type": "grid",
             "padding": 0.1
@@ -323,7 +336,7 @@
         "type": "rect",
         "w": 1580,
         "h": 900,
-        "color": "rgba(255,255,255,0.15)"
+        "color": "rgba(255,255,255,0.0)"
       },
       "elements": [
         {
@@ -331,21 +344,21 @@
           "type": "card",
           "template": "stories-by-feature",
           "source": "jira:ticket",
-          "x": 20, "y":15, "w": 400, "h": 870
+          "x": 0, "y":0, "w": 420, "h": 900
         },
         {
           "key": "dependencies",
           "type": "card",
           "source": "jira:ticket",
           "template": "dependency-graph",
-          "x": 440, "y": 15, "w": 700, "h": 500
+          "x": 440, "y": 0, "w": 700, "h": 500
         },
         {
           "key": "teams",
           "type": "card",
           "source": "jira:team",
           "template": "team-overview",
-          "x": 1160, "y":15, "w": 400, "h": 870
+          "x": 1160, "y":0, "w": 420, "h": 900
         }
       ]
     },
@@ -354,12 +367,13 @@
         "type": "rect",
         "w": 700,
         "h": 500,
-        "color": {"$": "CARD_BACKGROUND_COLOR"},
+        "color": {"$": "AREA_BACKGROUND_COLOR"},
         "cornerRadius": "6px"
       },
+      "clickable": true,
       "elements": [
         {
-          "key": "label_features",
+          "key": "label_title",
           "type": "caption",
           "style": {"$": "GROUP_HEADING_STYLE"},
           "x": {"$": "MARGIN"}, "y": {"$": "MARGIN"}, "w": 100, "h": 32,
@@ -510,7 +524,6 @@
         }
       ]
     },
-
     {
       "type": "storyBarByStatus",
       "background": { "type": "rect", "w": 400, "h": 70},

@@ -83,7 +83,7 @@ export default class Component {
     //  fix unclosed syntactic bracket, but warn
     const propKeys = Object.keys(childDescriptor);
     if ( propKeys.length === 1 && propKeys[0].charAt(0) === '_' && ComponentFactory.knows(childDescriptor[propKeys[0]].type)) {
-      console.log(`Warning: automatically closed unclosed child descriptor ${JSON.stringify(childDescriptor)}`);
+      console.log(`Warning: automatically closed unclosed child descriptor of type ${childDescriptor[propKeys[0]].type}`);
       childDescriptor = childDescriptor[propKeys[0]];
     }
     if (childDescriptor.key == null) {
