@@ -14,6 +14,8 @@ export function setStyle(dom, style) {
     dom.style[key] = value});
 }
 
+const DEFAULT_SPATIAL = {x: 0, y: 0, scale: 1};
+
 export default class Component {
 
   static propTypes = {
@@ -33,7 +35,7 @@ export default class Component {
 
   updateScheduled = false;
 
-  constructor(props, domNode) {
+  constructor(props, parent, domNode) {
     if (domNode) {
       this.dom = domNode;
     } else {
@@ -44,15 +46,15 @@ export default class Component {
     this.className = props.className || this.constructor.className;
 
     if (this.className) {
-      if (props.nameSpace) {
+      if (props.nameSpace) { // svg
         this.dom.setAttribute('class', this.className);
       } else {
         this.dom.className = this.className;
       }
     }
+    this.parent = parent;
     this.key = props.key;
     this.alpha = 1;
-
   }
 
   checkProps(props) {
@@ -68,9 +70,21 @@ export default class Component {
     }
   }
 
-  // fillTemplate() {
-  //     throw new Error(`Neither function update nor fillTemplate defined for component ${this.constructor.name}`);
-  // }
+  getRelativeSpatial(component) {
+    let current = this;
+    const spatial = {...(this.spatial || DEFAULT_SPATIAL)};
+    console.log(`${this.key} at ${JSON.stringify(this.spatial)}`);
+    while (current.parent && current !== component) {
+      const parentSpatial = current.parent.spatial || DEFAULT_SPATIAL;
+      console.log(`${current.parent.key} at ${JSON.stringify(parentSpatial)}`);
+      spatial.x = spatial.x * parentSpatial.scale + parentSpatial.x;
+      spatial.y = spatial.y * parentSpatial.scale + parentSpatial.y;
+      spatial.scale *= parentSpatial.scale;
+      current = current.parent;
+    }
+    console.log(`result = ${JSON.stringify(spatial)}`)
+    return spatial;
+  }
 
   createChild(fallbackKey, childDescriptor) {
     if (typeof(childDescriptor) === 'string') {
@@ -90,21 +104,25 @@ export default class Component {
       childDescriptor.key = fallbackKey;
     }
     const existing = this.childByKey[childDescriptor.key];
+    if (childDescriptor.key === 'hover' )  {
+      console.log(`updating hover`);
+    }
     const {type, ...netProps} = childDescriptor;
     if (!existing || existing.constructor.type !== type) {
       if (existing) {
         existing.destroy();
       }
-      return this.addChild(ComponentFactory.create(childDescriptor));
-    } else if (!isEqual(netProps, existing.props)) {
-        existing.update(netProps);
+      return this.addChild(ComponentFactory.create(childDescriptor, this));
+    } else {
+      existing.update(netProps);
     }
     return existing;
   }
 
   // /**
   //  * includes an already instantiated Component into the list of child components
-  //  * However, if no child descriptor with the same key is passed in the next
+  //  * However, if no child descriptor with the same key is passed in the next update,
+  //  * it will be removed again
   //  * @param child
   //  * @param spatial - position and scale in this component's local coordinate system
   //  */
@@ -220,6 +238,7 @@ export default class Component {
       if (isNaN(x) || isNaN(y) || isNaN(scale)){
         throw new Error('NaN passed as argument for updateSpatial');
       }
+      // console.log(`update: ${this.key} scaled to ${scale}`);
       this.dom.style.transform = getTransformString(x, y, scale);
       this.spatial = spatial;
     }

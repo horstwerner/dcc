@@ -20,13 +20,13 @@ class ComponentFactory {
     return !!this.constructorByType[type];
   }
 
-  create( descriptor, div ) {
+  create( descriptor, parent, div ) {
     const {type, ...props} = descriptor;
     const constructor = this.constructorByType[type];
     if (!constructor) {
       throw new Error(`No component registered for type ${[type]}`);
     }
-    const result = new constructor(props, div);
+    const result = new constructor(props, parent, div);
     result.update(props);
     return result;
   }

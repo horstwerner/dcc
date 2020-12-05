@@ -267,7 +267,7 @@
       "background": {
         "type": "rect",
         "w": 420,
-        "h": 900,
+        "h": 500,
         "color": {"$":  "AREA_BACKGROUND_COLOR"},
         "cornerRadius": "6px"
       },
@@ -289,7 +289,7 @@
           "arrangement": {
             "type": "grid",
             "compact": true,
-            "padding": 0.1
+            "padding": 0
           },
           "align": {"storyPointSum": "max"},
           "template": "storyBarWithTitle",
@@ -334,7 +334,7 @@
       "type": "root",
       "background": {
         "type": "rect",
-        "w": 1580,
+        "w": 1680,
         "h": 900,
         "color": "rgba(255,255,255,0.0)"
       },
@@ -344,7 +344,7 @@
           "type": "card",
           "template": "stories-by-feature",
           "source": "jira:ticket",
-          "x": 0, "y":0, "w": 420, "h": 900
+          "x": 0, "y":0, "w": 420, "h": 500
         },
         {
           "key": "dependencies",
@@ -490,14 +490,16 @@
     },
     {
       "type": "storyBarWithTitle",
-      "background": {"type": "rect", "w": 280, "h": 40},
+      "background": {"type": "rect", "w": 380, "h": 30,
+        "color": "#FEFEFE"
+      },
       "preprocessing": [{"method":  "aggregate", "results":  {"storyPointSum":  {"attribute": "jira:storypoints", "calculate":  "sum"}}}],
       "elements": [
         {
           "key": "label",
           "type": "textfield",
           "attribute": "core:name",
-          "x": 0, "y": 0, "w": 148, "h": 20,
+          "x": 0, "y": 8, "w": 148, "h": 20,
           "style": {
             "$": "LABEL_STYLE",
             "h-align": "right"
@@ -511,7 +513,7 @@
             "$": "STATUS_SEQUENCE"
           },
           "chartType": "stackedBar",
-          "x": 160, "y": 0, "w": 120, "h": 20,
+          "x": 160, "y": 8, "w": 200, "h": 20,
           "totalWidthValue": "storyPointSum",
           "widthAttribute": "jira:storypoints",
           "colorAttribute": "jira:status",

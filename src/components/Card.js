@@ -26,8 +26,8 @@ class Card extends Component {
     onClick: P.func
   };
 
-  constructor(descriptor, domNode) {
-    super(descriptor, domNode);
+  constructor(descriptor, parent, domNode) {
+    super(descriptor, parent, domNode);
     this.childClickAction = {};
     this.handleCardClick = this.handleCardClick.bind(this);
   }
@@ -40,7 +40,7 @@ class Card extends Component {
 
   handleCardClick(e) {
     if (this.innerProps.onClick) {
-      this.innerProps.onClick({event: e, data: this.innerProps.data, template: this.innerProps.template, spatial: this.spatial});
+      this.innerProps.onClick({event: e, component: this});
     }
   }
 
@@ -54,7 +54,7 @@ class Card extends Component {
     }
     this.innerProps = props;
 
-    const { data, template, onClick } = props;
+    const { data, template, onClick, hover } = props;
 
     const {background, elements} = template;
     const color = template.getCardColor(data);
@@ -62,7 +62,7 @@ class Card extends Component {
 
     const children = [];
     if (hasBackground) {
-      children.push(Background(background, color, template['clickable'] && this.handleCardClick));
+      children.push(Background(background, color, template['clickable'] && this.handleCardClick, hover));
     }
     elements.forEach(element => {
       const { key } = element;

@@ -28,8 +28,8 @@ class CardSet extends Component {
     onClick: P.func,
   };
 
-  constructor(props, div) {
-    super(props, div);
+  constructor(props, parent, div) {
+    super(props, parent, div);
   }
 
   createChildrenForLod(lod) {

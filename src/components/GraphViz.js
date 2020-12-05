@@ -120,7 +120,7 @@ class GraphViz extends Component {
   static propTypes = {
     startNodes: P.arrayOf(P.instanceOf(GraphNode)).isRequired,
     scope: P.arrayOf(P.instanceOf(GraphNode)),
-    onNodeClick: P.func.isRequired,
+    onNodeClick: P.func,
     path: P.string.isRequired,
     w: P.number.isRequired,
     h: P.number.isRequired,

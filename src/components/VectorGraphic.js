@@ -12,7 +12,6 @@
   // svg.appendChild(shape);
 
 
-
   const VG = Render.VectorGraphic = function (width, height) {
 
     //noinspection JSUnresolvedFunction

@@ -11,8 +11,12 @@ import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
 import {CANVAS_WIDTH, MARGIN, MAX_CARD_HEIGHT, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
 import {Workbook_} from "@/components/Workbook";
+import {fit} from "@symb/util";
+import Tween from "@/arrangement/Tween";
 
 const APP = 'app';
+const WORKBOOK = 'workbook';
+const OVERLAY = 'overlay';
 
 const handleResponse = function (response) {
   if (response.ok) {
@@ -91,8 +95,8 @@ export default class App extends Component {
   };
 
 
-  constructor(props, domNode) {
-    super(props, domNode);
+  constructor(props, parent, domNode) {
+    super(props, parent, domNode);
 
     this.state = {
       nextChildIndex: 1,
@@ -125,17 +129,34 @@ export default class App extends Component {
 
   }
 
-  handleNodeClick(clickData) {
+  handleNodeClick({event, component}) {
     // const {id} = clickData;
     // const node = Cache.getNodeByUniqueKey(id);
     // const template = TemplateRegistry.getTemplate(node.type.uri);
     // this.setState({inspectionCard: {template, data: node}});
 
-    const {data, template} = clickData;
+    const {data, template} = component.innerProps;
+    const spatial = component.getRelativeSpatial(this);
 
-    this.appendCard(data, template);
-    // const clone = Card_({data, template, spatial: magnified})._Card
-    // this.setState({hoverCards: [clone]});
+    const {width, height} = template.getSize();
+    const {mainWidth, mainHeight} = this.state;
+    const newSpatial = fit(mainWidth, mainHeight, width, height);
+
+    const clone = Card_({key: 'hover', data, hover: true, template, spatial})._Card
+    this.setState({hoverCards: [clone]});
+
+    new Tween(350)
+        .addInterpolation([spatial.x, spatial.y, spatial.scale], [newSpatial.x, newSpatial.y, newSpatial.scale],
+            (sparry) => {
+            console.log(`hover scaled to ${sparry[2]}`);
+            const spatial = {x: sparry[0], y: sparry[1], scale: sparry[2]};
+            this.setState({hoverCards: [{...clone, spatial}]});
+        })
+        .start();
+
+
+    // const y = this.appendCard(data, template);
+    // this.childByKey[WORKBOOK].scrollToPos(y);
 
   }
 
@@ -194,6 +215,7 @@ export default class App extends Component {
       onClick: this.handleNodeClick
     })._Card
     this.setState({canvasCards: [...canvasCards, newCard], nextChildIndex: nextChildIndex + 1, nextChildPos: nextChildPos + height * spatial.scale + MARGIN});
+    return spatial.y;
   }
 
   updateContents(props) {
@@ -205,15 +227,17 @@ export default class App extends Component {
 
     const children = [sidebar];
     if (error) {children.push(Div_({}, `An error occurred: ${error.message}`)._Div);}
+
     if (dataLoaded) {
       children.push(...[
         Workbook_({
+          key: WORKBOOK,
           width: mainWidth,
           height: mainHeight,
           children: canvasCards
         })._Workbook,
         Div_({
-          key: 'overlay',
+          key: OVERLAY,
           className: css.overlay,
           children: hoverCards
         })._Div

@@ -19,11 +19,6 @@ export default class SubdividedGroup extends Component {
     data: P.object,
   };
 
-  constructor(descriptor, domNode) {
-    super(descriptor, domNode);
-
-  }
-
   updateContents(props) {
     if (isEqual(this.innerProps, props)) {
       return;

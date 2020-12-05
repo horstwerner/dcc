@@ -5,6 +5,7 @@ import css from "@/components/Workbook.css";
 import isEqual from "lodash/isEqual";
 import {Div_} from "@symb/Div";
 import {CANVAS_WIDTH} from "@/Config";
+import Tween from "@/arrangement/Tween";
 
 const WORKBOOK = 'workbook';
 
@@ -27,8 +28,11 @@ class Workbook extends Component {
   //   this.handleCardClick = this.handleCardClick.bind(this);
   // }
 
+  getScale(width) {
+    return width / CANVAS_WIDTH;
+  }
+
   updateContents(props) {
-    debugger
     if (isEqual(this.innerProps, props)) {
       return;
     }
@@ -37,14 +41,24 @@ class Workbook extends Component {
     }
     this.innerProps = props;
     const { children, width, canvasHeight } = props;
-    const scale = width / CANVAS_WIDTH;
+    const scale = this.getScale(width);
     const canvas =  Div_({ key:'workbook-canvas', className: css.canvas, style: {width: CANVAS_WIDTH, height: canvasHeight},
       spatial: {x: 0, y: 0, scale},
       children}
       )._Div
 
     this.createChildren(canvas);
+  }
 
+  getScrollPos() {
+    return this.dom.scrollTop;
+  }
+
+  scrollToPos(newScrollTop) {
+
+    new Tween(600)
+        .addInterpolation([this.dom.scrollTop], [newScrollTop], (values) => {this.dom.scrollTop = values[0]})
+        .start();
   }
 
 }

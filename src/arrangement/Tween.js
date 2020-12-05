@@ -3,7 +3,8 @@ const STATUS_ACTIVE = 1;
 const STATUS_FINISHED = 2;
 
 const easeInOut = function (t) {
-  return t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1
+  return 0.5 * (Math.sin((t - 0.5) * Math.PI) + 1);
+ // return t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
 };
 
 // noinspection JSUnusedGlobalSymbols
@@ -161,19 +162,23 @@ export default class Tween {
    */
   addTransform(component, newX, newY, newScale) {
     this.phases[0].addTransform(component, newX, newY, newScale);
+    return this;
   };
 
   addColorChange(element, newColor) {
     this.phases[0].addColorChange(element, newColor);
+    return this;
   };
 
 
   addFade = function (element, targetOpacity) {
     this.phases[0].addFade(element, targetOpacity);
+    return this;
   };
 
   addInterpolation = function (startArray, endArray, callback) {
     this.phases[0].addInterpolation(startArray, endArray, callback);
+    return this;
   };
 
 

@@ -22,8 +22,8 @@ export default class Rect extends Component {
     onClick: P.func
   };
 
-  constructor(props, domNode) {
-    super(props, domNode);
+  constructor(props, parent, domNode) {
+    super(props, parent, domNode);
     this.handleClick = this.handleClick.bind(this);
     // only at beginning lifespan
     if (props.onClick) {

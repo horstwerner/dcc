@@ -1,14 +1,13 @@
 
-.background {
+.background,
+.clickable,
+.hovering {
   position: absolute;
   transform-origin: 0 0;
   box-sizing: border-box;
 }
 
 .clickable {
-  position: absolute;
-  transform-origin: 0 0;
-  box-sizing: border-box;
   cursor: pointer;
 }
 
@@ -16,6 +15,9 @@
   box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.2);
 }
 
+.hovering {
+  box-shadow: 12px 12px 12px 0 rgba(0, 0, 0, 0.2), 4px 4px 8px 0 rgba(0, 0, 0, 0.25);
+}
 
 .card {
   position: absolute;
