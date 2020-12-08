@@ -1,0 +1,12 @@
+.panel {
+  position: absolute;
+  transform-origin: 0 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  background-color: #99babf;
+  box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.15);
+  border-bottom-right-radius: 8px;
+  border-top-right-radius: 8px;
+}

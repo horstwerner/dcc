@@ -1,13 +1,13 @@
 .workbook {
     overflow-x: hidden;
     overflow-y: scroll;
-    background-color: #acbcbf;
+    background-color: #536c70;
 }
 .workbook::-webkit-scrollbar {
     width: 10px;
 }
 .workbook::-webkit-scrollbar-thumb {
-    background-color: #c5d4d4;
+    background-color: #8fadb3;
     border-right: solid 1px #959595;
     width: 100%;
     border-radius: 5px;
@@ -18,7 +18,7 @@
     background-color: #EEEEEA;
 }
 .workbook::-webkit-scrollbar-track {
-    background-color: #acbcbf;
+    background-color: #7f9ea3;
     width: 100%;
 }
 .canvas {

@@ -13,10 +13,8 @@ export default class Button extends Component {
   };
 
   updateContents(props) {
-
     this.innerProps = props;
     const {text, onClick} = props;
-
     this.createChild(Div_({className: css.button, onclick: onClick}, text)._Div)
   }
 

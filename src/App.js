@@ -9,10 +9,20 @@ import {Div_} from '@symb/Div';
 import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
-import {CANVAS_WIDTH, MARGIN, MAX_CARD_HEIGHT, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
+import {
+  CANVAS_WIDTH,
+  MARGIN,
+  MAX_CARD_HEIGHT,
+  MENU_WIDTH,
+  SIDEBAR_BACK_COLOR,
+  SIDEBAR_MAX,
+  SIDEBAR_PERCENT
+} from "@/Config";
 import {Workbook_} from "@/components/Workbook";
 import {fit} from "@symb/util";
 import Tween from "@/arrangement/Tween";
+import {hoverCardMenu} from "@/components/Generators";
+import {ActiveCard_} from "@/components/ActiveCard";
 
 const APP = 'app';
 const WORKBOOK = 'workbook';
@@ -104,7 +114,7 @@ export default class App extends Component {
       currentData: Cache.rootNode,
       currentTemplate: 'root',
       canvasCards: [],
-      hoverCards: [],
+      hoverCard: null,
       dataLoaded: false,
       error: null,
     };
@@ -126,7 +136,25 @@ export default class App extends Component {
           }
         });
     this.handleNodeClick = this.handleNodeClick.bind(this);
+    this.handleHoverCardStash = this.handleHoverCardStash.bind(this);
+    this.handleHoverCardPin = this.handleHoverCardPin.bind(this);
+    this.handleHoverCardClose = this.handleHoverCardClose.bind(this);
+  }
 
+  handleHoverCardStash() {
+    console.log(`stash`);
+  }
+
+  handleHoverCardClose() {
+    this.setState({hoverCard: null});
+  }
+
+  handleHoverCardPin() {
+    const {nextChildPos, mainHeight, hoverCard} = this.state;
+    const {data, template} = hoverCard;
+    this.childByKey[WORKBOOK].scrollToPos(nextChildPos);
+    const newCard = this.appendCard(data, template, true);
+    this.setState({hoverCard: null});
   }
 
   handleNodeClick({event, component}) {
@@ -137,23 +165,28 @@ export default class App extends Component {
 
     const {data, template} = component.innerProps;
     const spatial = component.getRelativeSpatial(this);
+    spatial.y -= this.childByKey[WORKBOOK].getScrollPos();
 
     const {width, height} = template.getSize();
-    const {mainWidth, mainHeight} = this.state;
-    const newSpatial = fit(mainWidth, mainHeight, width, height);
+    const {mainWidth, mainHeight, nextChildPos} = this.state;
+    // const newScale = Math.min(mainWidth / width, mainHeight / height);
+    // const yOffset = 0.5 * (mainHeight - newScale * height);
+    // const xOffset = mainWidth - newScale * width ;
+    const newSpatial = fit(mainWidth, mainHeight, width, height, 0,0,1.2);
 
-    const clone = Card_({key: 'hover', data, hover: true, template, spatial})._Card
-    this.setState({hoverCards: [clone]});
 
-    new Tween(350)
-        .addInterpolation([spatial.x, spatial.y, spatial.scale], [newSpatial.x, newSpatial.y, newSpatial.scale],
+    const clone = Card_({key: 'hover', data, hover: true, template, spatial, style: {zIndex: 2}})._Card
+    // const veil = Div_({key: 'veil', style:{position: 'absolute', width: mainWidth, height: mainHeight, backgroundColor: SIDEBAR_BACK_COLOR, zIndex: 1}, alpha: 0})._Div
+    this.setState({hoverCard: clone, canvasHeight: nextChildPos + mainHeight});
+
+    const tween = new Tween(350)
+        .addInterpolation([0, spatial.x, spatial.y, spatial.scale], [1, newSpatial.x, newSpatial.y, newSpatial.scale],
             (sparry) => {
-            console.log(`hover scaled to ${sparry[2]}`);
-            const spatial = {x: sparry[0], y: sparry[1], scale: sparry[2]};
-            this.setState({hoverCards: [{...clone, spatial}]});
-        })
-        .start();
+            const spatial = {x: sparry[1], y: sparry[2], scale: sparry[3]};
+            this.setState({hoverCard:{...clone, spatial}});
+        });
 
+    tween.start();
 
     // const y = this.appendCard(data, template);
     // this.childByKey[WORKBOOK].scrollToPos(y);
@@ -201,26 +234,31 @@ export default class App extends Component {
         });
   }
 
-  appendCard(data, template) {
-    const { canvasCards, nextChildIndex, nextChildPos } = this.state;
+  appendCard(data, template, active) {
+    const { canvasCards, nextChildIndex, nextChildPos, canvasHeight } = this.state;
     const key = `card${nextChildIndex}`;
     const {width, height} = template.getSize();
-    const scale = Math.min((CANVAS_WIDTH - MARGIN) / width, MAX_CARD_HEIGHT / height, 1.25);
-    const spatial = {x: MARGIN / 2, y: nextChildPos, scale};
     const newCard = Card_({
       key,
-      spatial,
       data,
       template,
       onClick: this.handleNodeClick
     })._Card
-    this.setState({canvasCards: [...canvasCards, newCard], nextChildIndex: nextChildIndex + 1, nextChildPos: nextChildPos + height * spatial.scale + MARGIN});
-    return spatial.y;
+
+    const scale = Math.min((CANVAS_WIDTH - MARGIN - (active ? MENU_WIDTH : 0)) / width, MAX_CARD_HEIGHT / height, 1.25);
+    const spatial = {x: (CANVAS_WIDTH - scale * width) / 2, y: nextChildPos, scale};
+    const newNextChildPos = nextChildPos + height * spatial.scale + MARGIN;
+    let appendCard = active ?
+        ActiveCard_({card: newCard, width: scale * width + MENU_WIDTH, height: 600, spatial })._ActiveCard
+        : {...newCard, spatial};
+
+    this.setState({canvasCards: [...canvasCards, appendCard], nextChildIndex: nextChildIndex + 1, canvasHeight: newNextChildPos, nextChildPos: newNextChildPos});
+    return newCard;
   }
 
   updateContents(props) {
 
-    const {dataLoaded, error, mainWidth, mainHeight, sideBarWidth, canvasCards, hoverCards, windowHeight, inspectionCard} = this.state;
+    const {dataLoaded, error, mainWidth, mainHeight, sideBarWidth, canvasCards, canvasHeight, hoverCard, windowHeight, inspectionCard} = this.state;
 
     // const backgroundColor = (map && map.backColor) || '#ffffff';
     const sidebar = Sidebar_({w: sideBarWidth, h: windowHeight, selectedCard: inspectionCard, spatial: {x: mainWidth, y: 0, scale: 1}})._Sidebar;
@@ -228,18 +266,26 @@ export default class App extends Component {
     const children = [sidebar];
     if (error) {children.push(Div_({}, `An error occurred: ${error.message}`)._Div);}
 
+    const hoverChildren = [];
+    if (hoverCard) {
+      const menuRight = hoverCard.template.getSize().width * hoverCard.spatial.scale + hoverCard.spatial.x;
+      hoverChildren.push(hoverCard);
+      hoverChildren.push(hoverCardMenu(hoverCard.spatial.y, menuRight, this.handleHoverCardClose, this.handleHoverCardPin, this.handleHoverCardStash))
+    }
+
     if (dataLoaded) {
       children.push(...[
         Workbook_({
           key: WORKBOOK,
           width: mainWidth,
           height: mainHeight,
-          children: canvasCards
+          children: canvasCards,
+          canvasHeight
         })._Workbook,
-        Div_({
+        hoverCard && Div_({
           key: OVERLAY,
           className: css.overlay,
-          children: hoverCards
+          children: hoverChildren
         })._Div
       ]);
     }

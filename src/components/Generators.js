@@ -13,7 +13,7 @@ import {CardSet_, LOD_FULL, LOD_RECT} from "@/components/CardSet";
 import {Card_} from "@/components/Card";
 import CompactGridArrangement from "@/arrangement/CompactGridArrangement";
 import {preprocess} from "@/graph/Preprocessors";
-
+import hoverMenuCss from './HoverCardMenu.css';
 
 const PADDING = 0.2;
 const KEY_BACKGROUND = 'background';
@@ -197,4 +197,17 @@ ChildSet.propTypes = {key: P.string.isRequired,
   template: P.string.isRequired
 }
 
+export const hoverCardMenu = function hoverCardMenu(top, right, onClose, onPin, onStash) {
+  const iconSize = 18;
+  const iconMargin = 6;
+  const width = iconSize;
+  const totalWidth = 3 * iconSize + 2 * iconMargin;
+  const height = iconSize;
+  const children = [
+    Image_({className: hoverMenuCss.icon, width, height, source: 'public/Pin.svg', onClick: onPin})._Image,
+    Image_({className: hoverMenuCss.icon, width, height, source: 'public/Dock.svg', onClick: onStash})._Image,
+    Image_({className: hoverMenuCss.icon, width, height, source: 'public/CloseButton.svg', onClick: onClose})._Image,
+  ];
 
+  return Div_({className: hoverMenuCss.menu, children, style: {width: totalWidth, height}, spatial: {x: right - totalWidth - iconMargin, y: top + iconMargin, scale: 1}})._Div
+}

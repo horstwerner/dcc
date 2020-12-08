@@ -1,8 +1,8 @@
 {
   "constants": [
     {"MARGIN":  20},
-    {"CARD_BACKGROUND_COLOR":  "#FEFEFE"},
-    {"AREA_BACKGROUND_COLOR":  "#FAFAFA"},
+    {"CARD_BACKGROUND_COLOR":  "#FAFAFA"},
+    {"AREA_BACKGROUND_COLOR":  "#F5F5F5"},
     {"TEXT_COLOR": "rgb(43,43,43)"},
     {"HEADING_COLOR": "rgba(0,0,0,0.83)"},
     {"TEXT_STYLE": {

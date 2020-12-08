@@ -19,7 +19,7 @@ class Workbook extends Component {
   static propTypes = {
     width: P.number.isRequired,
     height: P.number.isRequired,
-
+    activeCardKey: P.string
   }
 
   // constructor(descriptor, domNode) {
@@ -54,11 +54,16 @@ class Workbook extends Component {
     return this.dom.scrollTop;
   }
 
-  scrollToPos(newScrollTop) {
+  scrollToPos(newScrollTop, tween) {
 
-    new Tween(600)
-        .addInterpolation([this.dom.scrollTop], [newScrollTop], (values) => {this.dom.scrollTop = values[0]})
-        .start();
+    const useTween = tween || new Tween(600);
+
+    useTween
+        .addInterpolation([this.dom.scrollTop], [newScrollTop], (values) => {this.dom.scrollTop = values[0]});
+
+    if (!tween) {
+      useTween.start();
+    }
   }
 
 }
