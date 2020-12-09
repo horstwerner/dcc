@@ -20,7 +20,8 @@ export default class Path extends Component {
     if (isEqual(this.innerProps, props)) {
       return;
     }
-    this.innerProps = props;
+    this.innerProps = {...props};
+
     const { id, d, fill, stroke } = props;
 
     if (id) {

@@ -70,11 +70,11 @@ export default class Component {
     }
   }
 
-  getRelativeSpatial(component) {
+  getRelativeSpatial(refComponent) {
     let current = this;
     const spatial = {...(this.spatial || DEFAULT_SPATIAL)};
     console.log(`${this.key} at ${JSON.stringify(this.spatial)}`);
-    while (current.parent && current !== component) {
+    while (current.parent && current !== refComponent) {
       const parentSpatial = current.parent.spatial || DEFAULT_SPATIAL;
       console.log(`${current.parent.key} at ${JSON.stringify(parentSpatial)}`);
       spatial.x = spatial.x * parentSpatial.scale + parentSpatial.x;
@@ -82,8 +82,25 @@ export default class Component {
       spatial.scale *= parentSpatial.scale;
       current = current.parent;
     }
+    if (current !== refComponent) {
+      const downPath = refComponent.getAncestry([]);
+      for (let idx = 1; idx < downPath.length; idx++) {
+        const currentSpatial = downPath[idx].spatial || DEFAULT_SPATIAL;
+        spatial.x = (spatial.x - currentSpatial.x) / currentSpatial.scale;
+        spatial.y = (spatial.y - currentSpatial.y) / currentSpatial.scale;
+        spatial.scale /= currentSpatial.scale;
+      }
+    }
     console.log(`result = ${JSON.stringify(spatial)}`)
     return spatial;
+  }
+
+  getAncestry(targetArray) {
+    if (this.parent) {
+      this.parent.getAncestry(targetArray);
+    }
+    targetArray.push(this);
+    return targetArray;
   }
 
   createChild(fallbackKey, childDescriptor) {
@@ -104,9 +121,6 @@ export default class Component {
       childDescriptor.key = fallbackKey;
     }
     const existing = this.childByKey[childDescriptor.key];
-    if (childDescriptor.key === 'hover' )  {
-      console.log(`updating hover`);
-    }
     const {type, ...netProps} = childDescriptor;
     if (!existing || existing.constructor.type !== type) {
       if (existing) {
@@ -119,24 +133,22 @@ export default class Component {
     return existing;
   }
 
-  // /**
-  //  * includes an already instantiated Component into the list of child components
-  //  * However, if no child descriptor with the same key is passed in the next update,
-  //  * it will be removed again
-  //  * @param child
-  //  * @param spatial - position and scale in this component's local coordinate system
-  //  */
-  // adoptChild(child, spatial) {
-  //   if (!this.childByKey) {
-  //     this.childByKey = {};
-  //   }
-  //   child.update({spatial});
-  //   this.addChild(child);
-  // }
-
-  // updateChild(key, descriptor) {
-  //   this.childByKey[key] = this.createChild(key, descriptor);
-  // }
+  /**
+   * includes an already instantiated Component into the list of child components
+   * However, if no child descriptor with the same key is passed in the next update,
+   * it will be removed again
+   * @param child
+   * @param spatial - position and scale in this component's local coordinate system
+   */
+  adoptChild(child, spatial) {
+    if (!this.childByKey) {
+      this.childByKey = {};
+    }
+    delete child.parent.childByKey[child.key];
+    child.update({spatial});
+    child.parent = this;
+    this.addChild(child);
+  }
 
   createChildren(descriptor) {
     const updatedChildren = {};
@@ -176,8 +188,9 @@ export default class Component {
   update(props) {
 
     if (props) {
-      this.checkProps(props);
+      // this.checkProps(props);
     }
+
     const {key, className, style, alpha, spatial, ...innerProps} = props;
     if (key && (key !== this.key)) {
       throw new Error(`Attempt to update object ${this.key} with props for ${key}`);
@@ -211,11 +224,11 @@ export default class Component {
     if (!isEqual(this.innerProps, props)) {
       const { children } = props;
       if (children) {
-        this.innerProps = props;
+        this.innerProps = {...props};
         this.createChildren(children);
       } else {
         // this.dom.innerHTML = this.fillTemplate(props);
-        this.innerProps = props;
+        this.innerProps = {...props};
       }
     }
   }
@@ -223,7 +236,7 @@ export default class Component {
   updateStyle(style) {
     if (!isEqual(style, this.style)) {
       setStyle(this.dom, style);
-      this.style = style;
+      this.style = {...style};
     }
   }
 
@@ -240,7 +253,7 @@ export default class Component {
       }
       // console.log(`update: ${this.key} scaled to ${scale}`);
       this.dom.style.transform = getTransformString(x, y, scale);
-      this.spatial = spatial;
+      this.spatial = {x, y, scale};
     }
   }
 

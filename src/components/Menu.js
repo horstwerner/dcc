@@ -19,7 +19,7 @@ class MenuPanel extends Component {
 
   updateContents(props) {
     if (isEqual(props, this.innerProps)) return;
-    this.innerProps = props;
+    this.innerProps = {...props};
 
     const {title, entries, w} = props;
 

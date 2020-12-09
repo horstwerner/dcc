@@ -42,7 +42,8 @@ export default class Rect extends Component {
     if (isEqual(this.innerProps, props)) {
       return;
     }
-    this.innerProps = props;
+    this.innerProps = {...props};
+
     const { id, x, y, width, height, value} = props;
     if (DEBUG_MODE && (isNaN(width) || isNaN(height) || isNaN(x) || isNaN(y))) {
       debugger

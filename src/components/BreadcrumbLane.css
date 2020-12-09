@@ -1,0 +1,30 @@
+.lane {
+    position: absolute;
+    overflow-y: hidden;
+    overflow-x: scroll;
+    background-color: #5e7b80;
+    border-top: solid 1px #536d73;
+    box-sizing: border-box;
+}
+.lane::-webkit-scrollbar {
+    height: 12px;
+}
+.lane::-webkit-scrollbar-thumb {
+    background-color: #7a9499;
+    border-top: solid 1px #536d73;
+    height: 100%;
+    border-radius: 6px;
+    cursor: grab;
+    transition: background-color 0.4s;
+}
+.lane::-webkit-scrollbar-thumb:horizontal:hover {
+    background-color: #7f9ea3;
+}
+.lane::-webkit-scrollbar-track {
+    background-color: #5e7b80;
+    height: 100%;
+}
+.canvas {
+    /*position: absolute;*/
+    transform-origin: 0 0;
+}

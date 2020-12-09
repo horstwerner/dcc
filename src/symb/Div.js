@@ -1,6 +1,5 @@
 import P from 'prop-types';
-import isEqual from 'lodash/isEqual';
-import merge from 'lodash/merge';
+import {cloneDeep, isEqual, merge} from 'lodash';
 import Component from "./Component";
 import ComponentFactory from "./ComponentFactory"
 
@@ -14,10 +13,8 @@ export class Div extends Component {
   };
 
   updateContents(props) {
-    if (isEqual(this.innerProps, props)) {
-      return;
-    }
-    this.innerProps = props;
+    this.innerProps = {...props};
+
     const { onClick, children } = props;
     if (children) {
       this.createChildren(children);

@@ -23,7 +23,8 @@ export default class SubdividedGroup extends Component {
     if (isEqual(this.innerProps, props)) {
       return;
     }
-    this.innerProps = props;
+    this.innerProps = {...props};
+
     //FIXME: implement
 
   }

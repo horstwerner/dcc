@@ -39,6 +39,7 @@ class Card extends Component {
   }
 
   handleCardClick(e) {
+    debugger
     if (this.innerProps.onClick) {
       this.innerProps.onClick({event: e, component: this});
     }
@@ -52,7 +53,8 @@ class Card extends Component {
     if (isEqual(this.innerProps, props)) {
       return;
     }
-    this.innerProps = props;
+    this.innerProps = {...props};
+
 
     const { data, template, onClick, hover } = props;
 

@@ -14,7 +14,8 @@ export class Image extends Component {
     if (isEqual(this.innerProps, props)) {
       return;
     }
-    this.innerProps = props;
+    this.innerProps = {...props};
+
     const {source, width, height, cornerRadius, onClick, color} = props;
     this.dom.setAttribute('src',props.source);
     if (cornerRadius) {

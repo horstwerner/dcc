@@ -1,20 +1,20 @@
 import P from 'prop-types';
 import Component from "@symb/Component";
 import ComponentFactory from "@symb/ComponentFactory";
-import css from "@/components/Workbook.css";
+import css from "@/components/BreadcrumbLane.css";
 import isEqual from "lodash/isEqual";
 import {Div_} from "@symb/Div";
 import {CANVAS_WIDTH} from "@/Config";
 import Tween from "@/arrangement/Tween";
 
-const WORKBOOK = 'workbook';
+const Lane = 'breadcrumb-lane';
 
-class Workbook extends Component {
+class BreadcrumbLane extends Component {
 
-  static type = WORKBOOK;
+  static type = Lane;
   // noinspection JSUnusedGlobalSymbols
   static baseTag = 'div';
-  static className = css.workbook;
+  static className = css.lane;
 
   static propTypes = {
     width: P.number.isRequired,
@@ -39,15 +39,17 @@ class Workbook extends Component {
     if (!this.innerProps || props.width !== this.innerProps.width || props.height !== this.innerProps.height) {
       this.updateStyle({width: props.width, height: props.height});
     }
-    this.innerProps = props;
-    const { children, width, canvasHeight } = props;
-    const scale = this.getScale(width);
-    const canvas =  Div_({ key:'workbook-canvas', className: css.canvas, style: {width: CANVAS_WIDTH, height: canvasHeight},
-      spatial: {x: 0, y: 0, scale},
-      children}
-      )._Div
+    this.innerProps = {...props};
 
-    this.createChildren(canvas);
+    const { children, height, canvasWidth } = props;
+    const canvas =  Div_(
+        { key:'workbook-canvas',
+          className: css.canvas,
+          style: {width: 10000, height: 1},
+          children}
+    )._Div
+
+    this.createChildren([canvas, ...children]);
   }
 
   getScrollPos() {
@@ -65,9 +67,8 @@ class Workbook extends Component {
       useTween.start();
     }
   }
-
 }
 
-ComponentFactory.registerType(Workbook);
+ComponentFactory.registerType(BreadcrumbLane);
 
-export const Workbook_ = (props) => ({_Workbook: {type: WORKBOOK, ...props}});
+export const BreadcrumbLane_ = (props) => ({_BreadcrumbLane: {type: Lane, ...props}});

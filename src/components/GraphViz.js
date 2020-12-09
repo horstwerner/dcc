@@ -131,7 +131,8 @@ class GraphViz extends Component {
     if (isEqual(this.innerProps, props)) {
       return;
     }
-    this.innerProps = props;
+    this.innerProps = {...props};
+
 
     const {startNodes, scope, w, h, path, nodeTemplate, onNodeClick} = props;
 

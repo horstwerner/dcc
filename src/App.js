@@ -1,31 +1,24 @@
 import P from 'prop-types';
-import {omit} from 'lodash';
+import {omit, isEqual} from 'lodash';
 import Component from '@symb/Component';
 import css from './App.css';
 import ComponentFactory from "@symb/ComponentFactory";
 import Cache, {TYPE_AGGREGATOR, TYPE_CONTEXT} from './graph/Cache';
-import TemplateRegistry from './templates/TemplateRegistry';
+import TemplateRegistry, {ARRANGEMENT_DEFAULT} from './templates/TemplateRegistry';
 import {Div_} from '@symb/Div';
 import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
-import {
-  CANVAS_WIDTH,
-  MARGIN,
-  MAX_CARD_HEIGHT,
-  MENU_WIDTH,
-  SIDEBAR_BACK_COLOR,
-  SIDEBAR_MAX,
-  SIDEBAR_PERCENT
-} from "@/Config";
-import {Workbook_} from "@/components/Workbook";
+import {DURATION_REARRANGEMENT, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
 import {fit} from "@symb/util";
 import Tween from "@/arrangement/Tween";
 import {hoverCardMenu} from "@/components/Generators";
-import {ActiveCard_} from "@/components/ActiveCard";
+import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 
 const APP = 'app';
-const WORKBOOK = 'workbook';
+const BREADCRUMBS = 'breadcrumbs';
+const SIDEBAR = 'sidebar';
+const FOCUS = 'focus';
 const OVERLAY = 'overlay';
 
 const handleResponse = function (response) {
@@ -104,20 +97,21 @@ export default class App extends Component {
     title: P.string
   };
 
-
   constructor(props, parent, domNode) {
     super(props, parent, domNode);
 
     this.state = {
-      nextChildIndex: 1,
       nextChildPos: MARGIN,
       currentData: Cache.rootNode,
       currentTemplate: 'root',
-      canvasCards: [],
+      breadcrumbCards: [],
+      focusCard: null,
       hoverCard: null,
       dataLoaded: false,
       error: null,
     };
+
+    this.nextChildIndex = 1;
     this.onResize(window.innerWidth, window.innerHeight);
 
     this.getDictionaryFromDb()
@@ -132,13 +126,17 @@ export default class App extends Component {
             this.setState({
               dataLoaded: true
             });
-            this.appendCard(startData, TemplateRegistry.getTemplate('root'));
+            this.createFocusCard(startData, TemplateRegistry.getTemplate('root'));
           }
         });
     this.handleNodeClick = this.handleNodeClick.bind(this);
     this.handleHoverCardStash = this.handleHoverCardStash.bind(this);
     this.handleHoverCardPin = this.handleHoverCardPin.bind(this);
     this.handleHoverCardClose = this.handleHoverCardClose.bind(this);
+  }
+
+  createChildKey() {
+    return `card${this.nextChildIndex++}`;
   }
 
   handleHoverCardStash() {
@@ -150,14 +148,38 @@ export default class App extends Component {
   }
 
   handleHoverCardPin() {
-    const {nextChildPos, mainHeight, hoverCard} = this.state;
-    const {data, template} = hoverCard;
-    this.childByKey[WORKBOOK].scrollToPos(nextChildPos);
-    const newCard = this.appendCard(data, template, true);
-    this.setState({hoverCard: null});
+    const {nextChildPos, mainWidth, hoverCard, focusTop, focusHeight, focusCard, breadcrumbCards } = this.state;
+    const breadCrumbLane = this.childByKey[BREADCRUMBS];
+    const focusInstance = this.childByKey[FOCUS].childByKey[focusCard.key];
+    const spatial = focusInstance.getRelativeSpatial(breadCrumbLane);
+
+    const breadcrumbNativeSize = focusCard.template.getSize();
+    const newBreadcrumbScale =  (focusTop - 24) / breadcrumbNativeSize.height;
+    const newBreadcrumbSpatial = {x: nextChildPos, y: 7, scale: newBreadcrumbScale};
+
+    const focusNativeSize = hoverCard.template.getSize();
+    const hoverInstance = this.childByKey[OVERLAY].childByKey[hoverCard.key];
+    const newFocusSpatial =  fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, focusNativeSize.width, focusNativeSize.height, MARGIN,  MARGIN, 1.2);
+
+    new Tween(DURATION_REARRANGEMENT)
+        .addTransform(focusInstance, newBreadcrumbSpatial.x, newBreadcrumbSpatial.y + focusHeight, newBreadcrumbScale)
+        .addTransform(hoverInstance, newFocusSpatial.x, newFocusSpatial.y, newFocusSpatial.scale)
+        .onEndCall(() => {
+          focusCard.spatial = newBreadcrumbSpatial;
+          breadCrumbLane.adoptChild(focusInstance, newBreadcrumbSpatial);
+          this.childByKey[FOCUS].adoptChild(hoverInstance, newFocusSpatial);
+          this.setState({hoverCard: null,
+            focusCard: {...hoverCard, hover: false, onClick: this.handleNodeClick},
+            breadcrumbCards: [...breadcrumbCards, focusCard],
+            nextChildPos: nextChildPos + newBreadcrumbScale * breadcrumbNativeSize.width + MARGIN});
+        })
+        .start();
+
+    // .scrollToPos(nextChildPos);
+
   }
 
-  handleNodeClick({event, component}) {
+  handleNodeClick({component}) {
     // const {id} = clickData;
     // const node = Cache.getNodeByUniqueKey(id);
     // const template = TemplateRegistry.getTemplate(node.type.uri);
@@ -165,19 +187,17 @@ export default class App extends Component {
 
     const {data, template} = component.innerProps;
     const spatial = component.getRelativeSpatial(this);
-    spatial.y -= this.childByKey[WORKBOOK].getScrollPos();
 
     const {width, height} = template.getSize();
-    const {mainWidth, mainHeight, nextChildPos} = this.state;
+    const {mainWidth, focusHeight, nextChildPos} = this.state;
     // const newScale = Math.min(mainWidth / width, mainHeight / height);
     // const yOffset = 0.5 * (mainHeight - newScale * height);
     // const xOffset = mainWidth - newScale * width ;
-    const newSpatial = fit(mainWidth, mainHeight, width, height, 0,0,1.2);
-
+    const newSpatial = fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, width, height, MARGIN,MARGIN,1.2);
 
     const clone = Card_({key: 'hover', data, hover: true, template, spatial, style: {zIndex: 2}})._Card
     // const veil = Div_({key: 'veil', style:{position: 'absolute', width: mainWidth, height: mainHeight, backgroundColor: SIDEBAR_BACK_COLOR, zIndex: 1}, alpha: 0})._Div
-    this.setState({hoverCard: clone, canvasHeight: nextChildPos + mainHeight});
+    this.setState({hoverCard: clone});
 
     const tween = new Tween(350)
         .addInterpolation([0, spatial.x, spatial.y, spatial.scale], [1, newSpatial.x, newSpatial.y, newSpatial.scale],
@@ -234,19 +254,32 @@ export default class App extends Component {
         });
   }
 
-  appendCard(data, template, active) {
-    const { canvasCards, nextChildIndex, nextChildPos, canvasHeight } = this.state;
-    const key = `card${nextChildIndex}`;
+  createFocusCard(data, template) {
+    const {mainWidth, focusHeight} = this.state;
     const {width, height} = template.getSize();
-    const newCard = Card_({
+    // const spatial = fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, width, height, MARGIN,  MARGIN, 1.2);
+    const key = this.createChildKey();
+
+    const focusCard = Card_({
       key,
       data,
       template,
+      // spatial,
       onClick: this.handleNodeClick
     })._Card
 
-    const scale = Math.min((CANVAS_WIDTH - MARGIN - (active ? MENU_WIDTH : 0)) / width, MAX_CARD_HEIGHT / height, 1.25);
-    const spatial = {x: (CANVAS_WIDTH - scale * width) / 2, y: nextChildPos, scale};
+    this.setState({focusCard})
+  }
+
+  appendToBreadcrumb(cardInstance, descriptor) {
+    const breadInstance = this.childByKey[BREADCRUMBS];
+    const spatial = cardInstance.getRelativeSpatial(breadInstance);
+    breadInstance.adoptChild(cardInstance, spatial);
+
+    const { breadcrumbCards, nextChildPos } = this.state;
+
+    const key = `card${nextChildIndex}`;
+    const {width, height} = template.getSize();
     const newNextChildPos = nextChildPos + height * spatial.scale + MARGIN;
     let appendCard = active ?
         ActiveCard_({card: newCard, width: scale * width + MENU_WIDTH, height: 600, spatial })._ActiveCard
@@ -258,13 +291,14 @@ export default class App extends Component {
 
   updateContents(props) {
 
-    const {dataLoaded, error, mainWidth, mainHeight, sideBarWidth, canvasCards, canvasHeight, hoverCard, windowHeight, inspectionCard} = this.state;
+    const {focusCard, error, mainWidth, focusHeight, sideBarWidth, breadcrumbCards, canvasHeight, hoverCard, focusTop,
+      windowHeight} = this.state;
 
     // const backgroundColor = (map && map.backColor) || '#ffffff';
-    const sidebar = Sidebar_({w: sideBarWidth, h: windowHeight, selectedCard: inspectionCard, spatial: {x: mainWidth, y: 0, scale: 1}})._Sidebar;
-
-    const children = [sidebar];
-    if (error) {children.push(Div_({}, `An error occurred: ${error.message}`)._Div);}
+    if (error) {
+      this.createChildren(Div_({}, `An error occurred: ${error.message}`)._Div);
+      return;
+    }
 
     const hoverChildren = [];
     if (hoverCard) {
@@ -273,32 +307,53 @@ export default class App extends Component {
       hoverChildren.push(hoverCardMenu(hoverCard.spatial.y, menuRight, this.handleHoverCardClose, this.handleHoverCardPin, this.handleHoverCardStash))
     }
 
-    if (dataLoaded) {
-      children.push(...[
-        Workbook_({
-          key: WORKBOOK,
-          width: mainWidth,
-          height: mainHeight,
-          children: canvasCards,
-          canvasHeight
-        })._Workbook,
-        hoverCard && Div_({
+    if (focusCard) {
+     const {width, height} = focusCard.template.getSize();
+     const newSpatial = fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, width, height, MARGIN,  MARGIN, 1.2);
+     if (!isEqual(newSpatial, focusCard.spatial)) {
+       focusCard.spatial = newSpatial;
+     }
+    }
+
+    this.createChildren([
+      BreadcrumbLane_({
+        key: BREADCRUMBS,
+        spatial: {x: 0, y: windowHeight - focusTop, scale: 1},
+        width: mainWidth,
+        height: focusTop,
+        children: breadcrumbCards,
+        canvasHeight
+      })._BreadcrumbLane,
+        Div_({
+          key: FOCUS,
+          className: css.focus,
+          spatial: {x: 0, y: 0, scale: 1},
+          children: focusCard
+        })._Div,
+      Sidebar_({w: sideBarWidth, h: windowHeight,
+        menuTop: 0.5 *  windowHeight - focusTop,
+        key: SIDEBAR,
+        spatial: {x: mainWidth, y: 0, scale: 1}
+      })._Sidebar,
+      Div_({
           key: OVERLAY,
           className: css.overlay,
           children: hoverChildren
         })._Div
-      ]);
-    }
-    this.createChildren(children);
+    ]);
   }
 
   onResize(width, height) {
     console.log(`onResize:${width}-${height}`);
+    this.dom.style.width = `${width}px`;
+    this.dom.style.height = `${height}px`;
     const sideBarWidth = Math.min(Math.min(SIDEBAR_PERCENT * width, SIDEBAR_MAX), 4 * height);
+    const focusTop = 0.15 * height;
+    const focusHeight = height - focusTop;
     const mainHeight = height;
     const mainWidth = width - sideBarWidth;
 
-    this.setState({windowWidth: width, windowHeight: height, mainWidth, mainHeight, sideBarWidth});
+    this.setState({windowWidth: width, windowHeight: height, focusTop, focusHeight, mainWidth, mainHeight, sideBarWidth});
   }
 
 };

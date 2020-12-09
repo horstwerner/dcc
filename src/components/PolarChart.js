@@ -32,7 +32,8 @@ export default class PolarChart extends Component {
 
   updateContents(props) {
     if (isEqual(this.innerProps, props)) return;
-    this.innerProps = props;
+    this.innerProps = {...props};
+
 
     const {data, maxValues, dimensions, labels, labelStyle, diameter, colorStops} = props;
 

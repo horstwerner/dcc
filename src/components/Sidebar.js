@@ -7,7 +7,7 @@ import Template from "@/templates/Template";
 import GraphNode from "@/graph/GraphNode";
 import {Card_} from "@/components/Card";
 import {fit} from "@symb/util";
-import {MARGIN} from "@/Config";
+import {MARGIN, MENU_WIDTH} from "@/Config";
 import {MenuPanel_} from "@/components/MenuPanel";
 
 const SIDEBAR = 'sidebar';
@@ -29,16 +29,22 @@ class Sidebar extends Component {
 
   updateContents(props) {
     if (isEqual(props, this.innerProps)) return;
-    this.innerProps = props;
+    this.innerProps = {...props};
 
-    const { w, h, views, tools } = props;
+    const { w, h, menuTop, views, tools } = props;
     if (!w || !h) return;
 
     this.dom.style.width = `${w}px`;
     this.dom.style.height = `${h}px`;
 
     const netW = w - 2 * MARGIN;
-    const children = [];
+    const children = [
+        MenuPanel_({
+          w: MENU_WIDTH,
+          h: 0.5 * h,
+          spatial: {x: 0, y: menuTop, scale: 1}
+        })._MenuPanel
+    ];
 
     // if (selectedCard) {
     //   const size = selectedCard.template.getSize();

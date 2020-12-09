@@ -73,7 +73,8 @@ class Svg extends Component {
     if (isEqual(this.innerProps, props)) {
       return;
     }
-    this.innerProps = props;
+    this.innerProps = {...props};
+
     const {children, width, height, defs} = props;
     if (defs) {
       let defDomEl = this.dom.getElementsByTagName(DEFS)[0];

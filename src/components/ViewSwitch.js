@@ -15,7 +15,8 @@ export default class ViewSwitch extends Component {
   };
 
   updateContents(props) {
-    this.innerProps = props;
+    this.innerProps = {...props};
+
     this.createChildren(
         FlexBox_({flexDirection: 'vertical'},
           views.map(view => Button_({text: view, onClick: () => onViewSelect(view)})._Button)
