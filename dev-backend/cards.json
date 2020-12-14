@@ -64,7 +64,7 @@
         },
         {
           "condition": "=open",
-          "color": "#d0d0d0"
+          "color": "#c0c0c0"
         }
       ]},
     {"DEFAULT_TICKET_COLOR": "#a0a0a0"},
@@ -114,7 +114,10 @@
   ],
   "cards": [
     {
-      "type": "jira:ticket",
+      "id": "jira:ticket",
+      "name": "Default",
+      "appliesTo": "jira:ticket",
+      "aggregate": false,
       "size": {
         "w": 220,
         "h": 120
@@ -190,13 +193,30 @@
           "style": {
             "font-size": "16px",
             "font-weight": "bold",
-            "color": "#FFFFFF"
+            "color": "#202020"
+          }
+        },
+        {
+          "key": "status",
+          "type": "textfield",
+          "x": 130,
+          "y": 67,
+          "w": 90,
+          "h": 20,
+          "attribute": "jira:status",
+          "style": {
+            "font-size": "12px",
+            "font-weight": "normal",
+            "color": "#202020"
           }
         }
       ]
     },
     {
-      "type": "jira:team",
+      "id": "jira:team",
+      "name": "Default",
+      "appliesTo": "jira:team",
+      "aggregate": false,
       "size": {
         "w": 400,
         "h": 150
@@ -262,8 +282,10 @@
       ]
     },
     {
-      "type": "stories-by-feature",
-      "node-type": "jira:ticket",
+      "id": "stories-by-feature",
+      "name": "by Feature",
+      "appliesTo": "jira:ticket",
+      "aggregate": true,
       "background": {
         "type": "rect",
         "w": 420,
@@ -298,8 +320,10 @@
       ]
     },
     {
-      "type": "team-overview",
-      "node-type": "jira:team",
+      "id": "team-overview",
+      "name": "Teams",
+      "appliesTo": "jira:team",
+      "aggregate": true,
       "background": {
         "type": "rect",
         "w": 420,
@@ -331,7 +355,9 @@
       ]
     },
     {
-      "type": "root",
+      "id": "root",
+      "name": "Start View",
+      "aggregate": true,
       "background": {
         "type": "rect",
         "w": 1580,
@@ -343,26 +369,29 @@
           "key": "map-feature",
           "type": "card",
           "template": "stories-by-feature",
-          "source": "jira:ticket",
+          "source": "~jira:ticket",
           "x": 0, "y":0, "w": 420, "h": 500
         },
         {
           "key": "dependencies",
           "type": "card",
-          "source": "jira:ticket",
+          "source": "~jira:ticket",
           "template": "dependency-graph",
           "x": 440, "y": 0, "w": 700, "h": 500
         },
         {
           "key": "teams",
           "type": "card",
-          "source": "jira:team",
+          "source": "~jira:team",
           "template": "team-overview",
           "x": 1160, "y":0, "w": 420, "h": 900
         }
       ]
     },
-    {"type":  "dependency-graph",
+    {"id": "dependency-graph",
+      "name": "Dependency Graph",
+      "appliesTo": "jira:ticket",
+      "aggregate": true,
       "background": {
         "type": "rect",
         "w": 700,
@@ -393,7 +422,10 @@
       ]
     },
     {
-      "type": "storiesByStatus",
+      "id": "storiesByStatus",
+      "name": "by Status",
+      "appliesTo": "jira:ticket",
+      "aggregate": true,
       "background": {
         "type": "rect",
         "w": 400,
@@ -403,6 +435,16 @@
         "x": 0,
         "y": 0
       },
+      "preprocessing": [
+        {"method":  "aggregate",
+        "input": "core:subNodes",
+        "results": {
+          "storyPointSum": {
+            "attribute": "jira:storypoints",
+            "calculate": "sum"
+          }}
+      }
+      ],
       "elements": [
         {
           "key": "title",
@@ -437,7 +479,7 @@
         {
           "key": "storypts",
           "type": "textfield",
-          "attribute": "total-storypoints",
+          "attribute": "storyPointSum",
           "x": 348,
           "y": 30,
           "w": 200,
@@ -476,7 +518,7 @@
           "type": "cards",
           "source": "core:subNodes",
           "x": 20,
-          "y": 80,
+          "y": 100,
           "w": 360,
           "h": 700,
           "arrangement": {
@@ -489,7 +531,8 @@
       ]
     },
     {
-      "type": "storyBarWithTitle",
+      "id": "storyBarWithTitle",
+      "aggregate": true,
       "background": {"type": "rect", "w": 380, "h": 30,
         "color": "#FEFEFE"
       },
@@ -527,7 +570,8 @@
       ]
     },
     {
-      "type": "storyBarByStatus",
+      "id": "storyBarByStatus",
+      "aggregate": true,
       "background": { "type": "rect", "w": 400, "h": 70},
       "preprocessing": [
         {"method":  "aggregate",
@@ -535,7 +579,11 @@
           "storyPointSum": {
             "attribute": "jira:storypoints",
             "calculate": "sum"
-          }}
+          },
+           "secondSum": {
+             "attribute": "jira:storypoints",
+             "calculate": "sum"
+           }}
         }
       ],
       "elements": [
@@ -549,7 +597,7 @@
         {
           "key": "counter",
           "type": "caption",
-          "text": "{{core:nodeCount}} Stories, {{storyPointSum}} Story Points",
+          "text": "{{core:nodeCount}} Stories, {{secondSum}} Story Points",
           "x": 200, "y": 6, "w": 200, "h": 16,
           "style": {"font-size": "16px", "color": "#A0A0A0", "h-align": "right"}
         },
@@ -571,16 +619,26 @@
       ]
     },
     {
-      "type": "trellisByRelease+Status",
+      "id": "trellisByRelease+Status",
+      "name": "by Release",
+      "appliesTo": "jira:ticket",
+      "aggregate": true,
       "background": {
         "type": "rect",
-        "w": 260,
+        "w": 300,
         "h": 500,
         "cornerRadius": "6px",
         "color": "#FEFEFE",
         "x": 0,
         "y": 0
       },
+      "preprocessing": [       {"method":  "aggregate",
+        "results": {
+          "storyPointSum": {
+            "attribute": "jira:storypoints",
+            "calculate": "sum"
+          }}}
+      ],
       "elements": [
         {
           "key": "title",
@@ -589,7 +647,7 @@
           "style": {
             "$": "CARD_HEADING_STYLE"
           },
-          "x": 30,
+          "x": 20,
           "y": 20,
           "w": 200,
           "h": 32
@@ -598,8 +656,8 @@
           "key": "storyptLabel",
           "type": "caption",
           "text": "Total Storypoints:",
-          "x": 240,
-          "y": 32,
+          "x": 20,
+          "y": 60,
           "w": 200,
           "h": 24,
           "style": {
@@ -612,10 +670,10 @@
         {
           "key": "storypts",
           "type": "textfield",
-          "attribute": "total-storypoints",
-          "x": 348,
-          "y": 30,
-          "w": 200,
+          "attribute": "storyPointSum",
+          "x": 130,
+          "y": 56.5,
+          "w": 60,
           "h": 24,
           "style": {
             "color": "#A0A0A0",
@@ -629,7 +687,7 @@
           "type": "trellis",
           "source": "core:subNodes",
           "x": 20,
-          "y": 60,
+          "y": 100,
           "w": 260,
           "h": 400,
           "arrangement": {
@@ -646,7 +704,8 @@
       ]
     },
     {
-      "type": "storyBarByImpact",
+      "id": "storyBarByImpact",
+      "aggregate": true,
       "background": {"type": "rect", "w": 460, "h": 70},
       "preprocessing": [
         {"method":  "aggregate",
@@ -708,7 +767,10 @@
       ]
     },
     {
-      "type": "graphAnalysis",
+      "id": "graphAnalysis",
+      "name": "Dependency Analysis",
+      "aggregate": true,
+      "appliesTo": "jira:ticket",
       "background": {
         "type": "rect", "w": 500, "h": 500, "color": "#FEFEFE"},
       "preprocessing": [{"method":  "set-context", "values":  {"allNodes": "core:subNodes"}}],

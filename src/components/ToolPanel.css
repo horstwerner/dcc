@@ -1,0 +1,9 @@
+.panel {
+  position: absolute;
+  transform-origin: 0 0;
+  background-color: #EEEEEA;
+  border-top: solid 1px #C0C0B9;
+  padding: 20px;
+  box-sizing: border-box;
+  z-index: 20;
+}

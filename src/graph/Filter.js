@@ -10,17 +10,37 @@ export const restAfter = function(string, prefix) {
   } else return rest;
 };
 
-export const comparisons = [
-  {symbol: "=", matches: (testValue, value) => testValue === value},
-  {symbol: "contains", matches: (testValue, value) => value.toLowerCase().includes(testValue.toLowerCase())},
-  {symbol: "!=", matches: (testValue, value) => testValue !== value},
-  {symbol: "!contains", matches: (testValue, value) => !(value.toLowerCase().includes(testValue.toLowerCase()))},
-  {symbol: "<=", matches: (testValue, value) => value <= testValue},
-  {symbol: ">=", matches: (testValue, value) =>  value >= testValue},
-  {symbol: "<", matches: (testValue, value) => value < testValue},
-  {symbol: ">", matches: (testValue, value) => value > testValue},
-  {symbol: "exists", matches: (testValue, value) => value != null},
-  {symbol: "empty", matches: (testValue, value) => value == null}
+export const COMPARISON_EQUAL =  (testValue, value) => testValue === value;
+export const COMPARISON_CONTAINS = (testValue, value) => value.toLowerCase().includes(testValue.toLowerCase());
+export const COMPARISON_NOT_EQUAL = (testValue, value) => testValue !== value;
+export const COMPARISON_NOT_CONTAINS = (testValue, value) => !(value.toLowerCase().includes(testValue.toLowerCase()));
+export const COMPARISON_LESS_OR_EQUAL = (testValue, value) => value <= testValue;
+export const COMPARISON_GREATER_OR_EQUAL = (testValue, value) =>  value >= testValue;
+export const COMPARISON_LESS = (testValue, value) => value < testValue;
+export const COMPARISON_GREATER = (testValue, value) => value > testValue;
+export const COMPARISON_EXISTS = (testValue, value) => value != null;
+export const COMPARISON_EMPTY = (testValue, value) => value == null;
+export const COMPARISON_HAS_ASSOCIATED =  (testValue, value) => {
+    if (typeof testValue === 'string') {
+      if (!value) return false;
+      return Array.isArray(value) ? value.find(node => node.uri === testValue) : (value.constructor === GraphNode && value.uri === testValue);
+    } else if (typeof testValue === 'object' && testValue.constructor === GraphNode) {
+      return Array.isArray(value) ? value.includes(testValue) : (value === testValue);
+    }
+}
+
+const comparisons = [
+  {symbol: "=", matches: COMPARISON_EQUAL},
+  {symbol: "contains", matches: COMPARISON_CONTAINS},
+  {symbol: "!=", matches: COMPARISON_NOT_EQUAL},
+  {symbol: "!contains", matches: COMPARISON_NOT_CONTAINS},
+  {symbol: "<=", matches: COMPARISON_LESS_OR_EQUAL},
+  {symbol: ">=", matches: COMPARISON_GREATER_OR_EQUAL},
+  {symbol: "<", matches: COMPARISON_LESS},
+  {symbol: ">", matches: COMPARISON_GREATER},
+  {symbol: "exists", matches: COMPARISON_EXISTS},
+  {symbol: "empty", matches: COMPARISON_EMPTY},
+  {symbol: "->", matches: COMPARISON_HAS_ASSOCIATED}
 ];
 
 export const parseComparison = function parseComparison(condition) {
@@ -70,4 +90,12 @@ export default class Filter {
     throw new Error(`Can't apply filter to "${JSON.stringify(source)}"`);
   }
 
+}
+
+export const applyFilters = function applyFilters(filters, nodes) {
+  let current = nodes;
+  filters.forEach(filter => {
+    current = filter.process(nodes);
+  });
+  return current;
 }

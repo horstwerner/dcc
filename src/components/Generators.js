@@ -1,7 +1,11 @@
+/**
+ * Functions creating Symbiosis components - corresponds to React pure function components
+ */
+
 import P from "prop-types";
+import Cache, {resolve, resolveAttribute, TYPE_CONTEXT, TYPE_NODE_COUNT} from '@/graph/Cache';
 import {mapValues, omit} from 'lodash';
 import {DEBUG_MODE} from "@/Config";
-import {resolveAttribute, TYPE_CONTEXT, TYPE_NODE_COUNT} from "@/graph/Cache";
 import css from "@/components/Card.css";
 import {Div_, FlexBox_} from "@symb/Div";
 import {Image_} from "@symb/Image";
@@ -102,7 +106,7 @@ export function createArrangement(descriptor, childSize) {
   }
 
   const { type } = descriptor;
-  // console.log(`rendering cardset with ${width}/${height}`);
+  // console.log(`rendering card set with ${width}/${height}`);
   switch (type) {
     case GRID:
       const {x, y, w, h, padding } = descriptor;
@@ -127,7 +131,7 @@ createArrangement.propTypes = {
  * @param {Object} context
  * @param {Template} template
  */
-const createPreprocessedCardNode = function createPreprocessedCardNode(data, context, template) {
+export const createPreprocessedCardNode = function createPreprocessedCardNode(data, context, template) {
   const result = createCardNode(data);
   const newContext = {...context};
   result[TYPE_CONTEXT] = newContext;
@@ -150,9 +154,13 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
   const template = TemplateRegistry.getTemplate(templateName);
   const nativeChildSize = template.getSize();
 
-  let nodes = (!source || source === 'this') ?
-      data :
-      resolveAttribute(data, source);
+  let nodes;
+  if (!source || source === 'this') {
+    nodes = data;
+  } else {
+    nodes = resolve(data, source);
+  }
+
   if (!nodes) return null;
 
   if (aggregate) {

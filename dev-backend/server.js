@@ -81,6 +81,18 @@ router.get("/cards", (req, res) => {
   return res.json({success: true, data: templates});
 });
 
+router.get("/tools", (req, res) => {
+  let tools;
+  try {
+    const data = fs.readFileSync(path.join(__dirname, 'tools.json'), {encoding: 'utf-8'});
+    tools = JSON.parse(data);
+  } catch (err) {
+    throw new Error(`Couldn't load data: ${err}`);
+  }
+  console.log(`serving tools`);
+  return res.json({success: true, data: tools});
+});
+
 router.get("/navigation", (req, res) => {
   let navigation;
   try {

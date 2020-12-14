@@ -14,6 +14,9 @@ class MenuPanel extends Component {
   static propTypes = {
     views: P.array,
     tools: P.array,
+    onViewClick: P.func,
+    activeTools: P.object,
+    onToolToggle: P.func,
     w: P.number.isRequired,
     h: P.number.isRequired,
   };
@@ -22,18 +25,15 @@ class MenuPanel extends Component {
     if (isEqual(props, this.innerProps)) return;
     this.innerProps = {...props};
 
-
-    const {w, h} = props;
+    const {w, h, tools, views, onViewClick, onToolToggle} = props;
 
     this.dom.style.width = `${w}px`;
     this.dom.style.height = `${h}px`;
 
-    const children = [
-        Menu_({title: 'Views', w, entries: ['View1','View2','View3']})._Menu,
-        Menu_({title: 'Tools', w, entries: ['Tool1','Tool2','Tool3']})._Menu
-    ];
-
-    this.createChildren(children);
+    this.createChildren([
+      Menu_({key: "views", title: 'Views', w, entries: views, onEntryClick: onViewClick})._Menu,
+      Menu_({key: "tools", title: 'Tools', w, entries: tools, onEntryClick: onToolToggle})._Menu
+    ]);
   }
 
 }

@@ -39,7 +39,6 @@ class Card extends Component {
   }
 
   handleCardClick(e) {
-    debugger
     if (this.innerProps.onClick) {
       this.innerProps.onClick({event: e, component: this});
     }
@@ -103,7 +102,6 @@ class Card extends Component {
     });
 
     this.createChildren(children);
-    //TODO: remove dependency to 'root' literal
     this.updateStyle({...this.style, width: background.w, height: background.h});
   };
 

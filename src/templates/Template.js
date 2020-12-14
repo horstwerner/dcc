@@ -8,13 +8,16 @@ export const positionType = {...sizeType, x: P.number, y: P.number};
 export default class Template extends CheckedObject{
 
   static propertyTypes = {
-    type: P.string.isRequired,
+    id: P.string.isRequired,
+    name: P.string,
+    aggregate: P.bool,
     background: P.shape({
       type: P.string.isRequired,
       source: P.string,
       color: P.string,
       ...sizeType
     }),
+    appliesTo: P.string,
     clickable: P.bool,
     preprocessing: P.arrayOf(P.shape({method: P.string.isRequired, result: P.string, inputSelector: P.object})),
     colorcoding: P.shape(ColorCoder.propTypes),

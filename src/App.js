@@ -1,10 +1,10 @@
 import P from 'prop-types';
-import {omit, isEqual} from 'lodash';
+import {isEqual, omit, pick} from 'lodash';
 import Component from '@symb/Component';
 import css from './App.css';
 import ComponentFactory from "@symb/ComponentFactory";
-import Cache, {TYPE_AGGREGATOR, TYPE_CONTEXT} from './graph/Cache';
-import TemplateRegistry, {ARRANGEMENT_DEFAULT} from './templates/TemplateRegistry';
+import Cache, {resolveAttribute, TYPE_AGGREGATOR, TYPE_CONTEXT, TYPE_NODES} from './graph/Cache';
+import TemplateRegistry from './templates/TemplateRegistry';
 import {Div_} from '@symb/Div';
 import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
@@ -12,14 +12,20 @@ import GraphNode from "@/graph/GraphNode";
 import {DURATION_REARRANGEMENT, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
 import {fit} from "@symb/util";
 import Tween from "@/arrangement/Tween";
-import {hoverCardMenu} from "@/components/Generators";
+import {createPreprocessedCardNode, hoverCardMenu} from "@/components/Generators";
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
+import {ToolPanel_} from "@/components/ToolPanel";
+import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
+import {RadioButtons_} from "@/components/RadioButtons";
+import {sum} from "@/Aggregator";
 
 const APP = 'app';
 const BREADCRUMBS = 'breadcrumbs';
 const SIDEBAR = 'sidebar';
 const FOCUS = 'focus';
 const OVERLAY = 'overlay';
+
+const TOOL_HEIGHT = 10;
 
 const handleResponse = function (response) {
   if (response.ok) {
@@ -88,6 +94,7 @@ const preprocess = function preprocess(constantList, templates) {
   processArray(constants, templates);
 }
 
+const FILTER_RESET = 'reset';
 export default class App extends Component {
 
   static type = APP;
@@ -104,10 +111,18 @@ export default class App extends Component {
       nextChildPos: MARGIN,
       currentData: Cache.rootNode,
       currentTemplate: 'root',
+      views: [],
+      tools: [],
+      activeTools: {},
+      toolControls: {},
+      currentFilters: [],
       breadcrumbCards: [],
+      focusData: null,
       focusCard: null,
       hoverCard: null,
       dataLoaded: false,
+      breadCrumbHeight: 0,
+      toolbarHeight: 0,
       error: null,
     };
 
@@ -115,7 +130,7 @@ export default class App extends Component {
     this.onResize(window.innerWidth, window.innerHeight);
 
     this.getDictionaryFromDb()
-        .then(() => Promise.all([...Cache.getEntityTypes().map(type => this.getDataFromDb(type)), this.getCardDescriptorsFromDb()]))
+        .then(() => Promise.all([...Cache.getEntityTypes().map(type => this.getDataFromDb(type)), this.getCardDescriptorsFromDb(), this.getToolDescriptorsFromDb()]))
         .then(() => {
           if (!this.state.error) {
             const startData = new GraphNode(TYPE_AGGREGATOR, Cache.createUri());
@@ -124,15 +139,18 @@ export default class App extends Component {
             })
             startData[TYPE_CONTEXT] = {}
             this.setState({
+              focusData: startData,
               dataLoaded: true
             });
-            this.createFocusCard(startData, TemplateRegistry.getTemplate('root'));
+            this.setFocusCard(this.createFocusCard(startData, TemplateRegistry.getTemplate('root'), []));
           }
         });
     this.handleNodeClick = this.handleNodeClick.bind(this);
     this.handleHoverCardStash = this.handleHoverCardStash.bind(this);
     this.handleHoverCardPin = this.handleHoverCardPin.bind(this);
     this.handleHoverCardClose = this.handleHoverCardClose.bind(this);
+    this.handleToolToggle = this.handleToolToggle.bind(this);
+    this.handleViewSelect = this.handleViewSelect.bind(this);
   }
 
   createChildKey() {
@@ -148,13 +166,12 @@ export default class App extends Component {
   }
 
   handleHoverCardPin() {
-    const {nextChildPos, mainWidth, hoverCard, focusTop, focusHeight, focusCard, breadcrumbCards } = this.state;
+    const {nextChildPos, mainWidth, hoverCard, breadCrumbHeight, focusHeight, focusCard, breadcrumbCards } = this.state;
     const breadCrumbLane = this.childByKey[BREADCRUMBS];
     const focusInstance = this.childByKey[FOCUS].childByKey[focusCard.key];
-    const spatial = focusInstance.getRelativeSpatial(breadCrumbLane);
 
     const breadcrumbNativeSize = focusCard.template.getSize();
-    const newBreadcrumbScale =  (focusTop - 24) / breadcrumbNativeSize.height;
+    const newBreadcrumbScale =  (breadCrumbHeight - 24) / breadcrumbNativeSize.height;
     const newBreadcrumbSpatial = {x: nextChildPos, y: 7, scale: newBreadcrumbScale};
 
     const focusNativeSize = hoverCard.template.getSize();
@@ -169,9 +186,10 @@ export default class App extends Component {
           breadCrumbLane.adoptChild(focusInstance, newBreadcrumbSpatial);
           this.childByKey[FOCUS].adoptChild(hoverInstance, newFocusSpatial);
           this.setState({hoverCard: null,
-            focusCard: {...hoverCard, hover: false, onClick: this.handleNodeClick},
+            focusData: hoverCard.data,
             breadcrumbCards: [...breadcrumbCards, focusCard],
             nextChildPos: nextChildPos + newBreadcrumbScale * breadcrumbNativeSize.width + MARGIN});
+          this.setFocusCard( {...hoverCard, hover: false, onClick: this.handleNodeClick});
         })
         .start();
 
@@ -189,7 +207,7 @@ export default class App extends Component {
     const spatial = component.getRelativeSpatial(this);
 
     const {width, height} = template.getSize();
-    const {mainWidth, focusHeight, nextChildPos} = this.state;
+    const {mainWidth, focusHeight} = this.state;
     // const newScale = Math.min(mainWidth / width, mainHeight / height);
     // const yOffset = 0.5 * (mainHeight - newScale * height);
     // const xOffset = mainWidth - newScale * width ;
@@ -201,8 +219,8 @@ export default class App extends Component {
 
     const tween = new Tween(350)
         .addInterpolation([0, spatial.x, spatial.y, spatial.scale], [1, newSpatial.x, newSpatial.y, newSpatial.scale],
-            (sparry) => {
-            const spatial = {x: sparry[1], y: sparry[2], scale: sparry[3]};
+            (sp_array) => {
+            const spatial = {x: sp_array[1], y: sp_array[2], scale: sp_array[3]};
             this.setState({hoverCard:{...clone, spatial}});
         });
 
@@ -240,6 +258,21 @@ export default class App extends Component {
         });
   };
 
+  getToolDescriptorsFromDb() {
+    return fetch('/api/tools')
+        .then(handleResponse)
+        .then(result => {
+          const {tools} = result.data;
+          tools.forEach(descriptor => {
+            TemplateRegistry.registerTool(descriptor);
+          })
+        })
+        .catch(error => {
+          console.log(error.stack);
+          this.setState({error})
+        });
+  };
+
   getDataFromDb(type) {
     return fetch(`/api/data?type=${encodeURI(type)}`, {})
         .then(handleResponse)
@@ -254,45 +287,121 @@ export default class App extends Component {
         });
   }
 
-  createFocusCard(data, template) {
-    const {mainWidth, focusHeight} = this.state;
-    const {width, height} = template.getSize();
-    // const spatial = fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, width, height, MARGIN,  MARGIN, 1.2);
+  createFocusCard(data, template, filters) {
     const key = this.createChildKey();
 
-    const focusCard = Card_({
+    return Card_({
       key,
       data,
       template,
       // spatial,
       onClick: this.handleNodeClick
     })._Card
-
-    this.setState({focusCard})
   }
 
-  appendToBreadcrumb(cardInstance, descriptor) {
-    const breadInstance = this.childByKey[BREADCRUMBS];
-    const spatial = cardInstance.getRelativeSpatial(breadInstance);
-    breadInstance.adoptChild(cardInstance, spatial);
+  createToolControl(tool) {
+    const {focusCard} = this.state;
+    let toolControl;
+    switch (tool.display) {
+      case 'radio-buttons': {
+        const {id, values, width, height, label} = tool;
+        const reset = {id: FILTER_RESET, name: 'All', onSelect: () => this.removeToolFilter(tool.id)};
+        const options = values.map(value => ({id: value, name: value, onSelect: () => this.setToolFilter(tool, value)}));
+        options.push(reset);
+        toolControl = RadioButtons_({key: id, width, height, label, options, selectedId: FILTER_RESET })._RadioButtons;
+        break;
+      }
+      case 'bars':
+        break;
+    }
+    return toolControl;
+  }
 
-    const { breadcrumbCards, nextChildPos } = this.state;
+  createUpdatedToolControls(toolId, selectedValue) {
+    const { activeTools, toolControls } = this.state;
+    const tool = activeTools[toolId];
+    const control = {...toolControls[toolId]};
+    switch (tool.display) {
+      case 'radio-buttons':
+        control.selectedId = selectedValue || FILTER_RESET;
+        break;
+    }
+    return {...toolControls, [toolId]: control};
+  }
 
-    const key = `card${nextChildIndex}`;
-    const {width, height} = template.getSize();
-    const newNextChildPos = nextChildPos + height * spatial.scale + MARGIN;
-    let appendCard = active ?
-        ActiveCard_({card: newCard, width: scale * width + MENU_WIDTH, height: 600, spatial })._ActiveCard
-        : {...newCard, spatial};
+  setFocusCard(focusCard) {
+    const { template } = focusCard;
+    const { appliesTo, aggregate } = template;
+    const views = TemplateRegistry.getViewsFor(appliesTo, aggregate);
+    const tools = TemplateRegistry.getToolsFor(appliesTo);
+    const activeTools = {};
+    const toolControls = {};
+    tools.forEach(tool => {
+      activeTools[tool.id] = tool.default ? tool : null;
+      if (tool.default) {
+        toolControls[tool.id] = this.createToolControl(tool);
+      }
+    });
+    this.setState({focusCard, views, tools, activeTools, toolControls, filters: {}});
+    const {windowWidth, windowHeight} = this.state;
+    this.onResize(windowWidth, windowHeight);
+  }
 
-    this.setState({canvasCards: [...canvasCards, appendCard], nextChildIndex: nextChildIndex + 1, canvasHeight: newNextChildPos, nextChildPos: newNextChildPos});
-    return newCard;
+  setToolFilter(tool, value) {
+
+    const {currentFilters} = this.state;
+
+    if (tool.type !== 'filter') {
+      throw new Error(`Can't use filter for tool ${tool.id} of type ${tool.type}. Use tool of type filter instead.`);
+    }
+    const comparison = (typeof value === 'object' && value.constructor === GraphNode) ? COMPARISON_HAS_ASSOCIATED : COMPARISON_EQUAL;
+    const newFilter = new Filter(tool.filter, comparison, value);
+
+    const newFilters = {...currentFilters, [tool.id]: newFilter};
+    this.updateFilteredState(newFilters, tool.id, value);
+  }
+
+  removeToolFilter(toolId) {
+    const { currentFilters } = this.state;
+    this.updateFilteredState(omit(currentFilters, toolId), toolId, null);
+  }
+
+  updateFilteredState(newFilters, toolId, value) {
+    const { focusData, focusCard } = this.state;
+    const data = createPreprocessedCardNode(applyFilters(Object.values(newFilters), focusData[TYPE_NODES]), {}, focusCard.template);
+
+    const newFocusCard =  this.createFocusCard(data, focusCard.template, Object.values(newFilters));
+    this.setState({currentFilters: newFilters, toolControls: this.createUpdatedToolControls(toolId, value), focusCard: newFocusCard});
+  }
+
+  handleToolToggle(toolId) {
+    const {tools} = this.state;
+    const activeTools = {...this.state.activeTools};
+    const toolControls = {...this.state.toolControls};
+    if (activeTools[toolId]) {
+      delete toolControls[toolId];
+      activeTools[toolId] = null;
+    } else {
+      const tool = tools.find(tool => tool.id === toolId);
+      activeTools[toolId] = tool;
+      toolControls[toolId] = this.createToolControl(tool);
+    }
+    this.setState({ activeTools, toolControls });
+    this.onResize(this.state.windowWidth, this.state.windowHeight);
+  }
+
+  handleViewSelect(viewId) {
+    const {focusCard, focusData, currentFilters} = this.state;
+    const template = TemplateRegistry.getTemplate(viewId);
+
+    const data = template.aggregate ?  createPreprocessedCardNode(applyFilters(Object.values(currentFilters),focusData[TYPE_NODES].map(node => (node.originalNode || node))), {}, template): focusCard.data;
+    this.setState({focusCard: this.createFocusCard(data, template, currentFilters)});
   }
 
   updateContents(props) {
 
-    const {focusCard, error, mainWidth, focusHeight, sideBarWidth, breadcrumbCards, canvasHeight, hoverCard, focusTop,
-      windowHeight} = this.state;
+    const {focusCard, tools, activeTools, views, error, mainWidth, focusHeight, sideBarWidth, breadcrumbCards, canvasHeight, hoverCard, breadCrumbHeight, toolbarHeight,
+      windowHeight, toolControls} = this.state;
 
     // const backgroundColor = (map && map.backColor) || '#ffffff';
     if (error) {
@@ -309,7 +418,7 @@ export default class App extends Component {
 
     if (focusCard) {
      const {width, height} = focusCard.template.getSize();
-     const newSpatial = fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, width, height, MARGIN,  MARGIN, 1.2);
+     const newSpatial = fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN - TOOL_HEIGHT, width, height, MARGIN,  MARGIN, 1.2);
      if (!isEqual(newSpatial, focusCard.spatial)) {
        focusCard.spatial = newSpatial;
      }
@@ -318,22 +427,33 @@ export default class App extends Component {
     this.createChildren([
       BreadcrumbLane_({
         key: BREADCRUMBS,
-        spatial: {x: 0, y: windowHeight - focusTop, scale: 1},
+        spatial: {x: 0, y: windowHeight - breadCrumbHeight, scale: 1},
         width: mainWidth,
-        height: focusTop,
+        height: breadCrumbHeight,
         children: breadcrumbCards,
         canvasHeight
       })._BreadcrumbLane,
-        Div_({
+      ToolPanel_({
+          key: 'tools',
+          width: mainWidth + 1,
+          height: toolbarHeight,
+          spatial: {x: 0, y: focusHeight, scale: 1},
+          children: Object.values(toolControls)
+        })._ToolPanel,
+      Div_({
           key: FOCUS,
           className: css.focus,
           spatial: {x: 0, y: 0, scale: 1},
           children: focusCard
         })._Div,
       Sidebar_({w: sideBarWidth, h: windowHeight,
-        menuTop: 0.5 *  windowHeight - focusTop,
+        menuTop: 0.5 *  windowHeight - breadCrumbHeight,
         key: SIDEBAR,
-        spatial: {x: mainWidth, y: 0, scale: 1}
+        spatial: {x: mainWidth, y: 0, scale: 1},
+        views: views.map(view => ({id: view.id, name: view.name || view.id, selected: view.id === focusCard.template.id})),
+        tools: tools && tools.map(tool => ({id: tool.id, name: tool.name, selected: activeTools[tool.id]})),
+        onToolToggle: this.handleToolToggle,
+        onViewClick: this.handleViewSelect,
       })._Sidebar,
       Div_({
           key: OVERLAY,
@@ -348,12 +468,15 @@ export default class App extends Component {
     this.dom.style.width = `${width}px`;
     this.dom.style.height = `${height}px`;
     const sideBarWidth = Math.min(Math.min(SIDEBAR_PERCENT * width, SIDEBAR_MAX), 4 * height);
-    const focusTop = 0.15 * height;
-    const focusHeight = height - focusTop;
+
+    const breadCrumbHeight = 0.15 * height;
+    const toolControls = Object.values(this.state.toolControls);
+    const toolbarHeight = toolControls.reduce((result, control) => result + (control.height || 50), 0) + 20 * (toolControls.length + 1);
+    const focusHeight = height - breadCrumbHeight - toolbarHeight;
     const mainHeight = height;
     const mainWidth = width - sideBarWidth;
 
-    this.setState({windowWidth: width, windowHeight: height, focusTop, focusHeight, mainWidth, mainHeight, sideBarWidth});
+    this.setState({windowWidth: width, windowHeight: height, breadCrumbHeight, toolbarHeight, focusHeight, mainWidth, mainHeight, sideBarWidth});
   }
 
 };

@@ -9,8 +9,7 @@ if (DEBUG_MODE) {
   }
 }
 
-export const MENU_WIDTH = 200;
-
+export const MENU_WIDTH = 224;
 
 export const MARGIN = 24;
 

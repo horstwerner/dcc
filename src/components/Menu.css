@@ -5,23 +5,26 @@
   border-radius: 6px;
   padding: 6px;
   margin-bottom: 8px;
-  background-color: #7f9ea3;
-  box-shadow: inset -1px 1px 2px 0 rgba(0,0,0,0.1);
+  /*background-color: #7f9ea3;*/
+  background-color: #ccccca;
+  box-shadow: inset 1px 1px 2px 0 rgba(0,0,0,0.2);
+  transition: transform, height 0.25s;
 }
 
 .title {
-  font-size: 14px;
+  font-size: 13px;
   font-family: 'Tahoma',sans-serif;
   font-weight: bold;
-  color: rgba(255,255,255,0.75);
-  text-transform: capitalize;
-  letter-spacing: 0px;
+  color: #f5f5eb;
+  text-transform: uppercase;
+  letter-spacing: 3px;
   padding-left: 4px;
   padding-top: 2px;
   margin-bottom: 5px;
   height: 20px;
 }
-.entry {
+.entry,
+.entrySelected {
   font-family: 'Tahoma', sans-serif;
   box-sizing: border-box;
   font-size: 12px;
@@ -29,10 +32,24 @@
   width: 100%;
   margin-bottom: 2px;
   text-align: center;
-  background-color: #89a9ae;
-  border-radius: 1px;
+  border-radius: 2px;
   /*letter-spacing: 1px;*/
-  color: rgba(255,255,255,0.8);
   padding: 4px 2px 0px 10px;
   height: 22px;
+  cursor: pointer;
+}
+
+.entry {
+  background-color: #ccccca;
+  color: #40403e;
+}
+
+.entry:hover {
+  background-color: #d9d9d7;
+}
+
+.entrySelected {
+  background-color: #EEEEEA;
+  color: #262625;
+  box-shadow: 2px 2px 2px 0 rgba(0,0,0,0.2);
 }

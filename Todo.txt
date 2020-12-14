@@ -1,0 +1,6 @@
+//TODO: set breadcrumb canvas length to match content
+//TODO: scroll breadcrumb lane automatically to appended card
+//TODO: Clickable control in cards to limit clicking of sub-cards
+//TODO: Transition framework
+//TODO: Card types: "menu", "analysis", "individual node"
+//TODO: Raster system and adaptive layout for cards, uniform font sizes

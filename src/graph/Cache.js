@@ -1,5 +1,6 @@
 import Type from './Type';
 import GraphNode from './GraphNode';
+import instance from "@symb/ComponentFactory";
 
 export const DATATYPE_INTEGER = 'INTEGER';
 export const DATATYPE_STRING = 'STRING';
@@ -227,6 +228,16 @@ export const traverse = function(source, path) {
   }
   return curSet;
 };
+
+export const resolve = function (node, path) {
+
+  if (path.charAt(0) === '~') {
+    return cacheInstance.getAllNodesOf(path.substring(1));
+  } else {
+    return resolveAttribute(node, path);
+  }
+
+}
 
 /**
  *

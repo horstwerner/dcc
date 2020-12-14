@@ -13,7 +13,8 @@ class MenuPanel extends Component {
 
   static propTypes = {
     title: P.string.isRequired,
-    entries: P.array,
+    entries: P.arrayOf(P.shape({id: P.string.isRequired, name: P.string.isRequired, selected: P.bool.isRequired})),
+    onEntryClick: P.func,
     w: P.number.isRequired,
   };
 
@@ -21,12 +22,14 @@ class MenuPanel extends Component {
     if (isEqual(props, this.innerProps)) return;
     this.innerProps = {...props};
 
-    const {title, entries, w} = props;
+    const {title, entries, onEntryClick, w} = props;
 
+    const height = 22 * (entries.length + 1) + 12;
+    this.updateStyle({height});
 
     const children = [Div_({className: css.title, children:title})._Div];
     if (entries) {
-      entries.forEach(entry => children.push(Div_({className: css.entry, children:entry})._Div))
+      entries.forEach(entry => children.push(Div_({className: entry.selected ? css.entrySelected : css.entry, children:entry.name, onClick: () => onEntryClick(entry.id)})._Div))
     }
 
     this.createChildren(children);
