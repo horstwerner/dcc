@@ -534,7 +534,7 @@
       "id": "storyBarWithTitle",
       "aggregate": true,
       "background": {"type": "rect", "w": 380, "h": 30,
-        "color": "#FEFEFE"
+        "color": "rgba(0,0,0,0)"
       },
       "preprocessing": [{"method":  "aggregate", "results":  {"storyPointSum":  {"attribute": "jira:storypoints", "calculate":  "sum"}}}],
       "elements": [

@@ -18,6 +18,8 @@ import {ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 import {RadioButtons_} from "@/components/RadioButtons";
 import {sum} from "@/Aggregator";
+import {EMPTY, sliceBy} from "@/graph/GroupedSet";
+import Trellis from "@/generators/Trellis";
 
 const APP = 'app';
 const BREADCRUMBS = 'breadcrumbs';
@@ -300,7 +302,7 @@ export default class App extends Component {
   }
 
   createToolControl(tool) {
-    const {focusCard} = this.state;
+    const {focusData} = this.state;
     let toolControl;
     switch (tool.display) {
       case 'radio-buttons': {
@@ -311,8 +313,21 @@ export default class App extends Component {
         toolControl = RadioButtons_({key: id, width, height, label, options, selectedId: FILTER_RESET })._RadioButtons;
         break;
       }
-      case 'bars':
+      case 'trellis':
+        const {id, width, filter, align, arrangement, height, template} = tool;
+        // const reset = {id: FILTER_RESET, name: 'All', onSelect: () => this.removeToolFilter(tool.id)};
+
+        toolControl = Div_({
+          key: id,
+          style: {width, height},
+          children: Trellis(focusData, {key: id, source: TYPE_NODES, template, inputSelector: null, groupAttribute: filter, align, arrangement, x: 0, y: 0, w: width, h: height},
+            (data) => {
+              debugger;
+            })
+        })._Div;
         break;
+      default:
+        throw new Error(`Unknown tool display ${tool.display}`);
     }
     return toolControl;
   }
@@ -333,7 +348,7 @@ export default class App extends Component {
     const { template } = focusCard;
     const { appliesTo, aggregate } = template;
     const views = TemplateRegistry.getViewsFor(appliesTo, aggregate);
-    const tools = TemplateRegistry.getToolsFor(appliesTo);
+    const tools = aggregate ? TemplateRegistry.getToolsFor(appliesTo) : [];
     const activeTools = {};
     const toolControls = {};
     tools.forEach(tool => {
