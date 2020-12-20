@@ -95,7 +95,7 @@ export default class Filter {
 export const applyFilters = function applyFilters(filters, nodes) {
   let current = nodes;
   filters.forEach(filter => {
-    current = filter.process(nodes);
+    current = filter.process(current);
   });
   return current;
 }

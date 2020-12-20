@@ -9,6 +9,7 @@ import {Background, Caption, ChildSet} from "@/components/Generators";
 import Chart from "@/generators/Chart";
 import Trellis from "@/generators/Trellis"
 import {fillIn} from "@symb/util";
+import {CLICK_DISABLED, CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
 
 const CARD = 'card';
 
@@ -23,19 +24,13 @@ class Card extends Component {
   static propTypes = {
     template: P.instanceOf(Template),
     data: P.object.isRequired,
-    onClick: P.func
+    onClick: P.func,
+    clickMode: P.oneOf([CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT, CLICK_DISABLED])
   };
 
   constructor(descriptor, parent, domNode) {
     super(descriptor, parent, domNode);
-    this.childClickAction = {};
     this.handleCardClick = this.handleCardClick.bind(this);
-  }
-
-  handleChildClick(childKey, clickAction) {
-    // const tween = new Tween(DURATION_REARRANGEMENT);
-    // this.morph(clickAction, tween);
-    // tween.start();
   }
 
   handleCardClick(e) {
@@ -55,50 +50,65 @@ class Card extends Component {
     this.innerProps = {...props};
 
 
-    const { data, template, onClick, hover } = props;
+    const { data, template, onClick, hover, clickMode } = props;
 
     const {background, elements} = template;
     const color = template.getCardColor(data);
     const hasBackground = background.type !== 'transparent';
+    const isClickable = clickMode === CLICK_OPAQUE || (clickMode === CLICK_NORMAL && template.clickable);
+    const childrenClickable = clickMode === CLICK_TRANSPARENT || (clickMode === CLICK_NORMAL && !template.clickable);
 
     const children = [];
     if (hasBackground) {
-      children.push(Background(background, color, template['clickable'] && this.handleCardClick, hover));
+      children.push(Background(background, color, isClickable && this.handleCardClick, hover));
     }
     elements.forEach(element => {
       const { key } = element;
+      let childDescriptor = null;
       switch (element.type) {
         case 'caption':
           const {text} = element;
           const captionText = text.includes('{{') ? fillIn(text, data) : text;
-          children.push(Caption({...element, text: captionText}));
+          childDescriptor = Caption({...element, text: captionText});
           break;
         case 'textfield': {
           const {attribute, ...rest} = element;
-          children.push(Caption({
+          childDescriptor = Caption({
             key: attribute,
             text: String(resolveAttribute(data, attribute)),
             ...rest
-          }));
+          });
         }
           break;
         case 'trellis': {
-          children.push(Trellis( data,  element, onClick));
+          childDescriptor = Trellis( data,  element, onClick, CLICK_NORMAL);
           break;
         }
         case "chart":
-          children.push(Chart({key, data, descriptor: element, onClick }));
+          childDescriptor = Chart({key, data, descriptor: element, onClick : childrenClickable ? onClick : null });
           break;
         case "card":
-          children.push(ChildSet(data, data.get(TYPE_CONTEXT), element, true, onClick));
-          break
+          childDescriptor = ChildSet(data, data.get(TYPE_CONTEXT), element, true, childrenClickable ? onClick : null, CLICK_NORMAL);
+          break;
         case "cards":
           // this.childClickAction[element.key] = element.clickAction;
-          children.push(ChildSet(data, data.get(TYPE_CONTEXT), element, false, onClick));
+          childDescriptor = ChildSet(data, data.get(TYPE_CONTEXT), element, false, childrenClickable ? onClick : null, CLICK_NORMAL);
           break;
         default:
           throw new Error(`Unsupported Element type: ${element.type}`);
       }
+      if (childDescriptor) {
+        if (!childrenClickable) {
+          if (clickMode === CLICK_TRANSPARENT) {
+            debugger
+          }
+          childDescriptor.style = {...(childDescriptor.style || {}), pointerEvents: 'none'};
+        } else {
+          childDescriptor.style = {...(childDescriptor.style || {}), pointerEvents: ''};
+          // childDescriptor.style.pointerEvents = 'auto';
+        }
+      }
+      children.push(childDescriptor);
     });
 
     this.createChildren(children);

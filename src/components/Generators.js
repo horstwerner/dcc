@@ -142,13 +142,13 @@ export const createPreprocessedCardNode = function createPreprocessedCardNode(da
   return result;
 }
 
-export const ChildSet = function ChildSet(data, context, descriptor, aggregate, onClick) {
+export const ChildSet = function ChildSet(data, context, descriptor, aggregate, onClick, clickMode) {
 
   if (DEBUG_MODE) {
     P.checkPropTypes(ChildSet.propTypes, descriptor, 'prop', 'ChildSet');
   }
 
-  const { key, source, lod, align, arrangement, x, y, w, h } = descriptor;
+  const { key, source, lod, align, arrangement, x, y, w, h} = descriptor;
 
   const templateName = descriptor.template;
   const template = TemplateRegistry.getTemplate(templateName);
@@ -171,7 +171,8 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
       lod,
       spatial: fit(w, h, nativeChildSize.width, nativeChildSize.height, x, y),
       data:  cardNode,
-      onClick
+      onClick,
+      clickMode
     })._Card;
   }
 
@@ -190,7 +191,8 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
     lod,
     spatial: {x, y, scale: 1},
     arrangement: createArrangement(arrangementDescriptor, nativeChildSize),
-    onClick})._CardSet
+    onClick,
+    clickMode})._CardSet
 }
 
 ChildSet.propTypes = {key: P.string.isRequired,

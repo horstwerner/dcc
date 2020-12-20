@@ -6,6 +6,8 @@ import ComponentFactory from './ComponentFactory'
 import {getTransformString} from "@symb/util";
 
 export function setStyle(dom, style) {
+  //FIXME: setStyle can't remove style attributes
+
   Object.keys(style).forEach(key => {
     let value = style[key];
     if (['width','height','left','top'].includes(key) && typeof(value) === 'number') {

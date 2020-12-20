@@ -13,7 +13,7 @@ class TemplateRegistry {
 
   registerTemplate(descriptor) {
     const {id, appliesTo} = descriptor;
-    console.log(`registered template for '${descriptor.type}'`);
+    console.log(`registered template '${descriptor.id}'`);
     if (!this.toolsByContentType[appliesTo]) {
       this.toolsByContentType[appliesTo] = [];
     }

@@ -7,7 +7,7 @@ import Filter from "@/graph/Filter";
 import {TYPE_CONTEXT} from "@/graph/Cache";
 
 
-const Trellis = function Trellis(data, descriptor, onClick) {
+const Trellis = function Trellis(data, descriptor, onClick, clickMode) {
 
   if (DEBUG_MODE) {
     P.checkPropTypes(Trellis.propTypes, descriptor, 'prop', 'Trellis');
@@ -37,8 +37,8 @@ const Trellis = function Trellis(data, descriptor, onClick) {
         arrangement,
         x, y, w, h},
       false,
-      onClick);
-
+      onClick,
+      clickMode);
 }
 
 Trellis.propTypes = {

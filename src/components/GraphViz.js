@@ -11,6 +11,7 @@ import P from "prop-types";
 import Template from "@/templates/Template";
 import GraphNode from "@/graph/GraphNode";
 import ComponentFactory from "@symb/ComponentFactory";
+import {CLICK_OPAQUE} from "@/components/Constants";
 
 const inspect = function inspect(associationName) {
   const lastPos = associationName.length - 1;
@@ -220,7 +221,7 @@ class GraphViz extends Component {
     children.push(Svg_({style:{pointerEvents: 'none'}, width: w, height: h, children: lines.map(line => createSvgPath(line, roundDist))})._Svg);
     const {width, height} = nodeTemplate.getSize();
 
-    vizNodes.forEach(vizNode => {children.push(Card_({data: vizNode.graphNode, template: nodeTemplate, onClick: onNodeClick, spatial: fit(childW, childH, width, height, vizNode.pos.x - 0.5 * childW, vizNode.pos.y - 0.5 * childH)})._Card)});
+    vizNodes.forEach(vizNode => {children.push(Card_({data: vizNode.graphNode, template: nodeTemplate, onClick: onNodeClick, clickMode: CLICK_OPAQUE, spatial: fit(childW, childH, width, height, vizNode.pos.x - 0.5 * childW, vizNode.pos.y - 0.5 * childH)})._Card)});
 
     this.createChildren(children);
 

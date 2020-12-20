@@ -1,9 +1,9 @@
 import P from 'prop-types';
-import {isEqual, omit, pick} from 'lodash';
+import {isEqual, omit} from 'lodash';
 import Component from '@symb/Component';
 import css from './App.css';
 import ComponentFactory from "@symb/ComponentFactory";
-import Cache, {resolveAttribute, TYPE_AGGREGATOR, TYPE_CONTEXT, TYPE_NODES} from './graph/Cache';
+import Cache, {TYPE_AGGREGATOR, TYPE_CONTEXT, TYPE_NODES} from './graph/Cache';
 import TemplateRegistry from './templates/TemplateRegistry';
 import {Div_} from '@symb/Div';
 import {Card_} from "@/components/Card";
@@ -17,9 +17,8 @@ import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 import {ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 import {RadioButtons_} from "@/components/RadioButtons";
-import {sum} from "@/Aggregator";
-import {EMPTY, sliceBy} from "@/graph/GroupedSet";
 import Trellis from "@/generators/Trellis";
+import {CLICK_DISABLED, CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
 
 const APP = 'app';
 const BREADCRUMBS = 'breadcrumbs';
@@ -185,13 +184,14 @@ export default class App extends Component {
         .addTransform(hoverInstance, newFocusSpatial.x, newFocusSpatial.y, newFocusSpatial.scale)
         .onEndCall(() => {
           focusCard.spatial = newBreadcrumbSpatial;
+          focusCard.clickMode = CLICK_NORMAL;
           breadCrumbLane.adoptChild(focusInstance, newBreadcrumbSpatial);
           this.childByKey[FOCUS].adoptChild(hoverInstance, newFocusSpatial);
           this.setState({hoverCard: null,
             focusData: hoverCard.data,
             breadcrumbCards: [...breadcrumbCards, focusCard],
             nextChildPos: nextChildPos + newBreadcrumbScale * breadcrumbNativeSize.width + MARGIN});
-          this.setFocusCard( {...hoverCard, hover: false, onClick: this.handleNodeClick});
+          this.setFocusCard( {...hoverCard, hover: false, onClick: this.handleNodeClick, clickMode: CLICK_TRANSPARENT});
         })
         .start();
 
@@ -215,7 +215,7 @@ export default class App extends Component {
     // const xOffset = mainWidth - newScale * width ;
     const newSpatial = fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, width, height, MARGIN,MARGIN,1.2);
 
-    const clone = Card_({key: 'hover', data, hover: true, template, spatial, style: {zIndex: 2}})._Card
+    const clone = Card_({key: 'hover', data, hover: true, template, spatial, clickMode: CLICK_DISABLED, style: {zIndex: 2}})._Card
     // const veil = Div_({key: 'veil', style:{position: 'absolute', width: mainWidth, height: mainHeight, backgroundColor: SIDEBAR_BACK_COLOR, zIndex: 1}, alpha: 0})._Div
     this.setState({hoverCard: clone});
 
@@ -297,11 +297,15 @@ export default class App extends Component {
       data,
       template,
       // spatial,
-      onClick: this.handleNodeClick
+      onClick: this.handleNodeClick,
+      clickMode: CLICK_TRANSPARENT
     })._Card
   }
 
   createToolControl(tool) {
+
+    //FIXME: update tools when filter is set
+
     const {focusData} = this.state;
     let toolControl;
     switch (tool.display) {
@@ -320,10 +324,14 @@ export default class App extends Component {
         toolControl = Div_({
           key: id,
           style: {width, height},
-          children: Trellis(focusData, {key: id, source: TYPE_NODES, template, inputSelector: null, groupAttribute: filter, align, arrangement, x: 0, y: 0, w: width, h: height},
-            (data) => {
-              debugger;
-            })
+          children: Trellis(focusData, {key: id, source: TYPE_NODES, template, inputSelector: null,
+                groupAttribute: filter, align, arrangement, x: 0, y: 0, w: width, h: height
+              },
+
+              ({component, event}) => {
+                const dataValue = component.innerProps.data[filter];
+              this.setToolFilter(tool, dataValue);},
+              CLICK_OPAQUE)
         })._Div;
         break;
       default:
@@ -344,6 +352,7 @@ export default class App extends Component {
     return {...toolControls, [toolId]: control};
   }
 
+
   setFocusCard(focusCard) {
     const { template } = focusCard;
     const { appliesTo, aggregate } = template;
@@ -362,6 +371,7 @@ export default class App extends Component {
     this.onResize(windowWidth, windowHeight);
   }
 
+
   setToolFilter(tool, value) {
 
     const {currentFilters} = this.state;
@@ -376,10 +386,12 @@ export default class App extends Component {
     this.updateFilteredState(newFilters, tool.id, value);
   }
 
+
   removeToolFilter(toolId) {
     const { currentFilters } = this.state;
     this.updateFilteredState(omit(currentFilters, toolId), toolId, null);
   }
+
 
   updateFilteredState(newFilters, toolId, value) {
     const { focusData, focusCard } = this.state;
@@ -389,11 +401,13 @@ export default class App extends Component {
     this.setState({currentFilters: newFilters, toolControls: this.createUpdatedToolControls(toolId, value), focusCard: newFocusCard});
   }
 
+
   handleToolToggle(toolId) {
     const {tools} = this.state;
     const activeTools = {...this.state.activeTools};
     const toolControls = {...this.state.toolControls};
     if (activeTools[toolId]) {
+      this.removeToolFilter(toolId);
       delete toolControls[toolId];
       activeTools[toolId] = null;
     } else {
@@ -405,13 +419,16 @@ export default class App extends Component {
     this.onResize(this.state.windowWidth, this.state.windowHeight);
   }
 
+
   handleViewSelect(viewId) {
     const {focusCard, focusData, currentFilters} = this.state;
     const template = TemplateRegistry.getTemplate(viewId);
 
-    const data = template.aggregate ?  createPreprocessedCardNode(applyFilters(Object.values(currentFilters),focusData[TYPE_NODES].map(node => (node.originalNode || node))), {}, template): focusCard.data;
+    const data = template.aggregate ?  createPreprocessedCardNode(applyFilters(Object.values(currentFilters),
+        focusData[TYPE_NODES].map(node => (node.originalNode || node))), {}, template): focusCard.data;
     this.setState({focusCard: this.createFocusCard(data, template, currentFilters)});
   }
+
 
   updateContents(props) {
 
@@ -477,6 +494,7 @@ export default class App extends Component {
         })._Div
     ]);
   }
+
 
   onResize(width, height) {
     console.log(`onResize:${width}-${height}`);

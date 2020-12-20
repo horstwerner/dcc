@@ -8,6 +8,7 @@ import GraphNode from "@/graph/GraphNode";
 import Template from "@/templates/Template";
 import {ARRANGEMENT_DEFAULT} from "@/templates/TemplateRegistry";
 import Arrangement from "@/arrangement/Arrangement";
+import {CLICK_DISABLED, CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
 
 const CARDSET = 'card-set';
 const PADDING = 0.2;
@@ -26,6 +27,7 @@ class CardSet extends Component {
     template: P.instanceOf(Template).isRequired,
     arrangement: P.instanceOf(Arrangement),
     onClick: P.func,
+    clickMode: P.oneOf([CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT, CLICK_DISABLED])
   };
 
   constructor(props, parent, div) {
@@ -33,7 +35,7 @@ class CardSet extends Component {
   }
 
   createChildrenForLod(lod) {
-    const {nodes, arrangement, template, onClick} = this.innerProps;
+    const {nodes, arrangement, template, onClick, clickMode} = this.innerProps;
 
     this.lod = lod;
 
@@ -66,7 +68,7 @@ class CardSet extends Component {
         }
         arrangement.forEachRasterpos(nodes, (node, rasterPos) => {
           childDescriptors.push(
-              Card_({key: node.getUniqueKey(), spatial: rasterPos, data: node, parentSet: this, onClick, template})._Card
+              Card_({key: node.getUniqueKey(), spatial: rasterPos, data: node, parentSet: this, onClick, template, clickMode})._Card
           );
         });
         this.createChildren(childDescriptors);
