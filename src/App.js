@@ -180,8 +180,8 @@ export default class App extends Component {
     const newFocusSpatial =  fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, focusNativeSize.width, focusNativeSize.height, MARGIN,  MARGIN, 1.2);
 
     new Tween(DURATION_REARRANGEMENT)
-        .addTransform(focusInstance, newBreadcrumbSpatial.x, newBreadcrumbSpatial.y + focusHeight, newBreadcrumbScale)
-        .addTransform(hoverInstance, newFocusSpatial.x, newFocusSpatial.y, newFocusSpatial.scale)
+        .addTransform(focusInstance, newBreadcrumbSpatial.x, newBreadcrumbSpatial.y - breadCrumbHeight, newBreadcrumbScale)
+        .addTransform(hoverInstance, newFocusSpatial.x, newFocusSpatial.y + breadCrumbHeight, newFocusSpatial.scale)
         .onEndCall(() => {
           focusCard.spatial = newBreadcrumbSpatial;
           focusCard.clickMode = CLICK_NORMAL;
@@ -459,7 +459,7 @@ export default class App extends Component {
     this.createChildren([
       BreadcrumbLane_({
         key: BREADCRUMBS,
-        spatial: {x: 0, y: windowHeight - breadCrumbHeight, scale: 1},
+        spatial: {x: 0, y: 0, scale: 1},
         width: mainWidth,
         height: breadCrumbHeight,
         children: breadcrumbCards,
@@ -467,19 +467,19 @@ export default class App extends Component {
       })._BreadcrumbLane,
       ToolPanel_({
           key: 'tools',
-          width: mainWidth + 1,
+          width: mainWidth,
           height: toolbarHeight,
-          spatial: {x: 0, y: focusHeight, scale: 1},
+          spatial: {x: 0, y: focusHeight + breadCrumbHeight, scale: 1},
           children: Object.values(toolControls)
         })._ToolPanel,
       Div_({
           key: FOCUS,
           className: css.focus,
-          spatial: {x: 0, y: 0, scale: 1},
+          spatial: {x: 0, y: breadCrumbHeight, scale: 1},
           children: focusCard
         })._Div,
       Sidebar_({w: sideBarWidth, h: windowHeight,
-        menuTop: 0.5 *  windowHeight - breadCrumbHeight,
+        menuTop: breadCrumbHeight,
         key: SIDEBAR,
         spatial: {x: mainWidth, y: 0, scale: 1},
         views: views.map(view => ({id: view.id, name: view.name || view.id, selected: view.id === focusCard.template.id})),

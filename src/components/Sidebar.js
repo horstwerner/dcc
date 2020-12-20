@@ -24,6 +24,7 @@ class Sidebar extends Component {
   static propTypes = {
     w: P.number.isRequired,
     h: P.number.isRequired,
+    menuTop: P.number.isRequired,
     // selectedCard: P.shape({template: P.instanceOf(Template), data: P.instanceOf(GraphNode)})
     views: P.array,
     tools: P.array,
@@ -45,12 +46,12 @@ class Sidebar extends Component {
       Div_({className: css.searchField, spatial: {x: 20, y: MARGIN, scale: 1}, children: Image_({className:css.searchButton, source:`public/SearchButton.svg`})._Image})._Div,
       MenuPanel_({
         w: MENU_WIDTH,
-        h: 0.5 * h,
+        h: 400,
         views,
         tools,
         onViewClick,
         onToolToggle,
-        spatial: {x: (w - MENU_WIDTH) / 2, y: 80, scale: 1}
+        spatial: {x: 0, y: menuTop, scale: 1}
       })._MenuPanel
     ]);
 
