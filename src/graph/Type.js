@@ -8,6 +8,7 @@ export default class Type extends CheckedObject{
     name: P.string.isRequired,
     dataType: P.oneOf(['INTEGER','STRING','FLOAT','BOOLEAN', 'ENTITY']).isRequired,
     isAssociation: P.bool.isRequired,
+    subClassOf: P.string,
     inverseType: P.string
   };
 
@@ -17,5 +18,4 @@ export default class Type extends CheckedObject{
     }
     return this.inverseType || fallbackTargettype;
   }
-
 }

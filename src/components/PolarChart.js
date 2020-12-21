@@ -1,5 +1,4 @@
 import P from 'prop-types';
-import {isEqual} from 'lodash';
 import Cache from '@/graph/Cache';
 import Component from "@symb/Component";
 import GraphNode from "@/graph/GraphNode";
@@ -10,13 +9,13 @@ import ComponentFactory from "@symb/ComponentFactory";
 import {Caption} from "@/components/Generators";
 
 const POLAR = 'polar';
-const FILL_GRADIENT = 'fillGradient';
+// const FILL_GRADIENT = 'fillGradient';
 
-const rad = function rad(angle) {
-  return angle / 180 * Math.PI;
-}
+// const rad = function rad(angle) {
+//   return angle / 180 * Math.PI;
+// }
 
-export default class PolarChart extends Component {
+class PolarChart extends Component {
 
   static type = POLAR;
 
@@ -30,9 +29,7 @@ export default class PolarChart extends Component {
     colorStops: P.arrayOf(P.shape(Stop.propTypes)).isRequired,
   }
 
-  updateContents(props) {
-    if (isEqual(this.innerProps, props)) return;
-    this.innerProps = props;
+  createChildDescriptors(props) {
 
     const {data, maxValues, dimensions, labels, labelStyle, diameter, colorStops} = props;
 
@@ -81,8 +78,9 @@ export default class PolarChart extends Component {
 
     const children = [Path_({id: 'polarContour', d: polygonPath(corners, true), fill: `url(#${fillId})`, stroke: 'rgba(0,0,0,0.2)'})._Path,
       ...arrows.map(arrow => Path_({d: arrow, fill: 'rgba(0,0,0,0.4)'})._Path),
-      ...lines.map(line => Path_({d: line, style: {fill: 'none', stroke: 'rgba(0,0,0,0.4)'}})._Path)]
-    this.createChildren([Svg_({width: diameter, height: diameter, defs, children})._Svg, ...labelChildren]);
+      ...lines.map(line => Path_({d: line, style: {fill: 'none', stroke: 'rgba(0,0,0,0.4)'}})._Path)];
+
+    return [Svg_({width: diameter, height: diameter, defs, children})._Svg, ...labelChildren];
   }
 
 }

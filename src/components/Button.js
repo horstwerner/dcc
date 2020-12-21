@@ -1,23 +1,21 @@
 import P from 'prop-types';
 import Component from "@symb/Component";
-import ComponentFactory from '@ssymb/ComponentFactory';
+import ComponentFactory from '@symb/ComponentFactory';
 import css from './Button.css';
+import {Div_} from "@symb/Div";
 
 export const BUTTON = 'button';
 
-export default class Button extends Component {
+class Button extends Component {
 
   static propTypes = {
     text: P.string,
     onClick: P.func
   };
 
-  updateContents(props) {
-
-    this.innerProps = props;
+  createChildDescriptors(props) {
     const {text, onClick} = props;
-
-    this.createChild(Div_({className: css.button, onclick: onClick}, text)._Div)
+    return Div_({className: css.button, onclick: onClick}, text)._Div;
   }
 
 }

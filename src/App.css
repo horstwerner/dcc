@@ -1,3 +1,13 @@
 .app {
-  background-color: darksalmon;
+  background-color: #7f9ea3;
+}
+.overlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.focus {
+  transform-origin: 0 0;
+  position: absolute;
 }

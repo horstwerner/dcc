@@ -5,43 +5,59 @@ export const ARRANGEMENT_DEFAULT = 'default';
 class TemplateRegistry {
 
   constructor() {
-    this.templateByType = {};
-    this.viewsByType = {};
-    this.aggregatorsByType = {};
-    this.navigationMapByName = {};
-    this.startMap = null;
+    this.templateById = {};
+    this.templatesByContentType = {};
+    this.toolsById = {};
+    this.toolsByContentType = {};
   }
 
   registerTemplate(descriptor) {
-    console.log(`registered template for '${descriptor.type}'`);
-    if (!descriptor.arrangements) {
-      descriptor.arrangements = {};
+    const {id, appliesTo} = descriptor;
+    console.log(`registered template '${descriptor.id}'`);
+    if (!this.toolsByContentType[appliesTo]) {
+      this.toolsByContentType[appliesTo] = [];
     }
-    this.templateByType[descriptor.type] = new Template(descriptor);
-  }
-
-  registerViews(type, descriptor) {
-    console.log(`registered group template '${type}'`);
-    this.aggregatorByType[type] = descriptor.aggregator;
-    this.viewsByType[type] = descriptor.views;
-  }
-
-  getTemplate(type) {
-    if (!this.templateByType[type]) {
-      throw new Error(`No template for type ${type} registered`)
+    const template = new Template(descriptor);
+    if (!this.templatesByContentType[appliesTo]) {
+      this.templatesByContentType[appliesTo] = [];
     }
-    return this.templateByType[type];
+    this.templatesByContentType[appliesTo].push(template);
+    this.templateById[id] = template;
   }
 
-  getAggregator(type) {
-    return this.aggregatorsByType[type];
-  }
-
-  getViews(type) {
-    if (!this.viewsByType[type]) {
-      throw new Error(`No template for type ${type} registered`)
+  registerTool(descriptor) {
+    const {id, appliesTo} = descriptor;
+    this.toolsById[id] = descriptor;
+    if (!this.toolsByContentType[appliesTo]) {
+      this.toolsByContentType[appliesTo] = [];
     }
-    return this.viewsByType[type];
+    this.toolsByContentType[appliesTo].push(descriptor);
+  }
+
+  getTemplate(id) {
+    if (!this.templateById[id]) {
+      throw new Error(`No template for type ${id} registered`)
+    }
+    return this.templateById[id];
+  }
+
+  getToolsFor(nodeType) {
+    return this.toolsByContentType[nodeType] || [];
+  }
+
+  getTool(toolId) {
+    return this.toolsById[toolId];
+  }
+
+  // getAggregator(type) {
+  //   return this.aggregatorsByType[type];
+  // }
+
+  getViewsFor(type, aggregate) {
+    if (!this.templatesByContentType[type]) {
+      throw new Error(`No template for content type ${type} registered`)
+    }
+    return this.templatesByContentType[type].filter(template => template.aggregate === aggregate);
   }
 
   // registerNavigationMaps(descriptor) {

@@ -1,0 +1,54 @@
+.menu {
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+  padding: 6px;
+  margin-bottom: 8px;
+  background-color: #7f9ea3;
+  box-shadow: inset 1px 1px 2px 0 rgba(0,0,0,0.2);
+  transition: transform, height 0.25s;
+}
+
+.title {
+  font-size: 13px;
+  font-family: 'Tahoma',sans-serif;
+  font-weight: bold;
+  color: #f5f5eb;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  padding-left: 4px;
+  padding-top: 2px;
+  margin-bottom: 5px;
+  height: 20px;
+}
+.entry,
+.entrySelected {
+  font-family: 'Tahoma', sans-serif;
+  box-sizing: border-box;
+  font-size: 12px;
+  font-weight: 300;
+  width: 100%;
+  margin-bottom: 2px;
+  text-align: center;
+  border-radius: 2px;
+  /*letter-spacing: 1px;*/
+  padding: 4px 2px 0 10px;
+  height: 22px;
+  cursor: pointer;
+}
+
+.entry {
+  background-color: #7f9ea3;
+  color: #EEEEEA;
+}
+
+.entry:hover {
+  background-color: #a4bcbf;
+}
+
+.entrySelected {
+  background-color: #EEEEEA;
+  color: #536e73;
+  box-shadow: 2px 2px 2px 0 rgba(0,0,0,0.2);
+}

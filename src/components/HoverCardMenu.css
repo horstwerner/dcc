@@ -1,0 +1,17 @@
+.menu {
+  display: flex;
+  flex-direction: row;
+  position: absolute;
+  transform-origin: 0 0;
+  z-index: 3;
+}
+.icon {
+  opacity: 0.3;
+  margin-right: 6px;
+}
+.icon:hover {
+  opacity: 0.6;
+}
+.icon:active {
+  opacity: 0.9;
+}

@@ -1,12 +1,11 @@
 import P from 'prop-types';
 import ComponentFactory from '@symb/ComponentFactory';
 import Component from "@symb/Component";
-import isEqual from "lodash/isEqual";
 
 const SVGNS = "http://www.w3.org/2000/svg";
 const PATH = 'svg_path';
 
-export default class Path extends Component {
+class Path extends Component {
 
   static baseTag = 'path';
   static type = PATH;
@@ -16,11 +15,8 @@ export default class Path extends Component {
     d: P.string.isRequired
   };
 
-  updateContents(props) {
-    if (isEqual(this.innerProps, props)) {
-      return;
-    }
-    this.innerProps = props;
+  updateDom(props) {
+
     const { id, d, fill, stroke } = props;
 
     if (id) {
@@ -34,7 +30,13 @@ export default class Path extends Component {
     }
     this.dom.setAttribute('d', d);
   }
+
+  createChildDescriptors(props) {
+    return null;
+  }
+
 }
+
 
 ComponentFactory.registerType( Path );
 

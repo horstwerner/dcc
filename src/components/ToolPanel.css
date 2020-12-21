@@ -1,0 +1,14 @@
+.panel {
+  position: absolute;
+  transform-origin: 0 0;
+  display: flex;
+  align-items: center;
+  padding-left: 24px;
+  padding-right: 24px;
+  background-color: #EEEEEA;
+  border-top: solid 1px #C0C0B9;
+  border-right: solid 2px #d1d1c9;
+  box-sizing: border-box;
+  transition:  height 0.25s, transform 0.25s;
+  z-index: 1;
+}

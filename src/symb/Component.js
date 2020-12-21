@@ -1,18 +1,21 @@
 import P from 'prop-types';
-import isEqual from 'lodash/isEqual';
-import isEmpty from 'lodash/isEmpty';
+import { clone, isEmpty, isEqual, mapValues } from 'lodash';
 import {DEBUG_MODE} from '@/Config';
 import ComponentFactory from './ComponentFactory'
 import {getTransformString} from "@symb/util";
 
 export function setStyle(dom, style) {
+
   Object.keys(style).forEach(key => {
     let value = style[key];
     if (['width','height','left','top'].includes(key) && typeof(value) === 'number') {
       value = `${value}px`;
     }
     dom.style[key] = value});
+
 }
+
+const DEFAULT_SPATIAL = {x: 0, y: 0, scale: 1};
 
 export default class Component {
 
@@ -33,7 +36,7 @@ export default class Component {
 
   updateScheduled = false;
 
-  constructor(props, domNode) {
+  constructor(props, parent, domNode) {
     if (domNode) {
       this.dom = domNode;
     } else {
@@ -44,15 +47,15 @@ export default class Component {
     this.className = props.className || this.constructor.className;
 
     if (this.className) {
-      if (props.nameSpace) {
+      if (props.nameSpace) { // svg
         this.dom.setAttribute('class', this.className);
       } else {
         this.dom.className = this.className;
       }
     }
+    this.parent = parent;
     this.key = props.key;
     this.alpha = 1;
-
   }
 
   checkProps(props) {
@@ -68,9 +71,38 @@ export default class Component {
     }
   }
 
-  // fillTemplate() {
-  //     throw new Error(`Neither function update nor fillTemplate defined for component ${this.constructor.name}`);
-  // }
+  getRelativeSpatial(refComponent) {
+    let current = this;
+    const spatial = {...(this.spatial || DEFAULT_SPATIAL)};
+    console.log(`${this.key} at ${JSON.stringify(this.spatial)}`);
+    while (current.parent && current !== refComponent) {
+      const parentSpatial = current.parent.spatial || DEFAULT_SPATIAL;
+      console.log(`${current.parent.key} at ${JSON.stringify(parentSpatial)}`);
+      spatial.x = spatial.x * parentSpatial.scale + parentSpatial.x;
+      spatial.y = spatial.y * parentSpatial.scale + parentSpatial.y;
+      spatial.scale *= parentSpatial.scale;
+      current = current.parent;
+    }
+    if (current !== refComponent) {
+      const downPath = refComponent.getAncestry([]);
+      for (let idx = 1; idx < downPath.length; idx++) {
+        const currentSpatial = downPath[idx].spatial || DEFAULT_SPATIAL;
+        spatial.x = (spatial.x - currentSpatial.x) / currentSpatial.scale;
+        spatial.y = (spatial.y - currentSpatial.y) / currentSpatial.scale;
+        spatial.scale /= currentSpatial.scale;
+      }
+    }
+    console.log(`result = ${JSON.stringify(spatial)}`)
+    return spatial;
+  }
+
+  getAncestry(targetArray) {
+    if (this.parent) {
+      this.parent.getAncestry(targetArray);
+    }
+    targetArray.push(this);
+    return targetArray;
+  }
 
   createChild(fallbackKey, childDescriptor) {
     if (typeof(childDescriptor) === 'string') {
@@ -83,7 +115,7 @@ export default class Component {
     //  fix unclosed syntactic bracket, but warn
     const propKeys = Object.keys(childDescriptor);
     if ( propKeys.length === 1 && propKeys[0].charAt(0) === '_' && ComponentFactory.knows(childDescriptor[propKeys[0]].type)) {
-      console.log(`Warning: automatically closed unclosed child descriptor ${JSON.stringify(childDescriptor)}`);
+      console.log(`Warning: automatically closed unclosed child descriptor of type ${childDescriptor[propKeys[0]].type}`);
       childDescriptor = childDescriptor[propKeys[0]];
     }
     if (childDescriptor.key == null) {
@@ -91,34 +123,34 @@ export default class Component {
     }
     const existing = this.childByKey[childDescriptor.key];
     const {type, ...netProps} = childDescriptor;
+    // noinspection JSUnresolvedVariable
     if (!existing || existing.constructor.type !== type) {
       if (existing) {
         existing.destroy();
       }
-      return this.addChild(ComponentFactory.create(childDescriptor));
-    } else if (!isEqual(netProps, existing.props)) {
-        existing.update(netProps);
+      return this.addChild(ComponentFactory.create(childDescriptor, this));
+    } else {
+      existing.update(netProps);
     }
     return existing;
   }
 
-  // /**
-  //  * includes an already instantiated Component into the list of child components
-  //  * However, if no child descriptor with the same key is passed in the next
-  //  * @param child
-  //  * @param spatial - position and scale in this component's local coordinate system
-  //  */
-  // adoptChild(child, spatial) {
-  //   if (!this.childByKey) {
-  //     this.childByKey = {};
-  //   }
-  //   child.update({spatial});
-  //   this.addChild(child);
-  // }
-
-  // updateChild(key, descriptor) {
-  //   this.childByKey[key] = this.createChild(key, descriptor);
-  // }
+  /**
+   * includes an already instantiated Component into the list of child components
+   * However, if no child descriptor with the same key is passed in the next update,
+   * it will be removed again
+   * @param child
+   * @param spatial - position and scale in this component's local coordinate system
+   */
+  adoptChild(child, spatial) {
+    if (!this.childByKey) {
+      this.childByKey = {};
+    }
+    delete child.parent.childByKey[child.key];
+    child.update({spatial});
+    child.parent = this;
+    this.addChild(child);
+  }
 
   createChildren(descriptor) {
     const updatedChildren = {};
@@ -149,17 +181,13 @@ export default class Component {
     return result;
   }
 
-  /**
-   * fallback generic update
-   * if no class specific update is implemented,
-   * method fillTemplate must be implemented
-   * @param props
-   */
   update(props) {
 
     if (props) {
-      this.checkProps(props);
+      //TODO check inner props and other props separately, take partial update into account
+      // this.checkProps(props);
     }
+
     const {key, className, style, alpha, spatial, ...innerProps} = props;
     if (key && (key !== this.key)) {
       throw new Error(`Attempt to update object ${this.key} with props for ${key}`);
@@ -185,28 +213,45 @@ export default class Component {
     }
 
     if (innerProps && !isEmpty(innerProps)) {
-      this.updateContents(innerProps);
-    }
-  }
-
-  updateContents(props) {
-    if (!isEqual(this.innerProps, props)) {
-      const { children } = props;
-      if (children) {
-        this.innerProps = props;
-        this.createChildren(children);
-      } else {
-        // this.dom.innerHTML = this.fillTemplate(props);
-        this.innerProps = props;
+      if (!isEqual(this.innerProps, props)) {
+        this.updateDom(innerProps);
+        const childDescriptors = this.createChildDescriptors(innerProps);
+        if (childDescriptors != null) {
+          this.createChildren(childDescriptors);
+        }
+        this.innerProps = {...props};
+        //TODO: recursive clone of children
+        if (props.children) {
+          this.innerProps.children = clone(props.children);
+        }
       }
     }
   }
 
+  morphTo(props, tween) {
+    // const {key, className, style, alpha, spatial, ...innerProps} = props;
+    //
+    // if (key && (key !== this.key)) {
+    //   throw new Error(`Attempt to update object ${this.key} with props for ${key}`);
+    // }
+    //FIXME: Implement
+  }
+
+  updateDom(props) {
+    //NOP
+  }
+
+  createChildDescriptors(props) {
+    return props.children || [];
+  }
+
   updateStyle(style) {
-    if (!isEqual(style, this.style)) {
-      setStyle(this.dom, style);
-      this.style = style;
-    }
+    if (isEqual(style, this.style)) return;
+    const writeStyle =  (this.style) ? mapValues(this.style, () => '') : {};
+    Object.assign(writeStyle, style);
+    this.style = {...style};
+
+    setStyle(this.dom, writeStyle);
   }
 
   // getNativeSize() {
@@ -220,8 +265,9 @@ export default class Component {
       if (isNaN(x) || isNaN(y) || isNaN(scale)){
         throw new Error('NaN passed as argument for updateSpatial');
       }
+      // console.log(`update: ${this.key} scaled to ${scale}`);
       this.dom.style.transform = getTransformString(x, y, scale);
-      this.spatial = spatial;
+      this.spatial = {x, y, scale};
     }
   }
 
@@ -262,7 +308,11 @@ export default class Component {
       this.updateScheduled = true;
       requestAnimationFrame(() => {
         this.updateScheduled = false;
-        this.updateContents({...this.innerProps})
+        this.updateDom(this.innerProps);
+        const childDescriptors = this.createChildDescriptors(this.innerProps);
+        if (childDescriptors !== null) {
+          this.createChildren(childDescriptors);
+        }
       });
     }
   }

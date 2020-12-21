@@ -1,0 +1,40 @@
+.radioBar {
+  display: flex;
+}
+
+.buttonActive,
+.buttonInactive {
+  border-radius: 3px;
+  margin: 4px;
+  min-width: 60px;
+  height: 20px;
+  padding-top: 6px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.label {
+  margin-right: 10px;
+  min-width: 60px;
+  height: 20px;
+  padding-top: 8px;
+  font-size: 16px;
+  color: #696966;
+}
+
+.buttonInactive {
+  background-color: #d6d6d2;
+  color: #696966;
+  box-shadow: inset 2px 2px 2px 0 rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+
+.buttonInactive:hover {
+  background-color: #c7c7c3
+}
+
+.buttonActive {
+  background-color: #696966;
+  color: #EEEEEA;
+  box-shadow: 2px 2px 2px 0 rgba(0,0,0,0.15);
+}

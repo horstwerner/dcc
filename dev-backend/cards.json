@@ -1,6 +1,8 @@
 {
   "constants": [
-    {"MARGIN":  12},
+    {"MARGIN":  20},
+    {"CARD_BACKGROUND_COLOR":  "#FAFAFA"},
+    {"AREA_BACKGROUND_COLOR":  "#F5F5F5"},
     {"TEXT_COLOR": "rgb(43,43,43)"},
     {"HEADING_COLOR": "rgba(0,0,0,0.83)"},
     {"TEXT_STYLE": {
@@ -62,7 +64,7 @@
         },
         {
           "condition": "=open",
-          "color": "#d0d0d0"
+          "color": "#c0c0c0"
         }
       ]},
     {"DEFAULT_TICKET_COLOR": "#a0a0a0"},
@@ -112,7 +114,10 @@
   ],
   "cards": [
     {
-      "type": "jira:ticket",
+      "id": "jira:ticket",
+      "name": "Default",
+      "appliesTo": "jira:ticket",
+      "aggregate": false,
       "size": {
         "w": 220,
         "h": 120
@@ -124,6 +129,7 @@
         "h": 120,
         "cornerRadius": 6
       },
+      "clickable": true,
       "colorcoding": {
         "type": "selection",
         "attribute": "jira:status",
@@ -187,23 +193,43 @@
           "style": {
             "font-size": "16px",
             "font-weight": "bold",
-            "color": "#FFFFFF"
+            "color": "#202020"
+          }
+        },
+        {
+          "key": "status",
+          "type": "textfield",
+          "x": 130,
+          "y": 67,
+          "w": 90,
+          "h": 20,
+          "attribute": "jira:status",
+          "style": {
+            "font-size": "12px",
+            "font-weight": "normal",
+            "color": "#202020"
           }
         }
       ]
     },
     {
-      "type": "jira:team",
+      "id": "jira:team",
+      "name": "Default",
+      "appliesTo": "jira:team",
+      "aggregate": false,
       "size": {
-        "w": 300,
-        "h": 110
+        "w": 400,
+        "h": 150
       },
       "background": {
         "type": "rect",
-        "color": "#FEFEFE",
-        "w": 300,
-        "h": 110
+        "color": {"$": "CARD_BACKGROUND_COLOR"},
+        "borderColor": "#E8E8E8",
+        "w": 400,
+        "h": 150,
+        "cornerRadius": "6px"
       },
+      "clickable": true,
       "preprocessing": [{"method":  "aggregate", "input": "jira:ticket", "results": {"storyPointSum":  {"attribute":  "jira:storypoints", "calculate": "sum"}}}],
       "elements": [
         {
@@ -214,6 +240,13 @@
           "style": {"$": "LABEL_STYLE"}
         },
         {
+          "key": "storycaption",
+          "type": "caption",
+          "x": 12, "y": 48, "w": 80, "h": 18,
+          "text": "Stories",
+          "style": {"$": "LABEL_SMALL_STYLE"}
+        },
+        {
           "key": "storybar",
           "type": "chart",
           "source": "jira:ticket",
@@ -221,7 +254,7 @@
             "$": "STATUS_SEQUENCE"
           },
           "chartType": "stackedBar",
-          "x": 20, "y": 60, "w": 140, "h": 20,
+          "x": 12, "y": 60, "w": 200, "h": 30,
           "widthAttribute": "jira:storypoints",
           "colorAttribute": "jira:status",
           "colors": {
@@ -236,9 +269,9 @@
           "key": "polarBear",
           "type": "chart",
           "chartType": "polar",
-          "x": 200,
-          "y": 20,
-          "diameter": 100,
+          "x": 250,
+          "y": 30,
+          "diameter": 130,
           "dimensions": ["dcc:bugs", "dcc:speed", "dcc:downstream"],
           "maxValues": {"dcc:bugs": 140, "dcc:speed": 38, "dcc:downstream": 100},
           "colorStops": [{"percent": "0", "color":  "#548546"}, {"percent": "25", "color":  "#7ea550"}, {"percent":  "35", "color":  "#a3b630"}, {"percent":  "50", "color":  "#cfc726"},{"percent":  "60", "color":  "#cfc726"}, {
@@ -249,14 +282,18 @@
       ]
     },
     {
-      "type": "root",
+      "id": "stories-by-feature",
+      "name": "by Feature",
+      "appliesTo": "jira:ticket",
+      "aggregate": true,
       "background": {
         "type": "rect",
-        "w": 1200,
-        "h": 800,
-        "color": "#FAFAFA",
+        "w": 420,
+        "h": 500,
+        "color": {"$":  "AREA_BACKGROUND_COLOR"},
         "cornerRadius": "6px"
       },
+      "clickable": true,
       "elements": [
         {
           "key": "label_features",
@@ -268,49 +305,127 @@
         {
           "key": "features",
           "type": "trellis",
-          "source": "jira:ticket",
-          "x": 12, "y": 60, "w": 500, "h": 748,
+          "source": "core:subNodes",
+          "inputSelector": {"jira:release": ">1.1"},
+          "x": 20, "y": 60, "w": 360, "h": 800,
           "arrangement": {
             "type": "grid",
             "compact": true,
-            "padding": 0.1
+            "padding": 0
           },
-          "inputSelector": {"jira:release": {">": "1.1"}},
           "align": {"storyPointSum": "max"},
           "template": "storyBarWithTitle",
           "groupAttribute": "jira:feature"
-        },
-        {
-          "key": "graphanalysis",
-          "type": "card",
-          "source": "jira:ticket",
-          "template": "graphAnalysis",
-          "x": 320, "y": 20, "w": 500, "h": 600
-        },
+        }
+      ]
+    },
+    {
+      "id": "team-overview",
+      "name": "Teams",
+      "appliesTo": "jira:team",
+      "aggregate": true,
+      "background": {
+        "type": "rect",
+        "w": 420,
+        "h": 900,
+        "color": {"$":  "AREA_BACKGROUND_COLOR"},
+        "cornerRadius": "6px"
+      },
+      "clickable": true,
+      "elements": [
         {
           "key": "label_teams",
           "type": "caption",
           "style": {"$": "GROUP_HEADING_STYLE"},
-          "x": 850, "y": {"$": "MARGIN"}, "w": 100, "h": 32,
+          "x": {"$": "MARGIN"}, "y": {"$": "MARGIN"}, "w": 100, "h": 32,
           "text": "Teams"
         },
         {
           "key": "teams",
           "type": "cards",
-          "source": "jira:team",
+          "source": "core:subNodes",
           "align": {"storyPointSum": "max"},
-          "x": 850, "y": 60, "w": 380, "h": 748,
+          "x": 35, "y": 50, "w": 380, "h": 790,
           "arrangement": {
             "type": "grid",
             "padding": 0.1
           },
           "template": "jira:team"
         }
-
       ]
     },
     {
-      "type": "storiesByStatus",
+      "id": "root",
+      "name": "Start View",
+      "aggregate": true,
+      "background": {
+        "type": "rect",
+        "w": 1580,
+        "h": 900,
+        "color": "rgba(255,255,255,0.0)"
+      },
+      "elements": [
+        {
+          "key": "map-feature",
+          "type": "card",
+          "template": "stories-by-feature",
+          "source": "~jira:ticket",
+          "x": 0, "y":0, "w": 420, "h": 500
+        },
+        {
+          "key": "dependencies",
+          "type": "card",
+          "source": "~jira:ticket",
+          "template": "dependency-graph",
+          "x": 440, "y": 0, "w": 700, "h": 500
+        },
+        {
+          "key": "teams",
+          "type": "card",
+          "source": "~jira:team",
+          "template": "team-overview",
+          "x": 1160, "y":0, "w": 420, "h": 900
+        }
+      ]
+    },
+    {"id": "dependency-graph",
+      "name": "Dependency Graph",
+      "appliesTo": "jira:ticket",
+      "aggregate": true,
+      "background": {
+        "type": "rect",
+        "w": 700,
+        "h": 500,
+        "color": {"$": "AREA_BACKGROUND_COLOR"},
+        "cornerRadius": "6px"
+      },
+      "clickable": true,
+      "elements": [
+        {
+          "key": "label_title",
+          "type": "caption",
+          "style": {"$": "GROUP_HEADING_STYLE"},
+          "x": {"$": "MARGIN"}, "y": {"$": "MARGIN"}, "w": 100, "h": 32,
+          "text": "Dependencies"
+        },
+        {
+          "key": "graph",
+          "type": "chart",
+          "source": "core:subNodes",
+          "inputSelector": {"jira:release": "=1.2"},
+          "bounded": false,
+          "chartType": "graph",
+          "x": 20, "y": 20, "w": 680, "h": 480,
+          "path": "jira:is-prerequisite-for*",
+          "template": "jira:ticket"
+        }
+      ]
+    },
+    {
+      "id": "storiesByStatus",
+      "name": "by Status",
+      "appliesTo": "jira:ticket",
+      "aggregate": true,
       "background": {
         "type": "rect",
         "w": 400,
@@ -320,6 +435,16 @@
         "x": 0,
         "y": 0
       },
+      "preprocessing": [
+        {"method":  "aggregate",
+        "input": "core:subNodes",
+        "results": {
+          "storyPointSum": {
+            "attribute": "jira:storypoints",
+            "calculate": "sum"
+          }}
+      }
+      ],
       "elements": [
         {
           "key": "title",
@@ -354,7 +479,7 @@
         {
           "key": "storypts",
           "type": "textfield",
-          "attribute": "total-storypoints",
+          "attribute": "storyPointSum",
           "x": 348,
           "y": 30,
           "w": 200,
@@ -393,7 +518,7 @@
           "type": "cards",
           "source": "core:subNodes",
           "x": 20,
-          "y": 80,
+          "y": 100,
           "w": 360,
           "h": 700,
           "arrangement": {
@@ -406,15 +531,18 @@
       ]
     },
     {
-      "type": "storyBarWithTitle",
-      "background": {"type": "rect", "w": 280, "h": 40},
+      "id": "storyBarWithTitle",
+      "aggregate": true,
+      "background": {"type": "rect", "w": 380, "h": 30,
+        "color": "rgba(0,0,0,0)"
+      },
       "preprocessing": [{"method":  "aggregate", "results":  {"storyPointSum":  {"attribute": "jira:storypoints", "calculate":  "sum"}}}],
       "elements": [
         {
           "key": "label",
           "type": "textfield",
           "attribute": "core:name",
-          "x": 0, "y": 0, "w": 148, "h": 20,
+          "x": 0, "y": 8, "w": 148, "h": 20,
           "style": {
             "$": "LABEL_STYLE",
             "h-align": "right"
@@ -428,7 +556,7 @@
             "$": "STATUS_SEQUENCE"
           },
           "chartType": "stackedBar",
-          "x": 160, "y": 0, "w": 120, "h": 20,
+          "x": 160, "y": 8, "w": 200, "h": 20,
           "totalWidthValue": "storyPointSum",
           "widthAttribute": "jira:storypoints",
           "colorAttribute": "jira:status",
@@ -441,9 +569,9 @@
         }
       ]
     },
-
     {
-      "type": "storyBarByStatus",
+      "id": "storyBarByStatus",
+      "aggregate": true,
       "background": { "type": "rect", "w": 400, "h": 70},
       "preprocessing": [
         {"method":  "aggregate",
@@ -451,7 +579,11 @@
           "storyPointSum": {
             "attribute": "jira:storypoints",
             "calculate": "sum"
-          }}
+          },
+           "secondSum": {
+             "attribute": "jira:storypoints",
+             "calculate": "sum"
+           }}
         }
       ],
       "elements": [
@@ -465,7 +597,7 @@
         {
           "key": "counter",
           "type": "caption",
-          "text": "{{core:nodeCount}} Stories, {{storyPointSum}} Story Points",
+          "text": "{{core:nodeCount}} Stories, {{secondSum}} Story Points",
           "x": 200, "y": 6, "w": 200, "h": 16,
           "style": {"font-size": "16px", "color": "#A0A0A0", "h-align": "right"}
         },
@@ -487,16 +619,26 @@
       ]
     },
     {
-      "type": "trellisByRelease+Status",
+      "id": "trellisByRelease+Status",
+      "name": "by Release",
+      "appliesTo": "jira:ticket",
+      "aggregate": true,
       "background": {
         "type": "rect",
-        "w": 260,
+        "w": 300,
         "h": 500,
         "cornerRadius": "6px",
         "color": "#FEFEFE",
         "x": 0,
         "y": 0
       },
+      "preprocessing": [       {"method":  "aggregate",
+        "results": {
+          "storyPointSum": {
+            "attribute": "jira:storypoints",
+            "calculate": "sum"
+          }}}
+      ],
       "elements": [
         {
           "key": "title",
@@ -505,7 +647,7 @@
           "style": {
             "$": "CARD_HEADING_STYLE"
           },
-          "x": 30,
+          "x": 20,
           "y": 20,
           "w": 200,
           "h": 32
@@ -514,8 +656,8 @@
           "key": "storyptLabel",
           "type": "caption",
           "text": "Total Storypoints:",
-          "x": 240,
-          "y": 32,
+          "x": 20,
+          "y": 60,
           "w": 200,
           "h": 24,
           "style": {
@@ -528,10 +670,10 @@
         {
           "key": "storypts",
           "type": "textfield",
-          "attribute": "total-storypoints",
-          "x": 348,
-          "y": 30,
-          "w": 200,
+          "attribute": "storyPointSum",
+          "x": 130,
+          "y": 56.5,
+          "w": 60,
           "h": 24,
           "style": {
             "color": "#A0A0A0",
@@ -545,7 +687,7 @@
           "type": "trellis",
           "source": "core:subNodes",
           "x": 20,
-          "y": 60,
+          "y": 100,
           "w": 260,
           "h": 400,
           "arrangement": {
@@ -562,7 +704,8 @@
       ]
     },
     {
-      "type": "storyBarByImpact",
+      "id": "storyBarByImpact",
+      "aggregate": true,
       "background": {"type": "rect", "w": 460, "h": 70},
       "preprocessing": [
         {"method":  "aggregate",
@@ -574,7 +717,7 @@
         },
         {
         "method": "path-analysis",
-        "inputSelector": {"jira:release": {"=": 1.2}},
+        "inputSelector": {"jira:release": "=1.2"},
         "associationType": "jira:is-prerequisite-for",
         "upstreamAggregate": {
           "upstream-storypoints": {"attribute": "jira:storypoints", "calculate": "sum"}
@@ -597,7 +740,7 @@
           "type": "chart",
           "source": "core:subNodes",
           "overlay": "dependencies",
-          "inputSelector": {"jira:release": {"=": 1.2}},
+          "inputSelector": {"jira:release": "=1.2"},
           "sortSequence": "byUri",
           "chartType": "stackedBar",
           "x": 0, "y": 30, "w": 150, "h": 30,
@@ -624,7 +767,10 @@
       ]
     },
     {
-      "type": "graphAnalysis",
+      "id": "graphAnalysis",
+      "name": "Dependency Analysis",
+      "aggregate": true,
+      "appliesTo": "jira:ticket",
       "background": {
         "type": "rect", "w": 500, "h": 500, "color": "#FEFEFE"},
       "preprocessing": [{"method":  "set-context", "values":  {"allNodes": "core:subNodes"}}],

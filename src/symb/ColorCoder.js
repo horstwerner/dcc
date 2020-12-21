@@ -2,6 +2,7 @@ import P from 'prop-types';
 import CheckedObject from "@/CheckedObject";
 import {Gradient} from "@symb/ColorUtil";
 import {parseComparison} from "@/graph/Filter";
+import GraphNode from "@/graph/GraphNode";
 
 
 const createTest = function (condition, color) {
@@ -47,7 +48,7 @@ export default class ColorCoder extends CheckedObject{
   }
 
   getColor(object) {
-    const attributeValue = object[this.attribute];
+    const attributeValue = object.constructor === GraphNode ? object.get(this.attribute) : object [this.attribute];
     if (attributeValue == null) return this.default;
     return this.selectColor(attributeValue);
   }

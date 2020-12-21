@@ -2,13 +2,12 @@ import P from 'prop-types';
 import css from './Card.css';
 import ComponentFactory from '@symb/ComponentFactory';
 import Component from "@symb/Component";
-import isEqual from "lodash/isEqual";
 import {DEBUG_MODE} from "@/Config";
 
 const SVGNS = "http://www.w3.org/2000/svg";
 const RECT = 'svg_rect';
 
-export default class Rect extends Component {
+class Rect extends Component {
 
   static baseTag = 'rect';
   static type = RECT;
@@ -22,8 +21,8 @@ export default class Rect extends Component {
     onClick: P.func
   };
 
-  constructor(props, domNode) {
-    super(props, domNode);
+  constructor(props, parent, domNode) {
+    super(props, parent, domNode);
     this.handleClick = this.handleClick.bind(this);
     // only at beginning lifespan
     if (props.onClick) {
@@ -38,11 +37,7 @@ export default class Rect extends Component {
     }
   };
 
-  updateContents(props) {
-    if (isEqual(this.innerProps, props)) {
-      return;
-    }
-    this.innerProps = props;
+  updateDom(props) {
     const { id, x, y, width, height, value} = props;
     if (DEBUG_MODE && (isNaN(width) || isNaN(height) || isNaN(x) || isNaN(y))) {
       debugger
@@ -58,7 +53,10 @@ export default class Rect extends Component {
     this.dom.setAttribute('height', height);
     this.dom.setAttribute('x', x);
     this.dom.setAttribute('y', y);
+  }
 
+  createChildDescriptors(props) {
+    return null;
   }
 
 }

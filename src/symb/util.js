@@ -124,6 +124,7 @@ export const createCardNode = function createCardNode(contents) {
     if (contents.getTypeUri() === TYPE_AGGREGATOR) {
       return contents;
     }
+    //TODO: why create contextual for individual nodes?
     return contents.createContextual();
   }
 }

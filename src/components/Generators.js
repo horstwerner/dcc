@@ -1,7 +1,11 @@
+/**
+ * Functions creating Symbiosis components - corresponds to React pure function components
+ */
+
 import P from "prop-types";
+import {resolve, TYPE_CONTEXT, TYPE_NODE_COUNT} from '@/graph/Cache';
 import {mapValues, omit} from 'lodash';
 import {DEBUG_MODE} from "@/Config";
-import {resolveAttribute, TYPE_CONTEXT, TYPE_NODE_COUNT} from "@/graph/Cache";
 import css from "@/components/Card.css";
 import {Div_, FlexBox_} from "@symb/Div";
 import {Image_} from "@symb/Image";
@@ -13,7 +17,7 @@ import {CardSet_, LOD_FULL, LOD_RECT} from "@/components/CardSet";
 import {Card_} from "@/components/Card";
 import CompactGridArrangement from "@/arrangement/CompactGridArrangement";
 import {preprocess} from "@/graph/Preprocessors";
-
+import hoverMenuCss from './HoverCardMenu.css';
 
 const PADDING = 0.2;
 const KEY_BACKGROUND = 'background';
@@ -34,17 +38,16 @@ const CAPTION_PROPS = {
 const BACKGROUND_RECT = 'rect';
 const BACKGROUND_IMAGE = 'image';
 
-export const Background = function Background(props, color, onClick) {
-  const {type, w, h, source, cornerRadius} = props;
-  const className =  onClick ? css.clickable : css.background;
-  // if (onClick) {console.log(`${JSON.stringify(props)} is clickable`)}
+export const Background = function Background(props, color, onClick, hover) {
+  const {type, w, h, source, cornerRadius, borderColor} = props;
+  const className =  hover ? css.hovering : (onClick ? css.clickable : css.background);
   const spatial = props.spatial || {x: 0, y: 0, scale: 1};
 
   switch (type) {
     case BACKGROUND_RECT:
       return Div_({key: KEY_BACKGROUND, className, spatial,
-        style:{backgroundColor: color, width: w, height: h, borderRadius: cornerRadius},
-        onClick})._Div;
+        style:{backgroundColor: color, width: w, height: h, borderRadius: cornerRadius, border: borderColor && `solid 1px ${borderColor}`},
+        onClick: (hover ? null : onClick)})._Div;
     case BACKGROUND_IMAGE:
       return Image_({key: KEY_BACKGROUND, className, spatial, source, width: w, height: h, color, cornerRadius, onClick})._Image;
     default:
@@ -103,11 +106,11 @@ export function createArrangement(descriptor, childSize) {
   }
 
   const { type } = descriptor;
-  // console.log(`rendering cardset with ${width}/${height}`);
+  // console.log(`rendering card set with ${width}/${height}`);
   switch (type) {
     case GRID:
       const {x, y, w, h, padding } = descriptor;
-      return new CompactGridArrangement(padding || PADDING, childSize)
+      return new CompactGridArrangement(padding == null ? PADDING : padding, childSize)
           .setArea(w, h)
           .setOffset(x, y)
   }
@@ -128,7 +131,7 @@ createArrangement.propTypes = {
  * @param {Object} context
  * @param {Template} template
  */
-const createPreprocessedCardNode = function createPreprocessedCardNode(data, context, template) {
+export const createPreprocessedCardNode = function createPreprocessedCardNode(data, context, template) {
   const result = createCardNode(data);
   const newContext = {...context};
   result[TYPE_CONTEXT] = newContext;
@@ -139,21 +142,25 @@ const createPreprocessedCardNode = function createPreprocessedCardNode(data, con
   return result;
 }
 
-export const ChildSet = function ChildSet(data, context, descriptor, aggregate, onClick) {
+export const ChildSet = function ChildSet(data, context, descriptor, aggregate, onClick, clickMode) {
 
   if (DEBUG_MODE) {
     P.checkPropTypes(ChildSet.propTypes, descriptor, 'prop', 'ChildSet');
   }
 
-  const { key, source, lod, align, arrangement, x, y, w, h } = descriptor;
+  const { key, source, lod, align, arrangement, x, y, w, h} = descriptor;
 
   const templateName = descriptor.template;
   const template = TemplateRegistry.getTemplate(templateName);
   const nativeChildSize = template.getSize();
 
-  let nodes = (!source || source === 'this') ?
-      data :
-      resolveAttribute(data, source);
+  let nodes;
+  if (!source || source === 'this') {
+    nodes = data;
+  } else {
+    nodes = resolve(data, source);
+  }
+
   if (!nodes) return null;
 
   if (aggregate) {
@@ -164,12 +171,12 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
       lod,
       spatial: fit(w, h, nativeChildSize.width, nativeChildSize.height, x, y),
       data:  cardNode,
-      onClick
+      onClick,
+      clickMode
     })._Card;
   }
 
   const arrangementDescriptor = {type: GRID, x: 0, y: 0, w, h, padding: PADDING, ...arrangement};
-  debugger
   const cardNodes = nodes.map(node => createPreprocessedCardNode(node, context, template));
   if (align) {
     const aggregate = mapValues(align, (calculate, key) => ({attribute: key, calculate}));
@@ -184,7 +191,8 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
     lod,
     spatial: {x, y, scale: 1},
     arrangement: createArrangement(arrangementDescriptor, nativeChildSize),
-    onClick})._CardSet
+    onClick,
+    clickMode})._CardSet
 }
 
 ChildSet.propTypes = {key: P.string.isRequired,
@@ -199,4 +207,17 @@ ChildSet.propTypes = {key: P.string.isRequired,
   template: P.string.isRequired
 }
 
+export const hoverCardMenu = function hoverCardMenu(top, right, onClose, onPin, onStash) {
+  const iconSize = 18;
+  const iconMargin = 6;
+  const width = iconSize;
+  const totalWidth = 3 * iconSize + 2 * iconMargin;
+  const height = iconSize;
+  const children = [
+    Image_({className: hoverMenuCss.icon, width, height, source: 'public/Pin.svg', onClick: onPin})._Image,
+    Image_({className: hoverMenuCss.icon, width, height, source: 'public/Dock.svg', onClick: onStash})._Image,
+    Image_({className: hoverMenuCss.icon, width, height, source: 'public/CloseButton.svg', onClick: onClose})._Image,
+  ];
 
+  return Div_({className: hoverMenuCss.menu, children, style: {width: totalWidth, height}, spatial: {x: right - totalWidth - iconMargin, y: top + iconMargin, scale: 1}})._Div
+}

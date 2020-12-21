@@ -21,11 +21,12 @@
 import Aggregator from "@/Aggregator";
 import {resolveAttribute, TYPE_NODES} from "@/graph/Cache";
 import Filter from "@/graph/Filter";
-import {pathAnalysis} from "@/graph/Analysis";
+import {deriveAssociations, pathAnalysis} from "@/graph/Analysis";
 
 export const PATH_ANALYSIS = "path-analysis";
 export const AGGREGATE = "aggregate";
 export const SET_CONTEXT = "set-context";
+export const DERIVE_ASSOCIATIONS = "derive-associations";
 
 /**
  *
@@ -51,19 +52,27 @@ export const preprocess = function preprocess(data, context, preprocessors) {
     }
 
     switch (method) {
-      case PATH_ANALYSIS:
+      case PATH_ANALYSIS: {
         const {associationType, upstreamAggregate, downstreamAggregate} = descriptor;
         data[result] = pathAnalysis(source, associationType, new Aggregator(upstreamAggregate), new Aggregator(downstreamAggregate));
         break;
-      case AGGREGATE:
-        const { results } = descriptor;
+      }
+      case AGGREGATE: {
+        const {results} = descriptor;
         const aggregator = new Aggregator(results);
-        Object.assign(data , aggregator.aggregate(source));
+        Object.assign(data, aggregator.aggregate(source));
         break;
-      case SET_CONTEXT:
-        const { values } = descriptor;
+      }
+      case SET_CONTEXT: { // add key-value pairs to context object in order to be passed down
+        const {values} = descriptor;
         Object.keys(values).forEach(targetField => context[targetField] = resolveAttribute(data, values[targetField]));
         break;
+      }
+      case DERIVE_ASSOCIATIONS: {
+        const {path, derived} = descriptor;
+        data[result] = deriveAssociations(data[TYPE_NODES], path, derived);
+        break;
+      }
       default:
         throw new Error(`Unknown preprocessing algorithm ${method}`);
     }

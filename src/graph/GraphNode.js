@@ -6,8 +6,14 @@ import Cache, {
   TYPE_CONTEXTUAL_NODE,
   TYPE_NAME
 } from './Cache';
+import cacheInstance from "./Cache";
 
 export default class GraphNode {
+
+  uri;
+  type;
+  uniqueKey;
+  originalNode;
 
   /**
    *
@@ -16,20 +22,31 @@ export default class GraphNode {
    * @param {GraphNode?} originalNode
    */
   constructor(typeUri, uri, originalNode) {
-    if (Cache.getType(typeUri).isAssociation) {
-      throw new Error(`Can't use association type ${typeUri} as node type`);
+    if (!uri ) {
+      throw new Error('Undefined uri in node constructor');
     }
-
+    this.uri = uri;
     if (originalNode) {
       if (typeUri !== TYPE_CONTEXTUAL_NODE) {
         throw new Error(`reference to original Node ${originalNode.uri} only allowed for ${TYPE_CONTEXTUAL_NODE}`);
       }
       this.originalNode = originalNode;
+      this.uniqueKey = originalNode.getUniqueKey();
+      this.type = Cache.getType(TYPE_CONTEXTUAL_NODE);
+    } else if (typeUri) {
+      this.setType(typeUri);
     }
-    this.type = Cache.typeDic[typeUri];
+  }
+
+  setType(typeUri) {
+    const type = Cache.getType(typeUri);
+    if (!type) throw new Error(`Type ${typeUri} not declared in type dictionary`);
+    if (type.isAssociation) {
+      throw new Error(`Can't use association type ${typeUri} as node type`);
+    }
+    this.type = type;
     if (this.type === undefined) throw new Error("Can't find type " + typeUri);
-    this.uri = uri;
-    this.uniqueKey = originalNode ? originalNode.getUniqueKey() : `${this.type.uri}/${this.uri}`;
+    this.uniqueKey = `${this.type.uri}/${this.uri}`;
   }
 
   createContextual() {
@@ -39,6 +56,15 @@ export default class GraphNode {
   getTypeUri() {
     return this.type.uri;
   };
+
+  isOfType (typeUri) {
+    let curParent = this.type;
+    while (curParent) {
+      if (typeUri === curParent.uri) return true;
+      curParent = curParent.subClassOf ? Cache.getType(curParent.subClassOf) : null;
+    }
+    return  false;
+  }
 
   getUniqueKey () {
     return this.uniqueKey;
@@ -66,7 +92,7 @@ export default class GraphNode {
   //   }
   //   return property;
   // };
-  
+
   // /**
   //  *
   //  * @param {string} path traversal path in xpath syntax
@@ -125,7 +151,11 @@ export default class GraphNode {
   }
 
   setBulkAssociation(associationTypeUri, nodes) {
-    this[associationTypeUri] = nodes;
+    if (nodes.constructor === Set) {
+      this[associationTypeUri] = [...nodes]
+    } else {
+      this[associationTypeUri] = nodes;
+    }
     return this;
   }
 
@@ -179,13 +209,9 @@ export default class GraphNode {
 
     if (!target) return ;
 
-    if (associationtype.isAssociation && (!targetTypeUri || Cache.getType(targetTypeUri).isAssociation)) {
-      throw new Error(`No valid entity type specified for association ${associationtype.uri}`);
-    }
+    const nodeType = targetTypeUri || (!associationtype.isAssociation && associationtype.uri);
 
     const inverseTypeUri = associationtype.getInverseType(this.type.uri);
-
-    const nodeType = targetTypeUri || associationtype.uri;
 
     if (typeof target === 'string') {
       const targetNode = Cache.getNode(nodeType, target);
