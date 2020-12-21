@@ -1,5 +1,5 @@
 import P from 'prop-types';
-import {cloneDeep, isEqual, merge} from 'lodash';
+import {merge} from 'lodash';
 import Component from "./Component";
 import ComponentFactory from "./ComponentFactory"
 
@@ -12,13 +12,8 @@ export class Div extends Component {
       onClick: P.func
   };
 
-  updateContents(props) {
-    this.innerProps = {...props};
-
-    const { onClick, children } = props;
-    if (children) {
-      this.createChildren(children);
-    }
+  updateDom(props) {
+    const { onClick } = props;
     if (onClick) {
       this.dom.onclick = onClick;
     }

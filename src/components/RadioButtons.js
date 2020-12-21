@@ -1,9 +1,8 @@
 import P from 'prop-types';
-import {isEqual} from 'lodash';
 import Component from "@symb/Component";
 import ComponentFactory from "@symb/ComponentFactory";
 import css from './RadioButtons.css';
-import {Div, Div_} from "@symb/Div";
+import {Div_} from "@symb/Div";
 
 const RADIO = 'radio';
 
@@ -20,13 +19,15 @@ class RadioButtons extends Component {
     height: P.number
   }
 
-  updateContents(props) {
-    if (isEqual(props, this.innerProps)) return;
-    this.innerProps = props;
-
-    const {orientation, width, height, label, options, selectedId} = props;
-
+  updateDom(props) {
+    const { orientation, width, height } = props;
     this.updateStyle({flexDirection: (orientation === 'vertical' ? 'flex-column' : 'flex-row'), width, height});
+  }
+
+  createChildDescriptors(props) {
+
+    const { label, options, selectedId } = props;
+
     const children = [Div_({key: 'label', className: css.label, children: label})._Div];
 
     options.forEach(option => children.push(Div_({
@@ -36,10 +37,7 @@ class RadioButtons extends Component {
       onClick: option.id === selectedId ? null : option.onSelect
     })._Div));
 
-
     this.createChildren(children);
-
-
   }
 
 }

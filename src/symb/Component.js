@@ -1,12 +1,10 @@
 import P from 'prop-types';
-import isEqual from 'lodash/isEqual';
-import isEmpty from 'lodash/isEmpty';
+import { clone, isEmpty, isEqual, mapValues } from 'lodash';
 import {DEBUG_MODE} from '@/Config';
 import ComponentFactory from './ComponentFactory'
 import {getTransformString} from "@symb/util";
 
 export function setStyle(dom, style) {
-  //FIXME: setStyle can't remove style attributes
 
   Object.keys(style).forEach(key => {
     let value = style[key];
@@ -14,6 +12,7 @@ export function setStyle(dom, style) {
       value = `${value}px`;
     }
     dom.style[key] = value});
+
 }
 
 const DEFAULT_SPATIAL = {x: 0, y: 0, scale: 1};
@@ -124,6 +123,7 @@ export default class Component {
     }
     const existing = this.childByKey[childDescriptor.key];
     const {type, ...netProps} = childDescriptor;
+    // noinspection JSUnresolvedVariable
     if (!existing || existing.constructor.type !== type) {
       if (existing) {
         existing.destroy();
@@ -181,15 +181,10 @@ export default class Component {
     return result;
   }
 
-  /**
-   * fallback generic update
-   * if no class specific update is implemented,
-   * method fillTemplate must be implemented
-   * @param props
-   */
   update(props) {
 
     if (props) {
+      //TODO check inner props and other props separately, take partial update into account
       // this.checkProps(props);
     }
 
@@ -218,28 +213,45 @@ export default class Component {
     }
 
     if (innerProps && !isEmpty(innerProps)) {
-      this.updateContents(innerProps);
-    }
-  }
-
-  updateContents(props) {
-    if (!isEqual(this.innerProps, props)) {
-      const { children } = props;
-      if (children) {
+      if (!isEqual(this.innerProps, props)) {
+        this.updateDom(innerProps);
+        const childDescriptors = this.createChildDescriptors(innerProps);
+        if (childDescriptors != null) {
+          this.createChildren(childDescriptors);
+        }
         this.innerProps = {...props};
-        this.createChildren(children);
-      } else {
-        // this.dom.innerHTML = this.fillTemplate(props);
-        this.innerProps = {...props};
+        //TODO: recursive clone of children
+        if (props.children) {
+          this.innerProps.children = clone(props.children);
+        }
       }
     }
   }
 
+  morphTo(props, tween) {
+    // const {key, className, style, alpha, spatial, ...innerProps} = props;
+    //
+    // if (key && (key !== this.key)) {
+    //   throw new Error(`Attempt to update object ${this.key} with props for ${key}`);
+    // }
+    //FIXME: Implement
+  }
+
+  updateDom(props) {
+    //NOP
+  }
+
+  createChildDescriptors(props) {
+    return props.children || [];
+  }
+
   updateStyle(style) {
-    if (!isEqual(style, this.style)) {
-      setStyle(this.dom, style);
-      this.style = {...style};
-    }
+    if (isEqual(style, this.style)) return;
+    const writeStyle =  (this.style) ? mapValues(this.style, () => '') : {};
+    Object.assign(writeStyle, style);
+    this.style = {...style};
+
+    setStyle(this.dom, writeStyle);
   }
 
   // getNativeSize() {
@@ -296,7 +308,11 @@ export default class Component {
       this.updateScheduled = true;
       requestAnimationFrame(() => {
         this.updateScheduled = false;
-        this.updateContents({...this.innerProps})
+        this.updateDom(this.innerProps);
+        const childDescriptors = this.createChildDescriptors(this.innerProps);
+        if (childDescriptors !== null) {
+          this.createChildren(childDescriptors);
+        }
       });
     }
   }

@@ -2,7 +2,6 @@ import P from 'prop-types';
 import Component from "@symb/Component";
 import css from "./Menu.css"
 import ComponentFactory from "@symb/ComponentFactory";
-import {isEqual} from "lodash";
 import {Div_} from "@symb/Div";
 
 const MENU = 'menu';
@@ -18,21 +17,22 @@ class MenuPanel extends Component {
     w: P.number.isRequired,
   };
 
-  updateContents(props) {
-    if (isEqual(props, this.innerProps)) return;
-    this.innerProps = {...props};
-
-    const {title, entries, onEntryClick, w} = props;
-
+  updateDom(props) {
+    const { entries } = props;
     const height = 22 * (entries.length + 1) + 12;
     this.updateStyle({height});
+  }
+
+  createChildDescriptors(props) {
+
+    const {title, entries, onEntryClick} = props;
 
     const children = [Div_({className: css.title, children:title})._Div];
     if (entries) {
       entries.forEach(entry => children.push(Div_({className: entry.selected ? css.entrySelected : css.entry, children:entry.name, onClick: () => onEntryClick(entry.id)})._Div))
     }
 
-    this.createChildren(children);
+    return children;
   }
 
 }

@@ -2,7 +2,6 @@ import P from 'prop-types';
 import Component from "@symb/Component";
 import css from "./MenuPanel.css"
 import ComponentFactory from "@symb/ComponentFactory";
-import {isEqual} from "lodash";
 import {Menu_} from "@/components/Menu";
 
 const MENU_PANEL = 'menu-panel';
@@ -21,21 +20,22 @@ class MenuPanel extends Component {
     h: P.number.isRequired,
   };
 
-  updateContents(props) {
-    if (isEqual(props, this.innerProps)) return;
-    this.innerProps = {...props};
-
-    const {w, h, tools, views, onViewClick, onToolToggle} = props;
+  updateDom(props) {
+    const {w, h} = props;
 
     this.dom.style.width = `${w}px`;
     this.dom.style.height = `${h}px`;
+  };
 
-    this.createChildren([
+  createChildDescriptors(props) {
+
+    const {w, tools, views, onViewClick, onToolToggle} = props;
+
+    return [
       Menu_({key: "views", title: 'Views', w, entries: views, onEntryClick: onViewClick})._Menu,
       Menu_({key: "tools", title: 'Tools', w, entries: tools, onEntryClick: onToolToggle})._Menu
-    ]);
+    ];
   }
-
 }
 
 ComponentFactory.registerType(MenuPanel);

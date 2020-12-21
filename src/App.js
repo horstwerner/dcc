@@ -1,5 +1,5 @@
 import P from 'prop-types';
-import {isEqual, omit} from 'lodash';
+import {omit} from 'lodash';
 import Component from '@symb/Component';
 import css from './App.css';
 import ComponentFactory from "@symb/ComponentFactory";
@@ -289,7 +289,7 @@ export default class App extends Component {
         });
   }
 
-  createFocusCard(data, template, filters) {
+  createFocusCard(data, template) {
     const key = this.createChildKey();
 
     return Card_({
@@ -328,7 +328,7 @@ export default class App extends Component {
                 groupAttribute: filter, align, arrangement, x: 0, y: 0, w: width, h: height
               },
 
-              ({component, event}) => {
+              ({component}) => {
                 const dataValue = component.innerProps.data[filter];
               this.setToolFilter(tool, dataValue);},
               CLICK_OPAQUE)
@@ -430,33 +430,31 @@ export default class App extends Component {
   }
 
 
-  updateContents(props) {
+  createChildDescriptors(props) {
 
-    const {focusCard, tools, activeTools, views, error, mainWidth, focusHeight, sideBarWidth, breadcrumbCards, canvasHeight, hoverCard, breadCrumbHeight, toolbarHeight,
-      windowHeight, toolControls} = this.state;
+    const {focusCard, tools, activeTools, views, error, mainWidth, focusHeight, sideBarWidth, breadcrumbCards,
+      canvasHeight, hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls} = this.state;
 
     // const backgroundColor = (map && map.backColor) || '#ffffff';
     if (error) {
-      this.createChildren(Div_({}, `An error occurred: ${error.message}`)._Div);
-      return;
+      return Div_({}, `An error occurred: ${error.message}`)._Div;
     }
 
     const hoverChildren = [];
     if (hoverCard) {
       const menuRight = hoverCard.template.getSize().width * hoverCard.spatial.scale + hoverCard.spatial.x;
       hoverChildren.push(hoverCard);
-      hoverChildren.push(hoverCardMenu(hoverCard.spatial.y, menuRight, this.handleHoverCardClose, this.handleHoverCardPin, this.handleHoverCardStash))
+      hoverChildren.push(hoverCardMenu(hoverCard.spatial.y, menuRight, this.handleHoverCardClose,
+          this.handleHoverCardPin, this.handleHoverCardStash))
     }
 
     if (focusCard) {
-     const {width, height} = focusCard.template.getSize();
-     const newSpatial = fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN - TOOL_HEIGHT, width, height, MARGIN,  MARGIN, 1.2);
-     if (!isEqual(newSpatial, focusCard.spatial)) {
-       focusCard.spatial = newSpatial;
-     }
+     const { width, height } = focusCard.template.getSize();
+     focusCard.spatial = fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN - TOOL_HEIGHT, width,
+         height, MARGIN,  MARGIN, 1.2);
     }
 
-    this.createChildren([
+    return [
       BreadcrumbLane_({
         key: BREADCRUMBS,
         spatial: {x: 0, y: 0, scale: 1},
@@ -492,7 +490,7 @@ export default class App extends Component {
           className: css.overlay,
           children: hoverChildren
         })._Div
-    ]);
+    ];
   }
 
 

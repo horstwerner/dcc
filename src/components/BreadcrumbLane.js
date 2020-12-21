@@ -2,7 +2,6 @@ import P from 'prop-types';
 import Component from "@symb/Component";
 import ComponentFactory from "@symb/ComponentFactory";
 import css from "@/components/BreadcrumbLane.css";
-import isEqual from "lodash/isEqual";
 import {Div_} from "@symb/Div";
 import {CANVAS_WIDTH} from "@/Config";
 import Tween from "@/arrangement/Tween";
@@ -32,16 +31,17 @@ class BreadcrumbLane extends Component {
     return width / CANVAS_WIDTH;
   }
 
-  updateContents(props) {
-    if (isEqual(this.innerProps, props)) {
-      return;
-    }
+  updateDom(props) {
+
     if (!this.innerProps || props.width !== this.innerProps.width || props.height !== this.innerProps.height) {
       this.updateStyle({width: props.width, height: props.height});
     }
-    this.innerProps = {...props};
 
-    const { children, height, canvasWidth } = props;
+  }
+
+  createChildDescriptors(props) {
+
+    const { children } = props;
     const canvas =  Div_(
         { key:'workbook-canvas',
           className: css.canvas,
@@ -49,19 +49,21 @@ class BreadcrumbLane extends Component {
           children}
     )._Div
 
-    this.createChildren([canvas, ...children]);
+    //FIXME: Doesn't look right, children in canvas and in main dom?
+    return[canvas, ...children];
   }
+
 
   getScrollPos() {
     return this.dom.scrollTop;
   }
 
-  scrollToPos(newScrollTop, tween) {
+  scrollToPos(newScrollLeft, tween) {
 
     const useTween = tween || new Tween(600);
 
     useTween
-        .addInterpolation([this.dom.scrollTop], [newScrollTop], (values) => {this.dom.scrollTop = values[0]});
+        .addInterpolation([this.dom.scrollLeft], [newScrollLeft], (values) => {this.dom.scrollLeft = values[0]});
 
     if (!tween) {
       useTween.start();

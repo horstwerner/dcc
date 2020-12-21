@@ -2,7 +2,6 @@ import P from 'prop-types';
 import Component from '@symb/Component';
 import css from './Card.css';
 import {resolveAttribute, TYPE_CONTEXT} from "@/graph/Cache";
-import isEqual from "lodash/isEqual";
 import ComponentFactory from "@symb/ComponentFactory";
 import Template from "@/templates/Template";
 import {Background, Caption, ChildSet} from "@/components/Generators";
@@ -39,16 +38,17 @@ class Card extends Component {
     }
   }
 
+  updateDom(props) {
+    const { template } = props;
+    const {width, height} = template.getSize();
+    this.updateStyle({ ...this.style, width, height });
+  }
+
   /**
-   * map from template to symb component descriptors
+   * map from template to symbiosis component descriptors
    * @param {{template: Template, data: GraphNode, onClick: function}} props
    */
-  updateContents(props) {
-    if (isEqual(this.innerProps, props)) {
-      return;
-    }
-    this.innerProps = {...props};
-
+  createChildDescriptors(props) {
 
     const { data, template, onClick, hover, clickMode } = props;
 
@@ -99,20 +99,15 @@ class Card extends Component {
       }
       if (childDescriptor) {
         if (!childrenClickable) {
-          if (clickMode === CLICK_TRANSPARENT) {
-            debugger
-          }
           childDescriptor.style = {...(childDescriptor.style || {}), pointerEvents: 'none'};
         } else {
           childDescriptor.style = {...(childDescriptor.style || {}), pointerEvents: ''};
-          // childDescriptor.style.pointerEvents = 'auto';
         }
       }
       children.push(childDescriptor);
     });
 
-    this.createChildren(children);
-    this.updateStyle({...this.style, width: background.w, height: background.h});
+    return children;
   };
 
   // morph(arrangementName, tween, onClick) {
@@ -159,10 +154,10 @@ class Card extends Component {
   //   });
   // }
 
-  getNativeSize() {
-    const { template } = this.innerProps;
-    return template.getSize();
-  }
+  // getNativeSize() {
+  //   const { template } = this.innerProps;
+  //   return template.getSize();
+  // }
 
 }
 

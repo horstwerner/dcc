@@ -334,7 +334,7 @@
       "clickable": true,
       "elements": [
         {
-          "key": "label_features",
+          "key": "label_teams",
           "type": "caption",
           "style": {"$": "GROUP_HEADING_STYLE"},
           "x": {"$": "MARGIN"}, "y": {"$": "MARGIN"}, "w": 100, "h": 32,

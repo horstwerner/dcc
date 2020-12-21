@@ -3,7 +3,6 @@ import Component from "@symb/Component";
 import css from "./Card.css";
 import {Path_} from "./Path";
 import {Card_} from "./Card";
-import isEqual from "lodash/isEqual";
 import {getAssociated} from "@/graph/Analysis";
 import {Svg_} from "@/components/Svg";
 import {fit, roundCorners} from "@symb/util";
@@ -128,12 +127,7 @@ class GraphViz extends Component {
     nodeTemplate: P.instanceOf(Template).isRequired
   }
 
-  updateContents(props) {
-    if (isEqual(this.innerProps, props)) {
-      return;
-    }
-    this.innerProps = {...props};
-
+  createChildDescriptors(props) {
 
     const {startNodes, scope, w, h, path, nodeTemplate, onNodeClick} = props;
 
@@ -223,8 +217,7 @@ class GraphViz extends Component {
 
     vizNodes.forEach(vizNode => {children.push(Card_({data: vizNode.graphNode, template: nodeTemplate, onClick: onNodeClick, clickMode: CLICK_OPAQUE, spatial: fit(childW, childH, width, height, vizNode.pos.x - 0.5 * childW, vizNode.pos.y - 0.5 * childH)})._Card)});
 
-    this.createChildren(children);
-
+    return children;
   }
 }
 

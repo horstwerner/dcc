@@ -33,7 +33,7 @@
   text-align: center;
   border-radius: 2px;
   /*letter-spacing: 1px;*/
-  padding: 4px 2px 0px 10px;
+  padding: 4px 2px 0 10px;
   height: 22px;
   cursor: pointer;
 }
@@ -49,6 +49,6 @@
 
 .entrySelected {
   background-color: #EEEEEA;
-  color: #262625;
+  color: #536e73;
   box-shadow: 2px 2px 2px 0 rgba(0,0,0,0.2);
 }

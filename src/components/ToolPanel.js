@@ -1,5 +1,4 @@
 import P from 'prop-types';
-import {isEqual} from "lodash";
 import Component from "@symb/Component";
 import css from "./ToolPanel.css"
 import ComponentFactory from "@symb/ComponentFactory";
@@ -16,16 +15,13 @@ class ToolPanel extends Component {
     height: P.number.isRequired,
   };
 
-  updateContents(props) {
-    if (isEqual(props, this.innerProps)) return;
-    this.innerProps = {...props};
+  updateDom(props) {
 
-    const {width, height, children} = props;
+    const { width, height } = props;
 
     this.dom.style.width = `${width}px`;
     this.dom.style.height = `${height}px`;
 
-    this.createChildren(children || []);
   }
 
 }

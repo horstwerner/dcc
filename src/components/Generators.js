@@ -3,7 +3,7 @@
  */
 
 import P from "prop-types";
-import Cache, {resolve, resolveAttribute, TYPE_CONTEXT, TYPE_NODE_COUNT} from '@/graph/Cache';
+import {resolve, TYPE_CONTEXT, TYPE_NODE_COUNT} from '@/graph/Cache';
 import {mapValues, omit} from 'lodash';
 import {DEBUG_MODE} from "@/Config";
 import css from "@/components/Card.css";

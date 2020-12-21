@@ -10,14 +10,14 @@ export class Image extends Component {
   static baseTag = 'img';
   static propTypes = {source: P.string.isRequired, width: P.number, height: P.number, cornerRadius: P.number, onClick: P.func};
 
-  updateContents(props) {
+  updateDom(props) {
     if (isEqual(this.innerProps, props)) {
       return;
     }
     this.innerProps = {...props};
 
     const {source, width, height, cornerRadius, onClick, color} = props;
-    this.dom.setAttribute('src',props.source);
+    this.dom.setAttribute('src', source);
     if (cornerRadius) {
       this.dom.style.borderRadius = `${cornerRadius}px`;
     }
@@ -29,6 +29,10 @@ export class Image extends Component {
     if (onClick) {
       this.dom.onclick = onClick;
     }
+  }
+
+  createChildDescriptors(props) {
+    return null;
   }
 
   getNativeSize() {

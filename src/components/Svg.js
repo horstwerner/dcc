@@ -2,7 +2,6 @@ import P from 'prop-types';
 import css from './Card.css';
 import ComponentFactory from '@symb/ComponentFactory';
 import Component from "@symb/Component";
-import isEqual from "lodash/isEqual";
 import {DEBUG_MODE} from "@/Config";
 
 const SVGNS = "http://www.w3.org/2000/svg";
@@ -69,13 +68,16 @@ class Svg extends Component {
     defs: P.arrayOf(P.shape({type: P.string.isRequired, id: P.string.isRequired}))
   };
 
-  updateContents(props) {
-    if (isEqual(this.innerProps, props)) {
-      return;
-    }
-    this.innerProps = {...props};
+  updateDom(props){
+    const { width, height } = props;
 
-    const {children, width, height, defs} = props;
+    this.dom.setAttribute('width', width);
+    this.dom.setAttribute('height', height);
+  }
+
+  createChildDescriptors(props) {
+
+    const {children, defs} = props;
     if (defs) {
       let defDomEl = this.dom.getElementsByTagName(DEFS)[0];
       if (defDomEl) {
@@ -96,10 +98,7 @@ class Svg extends Component {
       }
     }
 
-    // this.dom.setAttribute('overflow', 'visible')
-    this.dom.setAttribute('width', width);
-    this.dom.setAttribute('height', height);
-    this.createChildren(children);
+    return children;
   }
 
 }
