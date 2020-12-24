@@ -201,10 +201,8 @@ export default class App extends Component {
     const newFocusCard = {...hoverCard,  hover: false, onClick: this.handleNodeClick, clickMode: CLICK_TRANSPARENT};
     const newBreadCrumbCard = {...focusCard, clickMode: CLICK_NORMAL, spatial: newBreadcrumbSpatial};
 
-    const toolState = this.createStateForFocusCard(newFocusCard);
     const targetState = {
-      ...toolState,
-      ...this.recalcLayout(toolState.toolControls),
+      ...this.createStateForFocusCard(newFocusCard),
       focusData: hoverCard.data,
       hoverCard: newBreadCrumbCard,
       nextChildPos: nextChildPos + newBreadcrumbScale * breadcrumbNativeSize.width + MARGIN,
@@ -371,13 +369,12 @@ export default class App extends Component {
         toolControls[tool.id] = this.createToolControl(tool);
       }
     });
-    return {focusCard, views, tools, activeTools, toolControls, filters: {}};
+    return {focusCard, views, tools, activeTools, toolControls, filters: {}, ...this.recalcLayout(toolControls)};
   }
 
+
   setFocusCard(focusCard) {
-    const toolState = this.createStateForFocusCard(focusCard);
-    this.setState(toolState);
-    this.transitionToState(this.recalcLayout(toolState.toolControls));
+    this.transitionToState(this.createStateForFocusCard(focusCard));
   }
 
 
@@ -425,8 +422,7 @@ export default class App extends Component {
       activeTools[toolId] = tool;
       toolControls[toolId] = this.createToolControl(tool);
     }
-    this.setState({ activeTools, toolControls });
-    this.transitionToState(this.recalcLayout(toolControls));
+    this.transitionToState({ activeTools, toolControls, ...this.recalcLayout(toolControls)});
   }
 
 
