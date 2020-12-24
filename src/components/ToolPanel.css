@@ -9,6 +9,5 @@
   border-top: solid 1px #C0C0B9;
   border-right: solid 2px #d1d1c9;
   box-sizing: border-box;
-  transition:  height 0.25s, transform 0.25s;
   z-index: 1;
 }

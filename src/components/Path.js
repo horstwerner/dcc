@@ -15,7 +15,7 @@ class Path extends Component {
     d: P.string.isRequired
   };
 
-  updateDom(props) {
+  updateDom(props, tween) {
 
     const { id, d, fill, stroke } = props;
 

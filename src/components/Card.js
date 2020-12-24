@@ -38,10 +38,10 @@ class Card extends Component {
     }
   }
 
-  updateDom(props) {
+  updateDom(props, tween) {
     const { template } = props;
-    const {width, height} = template.getSize();
-    this.updateStyle({ ...this.style, width, height });
+    const { width, height } = template.getSize();
+    this.updateSize({width, height}, tween);
   }
 
   /**

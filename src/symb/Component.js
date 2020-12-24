@@ -1,8 +1,9 @@
 import P from 'prop-types';
-import { clone, isEmpty, isEqual, mapValues } from 'lodash';
-import {DEBUG_MODE} from '@/Config';
+import {clone, isEmpty, isEqual, mapValues} from 'lodash';
+import {DEBUG_MODE, TRANSITION_DURATION} from '@/Config';
 import ComponentFactory from './ComponentFactory'
 import {getTransformString} from "@symb/util";
+import Tween from "@/arrangement/Tween";
 
 export function setStyle(dom, style) {
 
@@ -55,7 +56,9 @@ export default class Component {
     }
     this.parent = parent;
     this.key = props.key;
+    this.dom.setAttribute('data-key', props.key);
     this.alpha = 1;
+    this.renderStateChange = this.renderStateChange.bind(this);
   }
 
   checkProps(props) {
@@ -104,7 +107,7 @@ export default class Component {
     return targetArray;
   }
 
-  createChild(fallbackKey, childDescriptor) {
+  createChild(fallbackKey, childDescriptor, tween) {
     if (typeof(childDescriptor) === 'string') {
       this.dom.innerText = childDescriptor;
       return childDescriptor;
@@ -128,9 +131,15 @@ export default class Component {
       if (existing) {
         existing.destroy();
       }
-      return this.addChild(ComponentFactory.create(childDescriptor, this));
+      const newChild = ComponentFactory.create(childDescriptor, this);
+      if (tween) {
+        let targetAlpha = newChild.getAlpha();
+        newChild.setAlpha(0);
+        tween.addFade(newChild, targetAlpha);
+      }
+      return this.addChild(newChild);
     } else {
-      existing.update(netProps);
+      existing.update(netProps, tween);
     }
     return existing;
   }
@@ -140,19 +149,19 @@ export default class Component {
    * However, if no child descriptor with the same key is passed in the next update,
    * it will be removed again
    * @param child
-   * @param spatial - position and scale in this component's local coordinate system
    */
-  adoptChild(child, spatial) {
+  adoptChild(child) {
     if (!this.childByKey) {
       this.childByKey = {};
     }
+    const spatial = child.getRelativeSpatial(this);
     delete child.parent.childByKey[child.key];
     child.update({spatial});
     child.parent = this;
     this.addChild(child);
   }
 
-  createChildren(descriptor) {
+  createChildren(descriptor, tween) {
     const updatedChildren = {};
     let count = 0;
     let result;
@@ -163,11 +172,11 @@ export default class Component {
       result = descriptor
           .filter(Boolean)
           .map(childDescriptor => {
-        const childComponent = this.createChild(`surrogate_key${count++}`, childDescriptor);
+        const childComponent = this.createChild(`surrogate_key${count++}`, childDescriptor, tween);
         updatedChildren[childComponent.key] = childComponent;
       })
     } else {
-      result = this.createChild(`surrogate_key${count}`, descriptor);
+      result = this.createChild(`surrogate_key${count}`, descriptor, tween);
       updatedChildren[result.key] = result;
     }
     // remove old children that aren't part of children list
@@ -181,14 +190,14 @@ export default class Component {
     return result;
   }
 
-  update(props) {
+  update(props, tween) {
 
     if (props) {
       //TODO check inner props and other props separately, take partial update into account
       // this.checkProps(props);
     }
 
-    const {key, className, style, alpha, spatial, ...innerProps} = props;
+    const {key, className, style, alpha, size, spatial, ...innerProps} = props;
     if (key && (key !== this.key)) {
       throw new Error(`Attempt to update object ${this.key} with props for ${key}`);
     }
@@ -196,16 +205,25 @@ export default class Component {
     // each of the top-level properties can be updated independently without requiring
     // a full update
 
-    if (alpha != null) {
-      this.updateAlpha(alpha);
+    if (alpha != null && alpha !== this.getAlpha()) {
+      if (tween) {
+        tween.addFade(this, alpha);
+      } else {
+        this.setAlpha(alpha);
+      }
     }
 
+    // style changes can't be animated.
     if (style) {
       this.updateStyle(style);
     }
 
+    if (size) {
+      this.updateSize(size, tween);
+    }
+
     if (spatial) {
-      this.updateSpatial(spatial);
+      this.updateSpatial(spatial, tween);
     }
 
     if (className) {
@@ -214,13 +232,13 @@ export default class Component {
 
     if (innerProps && !isEmpty(innerProps)) {
       if (!isEqual(this.innerProps, props)) {
-        this.updateDom(innerProps);
+        this.updateDom(innerProps, tween);
         const childDescriptors = this.createChildDescriptors(innerProps);
         if (childDescriptors != null) {
-          this.createChildren(childDescriptors);
+          this.createChildren(childDescriptors, tween);
         }
         this.innerProps = {...props};
-        //TODO: recursive clone of children
+        //TODO: recursive clone of children plain objects
         if (props.children) {
           this.innerProps.children = clone(props.children);
         }
@@ -228,16 +246,35 @@ export default class Component {
     }
   }
 
-  morphTo(props, tween) {
-    // const {key, className, style, alpha, spatial, ...innerProps} = props;
-    //
-    // if (key && (key !== this.key)) {
-    //   throw new Error(`Attempt to update object ${this.key} with props for ${key}`);
-    // }
-    //FIXME: Implement
+  updateSize(size, tween) {
+    if (this.size && isEqual(this.size, size)) return;
+    if (!this.size) {
+      this.size = {};
+    }
+    const current = mapValues(size, (value, key) => (this.size[key] || 0));
+    // this.size = {};
+    if (tween) {
+      tween.addInterpolation(current, size, ({width, height}) => {
+        this.setSize({width, height})
+      });
+    } else {
+      this.setSize(size);
+    }
   }
 
-  updateDom(props) {
+  setSize({width, height}) {
+    if (width != null) {
+      this.dom.style.width = `${width}px`;
+      this.size.width = width;
+    }
+    if (height != null) {
+      this.dom.style.height = `${height}px`;
+      this.size.height = height;
+    }
+    this.size = {width, height};
+  }
+
+  updateDom(props, tween) {
     //NOP
   }
 
@@ -259,16 +296,28 @@ export default class Component {
   //   return { width, height };
   // }
 
-  updateSpatial(spatial) {
-    if (!isEqual(this.spatial, spatial)) {
-      const {x, y, scale} = spatial;
-      if (isNaN(x) || isNaN(y) || isNaN(scale)){
-        throw new Error('NaN passed as argument for updateSpatial');
-      }
-      // console.log(`update: ${this.key} scaled to ${scale}`);
-      this.dom.style.transform = getTransformString(x, y, scale);
-      this.spatial = {x, y, scale};
+  updateSpatial(spatial, tween) {
+    if (isEqual(this.getSpatial(), spatial)) return;
+
+    const {x, y, scale} = spatial;
+    if (isNaN(x) || isNaN(y) || isNaN(scale)){
+      throw new Error('NaN passed as argument for updateSpatial');
     }
+    if (tween) {
+      tween.addTransform(this, x, y, scale);
+    } else {
+      this.setSpatial(spatial);
+    }
+
+  }
+
+  getSpatial() {
+    return this.spatial || DEFAULT_SPATIAL;
+  }
+
+  setSpatial({x, y, scale}) {
+    this.dom.style.transform = getTransformString(x, y, scale);
+    this.spatial = {x, y, scale};
   }
 
   // getSpatial() {
@@ -279,7 +328,7 @@ export default class Component {
     return (this.alpha == null ? 1 : this.alpha);
   }
 
-  updateAlpha(alpha) {
+  setAlpha(alpha) {
     this.alpha = alpha;
     this.dom.style.opacity = this.alpha;
   }
@@ -302,18 +351,50 @@ export default class Component {
     this.dom.style.height = `${height}px`;
   }
 
+  transitionToState(partialState, tween) {
+    if (tween && tween.isRunning()) {
+      throw new Error(`Can't use running tween for state transition`);
+    }
+    if (tween) {
+      tween.onEndCall(() => {this.transitionTween = null}, true);
+    }
+    const transitionTween = tween || new Tween(TRANSITION_DURATION).onEndCall(() => {this.transitionTween = null});
+    if (this.updateScheduled) {
+      this.onStateRendered = () => {
+        this.transitionTween = transitionTween;
+        this.setState(partialState);
+        this.onStateRendered = null;
+        transitionTween.start();
+      };
+    } else {
+      this.transitionTween = transitionTween;
+      this.setState(partialState);
+      transitionTween.start();
+    }
+  }
+
   setState(partialState) {
+    if (this.transitionTween && this.transitionTween.isRunning()) {
+      this.transitionTween.finish();
+      this.transitionTween = null;
+    }
     this.state = {...this.state, ...partialState};
     if (!this.updateScheduled) {
       this.updateScheduled = true;
-      requestAnimationFrame(() => {
-        this.updateScheduled = false;
-        this.updateDom(this.innerProps);
-        const childDescriptors = this.createChildDescriptors(this.innerProps);
-        if (childDescriptors !== null) {
-          this.createChildren(childDescriptors);
-        }
-      });
+      requestAnimationFrame(this.renderStateChange);
+    }
+  }
+
+  renderStateChange() {
+    this.updateDom(this.innerProps, this.transitionTween);
+    const childDescriptors = this.createChildDescriptors(this.innerProps);
+    if (childDescriptors != null) {
+      this.createChildren(childDescriptors, this.transitionTween);
+    }
+    this.updateScheduled = false;
+    if (this.onStateRendered) {
+      this.onStateRendered();
+      this.onStateRendered = null;
     }
   }
 

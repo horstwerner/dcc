@@ -15,25 +15,16 @@ class MenuPanel extends Component {
     tools: P.array,
     onViewClick: P.func,
     activeTools: P.object,
-    onToolToggle: P.func,
-    w: P.number.isRequired,
-    h: P.number.isRequired,
-  };
-
-  updateDom(props) {
-    const {w, h} = props;
-
-    this.dom.style.width = `${w}px`;
-    this.dom.style.height = `${h}px`;
+    onToolToggle: P.func
   };
 
   createChildDescriptors(props) {
 
-    const {w, tools, views, onViewClick, onToolToggle} = props;
+    const { tools, views, onViewClick, onToolToggle} = props;
 
     return [
-      Menu_({key: "views", title: 'Views', w, entries: views, onEntryClick: onViewClick})._Menu,
-      Menu_({key: "tools", title: 'Tools', w, entries: tools, onEntryClick: onToolToggle})._Menu
+      Menu_({key: "views", title: 'Views',  entries: views, onEntryClick: onViewClick})._Menu,
+      Menu_({key: "tools", title: 'Tools',  entries: tools, onEntryClick: onToolToggle})._Menu
     ];
   }
 }

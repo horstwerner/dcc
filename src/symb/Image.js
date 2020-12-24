@@ -21,7 +21,7 @@ export class Image extends Component {
     if (cornerRadius) {
       this.dom.style.borderRadius = `${cornerRadius}px`;
     }
-    if (color !== null) {
+    if (color != null) {
       this.dom.style.backgroundColor = color;
     }
     this.dom.style.width = `${width}px`;

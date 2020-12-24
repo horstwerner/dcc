@@ -1,6 +1,5 @@
 import {mapValues} from 'lodash';
-import {resolveAttribute, TYPE_NAME, TYPE_NODES} from "@/graph/Cache";
-import Aggregator, {DEFAULT_AGGREGATOR} from "@/Aggregator";
+import {resolveAttribute, TYPE_NAME} from "@/graph/Cache";
 import {createCardNode} from "@symb/util";
 
 
@@ -9,9 +8,8 @@ export const EMPTY = '__empty__';
 
 /**
  * groups the array of data points by the specified dimension, creates a Slices instance containing these groups
- * @param {GraphNode} aggNode aggregated node
+ * @param {Array<GraphNode>} nodes node list to slice
  * @param {String} dimension
- * @param {Aggregator || undefined} aggregator, will be modified
  * @return {GroupedSet} non-aggregated slices, each slice contains node array
  */
 export const sliceBy = function sliceBy(nodes, dimension) {
@@ -34,7 +32,7 @@ export const sliceBy = function sliceBy(nodes, dimension) {
   }
   return new GroupedSet(dimension, keyArray,
       mapValues(subsets,(nodes, key) => {
-        const cardNode = createCardNode(nodes);
+        const cardNode = createCardNode(nodes, `group-${key}`);
         cardNode[dimension] = key;
         cardNode[TYPE_NAME] = (key === EMPTY ? 'unspecified' : key);
         return cardNode;})

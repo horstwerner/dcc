@@ -7,7 +7,6 @@
   margin-bottom: 8px;
   background-color: #7f9ea3;
   box-shadow: inset 1px 1px 2px 0 rgba(0,0,0,0.2);
-  transition: transform, height 0.25s;
 }
 
 .title {

@@ -10,19 +10,8 @@ class ToolPanel extends Component {
   static className = css.panel;
 
   static propTypes = {
-    tools: P.array,
-    width: P.number.isRequired,
-    height: P.number.isRequired,
+    tools: P.array
   };
-
-  updateDom(props) {
-
-    const { width, height } = props;
-
-    this.dom.style.width = `${width}px`;
-    this.dom.style.height = `${height}px`;
-
-  }
 
 }
 

@@ -15,8 +15,7 @@ class Sidebar extends Component {
   static className = css.sideBar;
 
   static propTypes = {
-    w: P.number.isRequired,
-    h: P.number.isRequired,
+    size: P.shape({width: P.number.isRequired, height: P.number.isRequired}),
     menuTop: P.number.isRequired,
     // selectedCard: P.shape({template: P.instanceOf(Template), data: P.instanceOf(GraphNode)})
     views: P.array,
@@ -25,12 +24,6 @@ class Sidebar extends Component {
     onToolToggle: P.func,
   };
 
-  updateDom(props) {
-    const { w, h } = props;
-    if (!w || !h) return;
-    this.updateStyle({width: w, height: h});
-  }
-
   createChildDescriptors(props) {
 
     const { menuTop, views, tools, onViewClick, onToolToggle } = props;
@@ -38,8 +31,7 @@ class Sidebar extends Component {
     return[
       Div_({className: css.searchField, spatial: {x: 20, y: MARGIN, scale: 1}, children: Image_({className:css.searchButton, source:`public/SearchButton.svg`})._Image})._Div,
       MenuPanel_({
-        w: MENU_WIDTH,
-        h: 400,
+        size: { width:  MENU_WIDTH, height: 400 },
         views,
         tools,
         onViewClick,

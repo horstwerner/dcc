@@ -37,7 +37,9 @@ class Rect extends Component {
     }
   };
 
-  updateDom(props) {
+
+  // can't animate size or position yet
+  updateDom(props, tween) {
     const { id, x, y, width, height, value} = props;
     if (DEBUG_MODE && (isNaN(width) || isNaN(height) || isNaN(x) || isNaN(y))) {
       debugger

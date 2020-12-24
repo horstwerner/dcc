@@ -431,10 +431,11 @@
         "w": 400,
         "h": 800,
         "cornerRadius": "6px",
-        "color": "#FEFEFE",
+        "color":  {"$":  "AREA_BACKGROUND_COLOR"},
         "x": 0,
         "y": 0
       },
+      "clickable": true,
       "preprocessing": [
         {"method":  "aggregate",
         "input": "core:subNodes",

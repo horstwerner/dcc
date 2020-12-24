@@ -19,9 +19,9 @@ class RadioButtons extends Component {
     height: P.number
   }
 
-  updateDom(props) {
-    const { orientation, width, height } = props;
-    this.updateStyle({flexDirection: (orientation === 'vertical' ? 'flex-column' : 'flex-row'), width, height});
+  updateDom(props, tween) {
+    const { orientation } = props;
+    this.updateStyle({flexDirection: (orientation === 'vertical' ? 'flex-column' : 'flex-row')});
   }
 
   createChildDescriptors(props) {
