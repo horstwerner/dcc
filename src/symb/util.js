@@ -111,13 +111,14 @@ export const roundCorners = function roundCorners(polygon, dist, closed) {
 
 /**
  * @param {GraphNode | GraphNode[]} contents
+ * @param {string} key
  *
  * creates a data node for a card representing either a single node or a node set
  * the data node carries aggregated/derived attributes for use in the visualization
  */
-export const createCardNode = function createCardNode(contents) {
+export const createCardNode = function createCardNode(contents, key) {
   if (Array.isArray(contents)) {
-    const result = new GraphNode(TYPE_AGGREGATOR, Cache.createUri());
+    const result = new GraphNode(TYPE_AGGREGATOR, key || Cache.createUri());
     result.setBulkAssociation(TYPE_NODES, contents);
     return result;
   } else {

@@ -68,7 +68,7 @@ class Svg extends Component {
     defs: P.arrayOf(P.shape({type: P.string.isRequired, id: P.string.isRequired}))
   };
 
-  updateDom(props){
+  updateDom(props, tween){
     const { width, height } = props;
 
     this.dom.setAttribute('width', width);

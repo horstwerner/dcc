@@ -17,10 +17,10 @@ class MenuPanel extends Component {
     w: P.number.isRequired,
   };
 
-  updateDom(props) {
+  updateDom(props, tween) {
     const { entries } = props;
     const height = 22 * (entries.length + 1) + 12;
-    this.updateStyle({height});
+    this.updateSize({ height }, tween);
   }
 
   createChildDescriptors(props) {

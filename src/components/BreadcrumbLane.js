@@ -16,9 +16,7 @@ class BreadcrumbLane extends Component {
   static className = css.lane;
 
   static propTypes = {
-    width: P.number.isRequired,
-    height: P.number.isRequired,
-    activeCardKey: P.string
+    size: P.shape({width: P.number.isRequired, height: P.number.isRequired}),
   }
 
   // constructor(descriptor, domNode) {
@@ -31,26 +29,16 @@ class BreadcrumbLane extends Component {
     return width / CANVAS_WIDTH;
   }
 
-  updateDom(props) {
-
-    if (!this.innerProps || props.width !== this.innerProps.width || props.height !== this.innerProps.height) {
-      this.updateStyle({width: props.width, height: props.height});
-    }
-
-  }
-
   createChildDescriptors(props) {
 
     const { children } = props;
     const canvas =  Div_(
         { key:'workbook-canvas',
           className: css.canvas,
-          style: {width: 10000, height: 1},
-          children}
+          style: {width: 10000, height: 1}}
     )._Div
 
-    //FIXME: Doesn't look right, children in canvas and in main dom?
-    return[canvas, ...children];
+    return [canvas, ...children];
   }
 
 
@@ -63,8 +51,7 @@ class BreadcrumbLane extends Component {
     const useTween = tween || new Tween(600);
 
     useTween
-        .addInterpolation([this.dom.scrollLeft], [newScrollLeft], (values) => {this.dom.scrollLeft = values[0]});
-
+        .addInterpolation({left: this.dom.scrollLeft}, {left: newScrollLeft}, ({left}) => {this.dom.scrollLeft = left});
     if (!tween) {
       useTween.start();
     }

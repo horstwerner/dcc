@@ -46,7 +46,7 @@ const comparisons = [
 export const parseComparison = function parseComparison(condition) {
   for (let i = 0; i < comparisons.length; i++) {
     const testValue = restAfter(condition, comparisons[i].symbol);
-    if (testValue !== null) {
+    if (testValue != null) {
       return {testValue, matches: comparisons[i].matches};
     }
   }

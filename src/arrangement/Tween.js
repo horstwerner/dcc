@@ -18,7 +18,6 @@ class Phase {
     this.delay = delay || 0;
     this.duration = duration;
     this.particles = [];
-    this.colorChanges = [];
     this.alphaChanges = [];
     this.interpolations = [];
     this.easing = easing || easeInOut;
@@ -41,12 +40,12 @@ class Phase {
    * @param {Number} newScale
    */
   addTransform(component, newX, newY, newScale) {
-    const {x, y, scale} = component.spatial;
+    const {x, y, scale} = component.getSpatial();
     if (newX === x && newY === y && newScale === scale) {
       return;
     }
     if (isNaN(newX) || isNaN(newY) || isNaN(newScale)) {
-      throw new Error(`NaN passed as target coordinate for Tewwn`);
+      throw new Error(`NaN passed as target coordinate for Tween`);
     }
     this.particles.push({
       element: component,
@@ -60,35 +59,32 @@ class Phase {
     return this;
   };
 
-  addColorChange (element, newColor) {
-    this.colorChanges.push({
-      element: element,
-      startColor: ColorUtil.splitColor(element.getColor()),
-      endColor: ColorUtil.splitColor(newColor)
-    });
-  };
-
   /**
    *
-   * @param {Moveable} card
+   * @param {Component} component
    * @param {number} targetAlpha
    */
-  addFade(card, targetAlpha) {
-    const startAlpha = card.getAlpha();
+  addFade(component, targetAlpha) {
+    const startAlpha = component.getAlpha();
     if (startAlpha === targetAlpha) {
       return;
     }
     this.alphaChanges.push({
-      element: card,
+      element: component,
       startAlpha: startAlpha,
       deltaAlpha: targetAlpha - startAlpha
     });
   };
 
-  addInterpolation(startArray, endArray, callback) {
+  addInterpolation(startValues, endValues, callback) {
+    Object.keys(startValues).forEach(key => {
+      if (isNaN(startValues[key])) {
+        debugger
+      }
+    });
     this.interpolations.push({
-      startArray: startArray,
-      endArray: endArray,
+      startValues: {...startValues},
+      endValues: {...endValues},
       callback: callback
     });
   };
@@ -98,19 +94,17 @@ class Phase {
     const tau = uneasedTau >= 1 ? 1 : Math.max(0, this.easing(uneasedTau));
     for (let i = 0; i < this.particles.length; i++) {
       const p = this.particles[i];
-      p.element.updateSpatial({x: p.startX + tau * p.deltaX, y:  p.startY + tau * p.deltaY, scale: p.startScale + tau * p.deltaScale});
+      p.element.setSpatial({x: p.startX + tau * p.deltaX, y:  p.startY + tau * p.deltaY, scale: p.startScale + tau * p.deltaScale});
     }
     for (let i = 0; i < this.alphaChanges.length; i++) {
       const ac = this.alphaChanges[i];
-      ac.element.updateAlpha(ac.startAlpha + tau * ac.deltaAlpha);
+      ac.element.setAlpha(ac.startAlpha + tau * ac.deltaAlpha);
     }
     for (let i = 0; i < this.interpolations.length; i++) {
       const ip = this.interpolations[i];
-      const interpArray = [];
-      for (let j = 0; j < ip.startArray.length; j++) {
-        interpArray.push(ip.startArray[j] + tau * (ip.endArray[j] - ip.startArray[j]));
-      }
-      ip.callback(interpArray);
+      const interpolatedValues = {};
+      Object.keys(ip.startValues).forEach(key => interpolatedValues[key] = ip.startValues[key] + tau * (ip.endValues[key] - ip.startValues[key]))
+      ip.callback(interpolatedValues);
     }
     this.startTime = performance.now();
   };
@@ -119,8 +113,8 @@ class Phase {
     this.parent.onEndCall(callback);
   };
 
-  newPhase (delay, duration, easingfunction) {
-    return this.parent.newPhase(delay, duration, easingfunction);
+  newPhase (delay, duration, easingFunction) {
+    return this.parent.newPhase(delay, duration, easingFunction);
   };
 }
 
@@ -129,8 +123,9 @@ export default class Tween {
   constructor(duration, easing) {
     this.duration = duration;
     this.phases = [];
+    this.started = false;
     // phase[0] spans the complete tween duration
-    // other phases can span a smaller timeinterval
+    // other phases can span a smaller time interval
     this.phases[0] = new Phase(this, duration, easing);
     this.interpolate = this.interpolate.bind(this);
   };
@@ -165,54 +160,48 @@ export default class Tween {
     return this;
   };
 
-  addColorChange(element, newColor) {
-    this.phases[0].addColorChange(element, newColor);
-    return this;
-  };
-
-
-  addFade = function (element, targetOpacity) {
+  addFade (element, targetOpacity) {
     this.phases[0].addFade(element, targetOpacity);
     return this;
   };
 
-  addInterpolation = function (startArray, endArray, callback) {
-    this.phases[0].addInterpolation(startArray, endArray, callback);
+  addInterpolation (startValues, endValues, callback) {
+    this.phases[0].addInterpolation(startValues, endValues, callback);
     return this;
   };
 
 
-  newPhase = function (delay, duration, easingfunction) {
+  newPhase (delay, duration, easingFunction) {
     if (duration && duration + (delay || 0) > this.duration) {
       throw new Error('Phase duration and delay exceed tween duration ' + this.duration);
     }
     if (delay && delay > this.duration) {
       throw new Error('Phase delay exceeds tween duration ' + this.duration);
     }
-    const result = new Phase(this, duration || (this.duration - (delay || 0)), easingfunction, delay);
+    const result = new Phase(this, duration || (this.duration - (delay || 0)), easingFunction, delay);
     this.phases.push(result);
     return result;
   };
 
 
-  getDuration = function () {
+  getDuration  () {
     return this.duration;
   };
 
   /**
    *
-   * @param {Moveable} card
+   * @param {Component} component
    * @param {number} newX
    * @param {number} newY
    * @param {number} newScale
    * @param {number} newWidth
    * @param {number} newHeight
    */
-  addTransformAndSize(card, newX, newY, newScale, newWidth, newHeight) {
-    this.phases[0].addTransformAndSize(card, newX, newY, newScale, newWidth, newHeight);
+  addTransformAndSize(component, newX, newY, newScale, newWidth, newHeight) {
+    this.phases[0].addTransformAndSize(component, newX, newY, newScale, newWidth, newHeight);
   };
 
-  finish = function () {
+  finish () {
     this.stopped = true;
     if (this.onEndCallback) {
       if (this.onEndCallback.constructor === Array) {
@@ -227,9 +216,14 @@ export default class Tween {
     activeTweens.splice(activeTweens.indexOf(this));
   };
 
+  isRunning() {
+    return this.started && !this.stopped;
+  }
+
   start() {
 
     activeTweens.push(this);
+    this.started = true;
     // noinspection JSUnresolvedVariable
     this.startTime = performance.now();
     this.frames = 0;
@@ -242,16 +236,21 @@ export default class Tween {
     return this;
   };
 
-  onEndCall = function (callback) {
+  onEndCall (callback, forceFirst) {
     if (typeof callback !== 'function') throw new Error(callback.toString() + ' is not a function');
     if (!this.onEndCallback) {
       this.onEndCallback = callback;
-    } else if (Array.isArray(this.onEndCallback)) {
-      this.onEndCallback.push(callback);
-    } else {
+      return this;
+    } else if (!Array.isArray(this.onEndCallback)) {
       this.onEndCallback = [this.onEndCallback];
+    }
+
+    if (forceFirst) {
+      this.onEndCallback.unshift(callback);
+    } else {
       this.onEndCallback.push(callback);
     }
+
     return this;
   };
 

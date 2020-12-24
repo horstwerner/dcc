@@ -3,22 +3,20 @@
   display: flex;
   flex-direction: column;
   border-radius: 6px;
-  padding: 6px;
+  padding: 8px;
   margin-bottom: 8px;
   background-color: #7f9ea3;
   box-shadow: inset 1px 1px 2px 0 rgba(0,0,0,0.2);
-  transition: transform, height 0.25s;
 }
 
 .title {
-  font-size: 13px;
-  font-family: 'Tahoma',sans-serif;
+  font-size: 16px;
+  font-family: 'Arial',sans-serif;
+  /*text-shadow: 1px 1px  rgba(0,0,0,0.2);*/
   font-weight: bold;
-  color: #f5f5eb;
+  color: #99babf;
   text-transform: uppercase;
   letter-spacing: 3px;
-  padding-left: 4px;
-  padding-top: 2px;
   margin-bottom: 5px;
   height: 20px;
 }
@@ -26,6 +24,7 @@
 .entrySelected {
   font-family: 'Tahoma', sans-serif;
   box-sizing: border-box;
+  user-select: none;
   font-size: 12px;
   font-weight: 300;
   width: 100%;

@@ -31,9 +31,9 @@ class PolarChart extends Component {
 
   createChildDescriptors(props) {
 
-    const {data, maxValues, dimensions, labels, labelStyle, diameter, colorStops} = props;
+    const { data, maxValues, dimensions, labels, labelStyle, diameter, colorStops} = props;
 
-    const fillId = `grad${Math.floor(100000 * Math.random())}`;
+    const fillId = `grad${this.key}`;
 
     const radius = diameter * 0.8 / 2;
     const center = {x: diameter / 2, y: diameter / 2};
