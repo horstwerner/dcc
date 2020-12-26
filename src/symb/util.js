@@ -92,6 +92,10 @@ export const polygonPath = function polygonPath(points, closed) {
   return segments.join('');
 }
 
+export const relSpatial = function(spatial, dx, dy) {
+  return {x: spatial.x + dx, y: spatial.y + dy, scale: spatial.scale};
+}
+
 export const roundCorners = function roundCorners(polygon, dist, closed) {
   const startP = closed ? interpolate(polygon[0], polygon[1], dist) : polygon[0];
   const segments = [`M${startP.x} ${startP.y}`];

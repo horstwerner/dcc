@@ -118,7 +118,6 @@ export const pathAnalysis = function pathAnalysis(sourceNodes, associationType, 
 
 export const deriveAssociations = function deriveAssociations(sourceNodes, path, derivedAssociation) {
   const result = [];
-  console.log(`preprocessing ${sourceNodes.length} nodes`);
   sourceNodes.forEach(node => {
     const associated = traverse(node, path);
     if (associated.size !== 0) {

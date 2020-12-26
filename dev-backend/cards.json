@@ -3,7 +3,7 @@
     {"MARGIN":  20},
     {"CARD_BACKGROUND_COLOR":  "#FAFAFA"},
     {"AREA_BACKGROUND_COLOR":  "#F5F5F5"},
-    {"TEXT_COLOR": "rgb(43,43,43)"},
+    {"TEXT_COLOR": "rgba(0,0,0,0.7)"},
     {"HEADING_COLOR": "rgba(0,0,0,0.83)"},
     {"TEXT_STYLE": {
         "color": {
@@ -159,12 +159,13 @@
         {
           "key": "name",
           "type": "textfield",
-          "x": 10,
-          "y": 47,
+          "x": 8,
+          "y": 44,
           "w": 200,
           "h": 32,
           "attribute": "core:name",
           "style": {
+            "font-size": "12px",
             "color": {
               "$": "TEXT_COLOR"
             }
@@ -173,9 +174,9 @@
         {
           "key": "storybar",
           "type": "chart",
-          "x": 10,
-          "y": 89,
-          "h": 20,
+          "x": 8,
+          "y": 102,
+          "h": 10,
           "attribute": "jira:storypoints",
           "color": "rgba(0,0,0,0.15)",
           "chartType": "rect",
@@ -185,7 +186,7 @@
         {
           "key": "storypts",
           "type": "textfield",
-          "x": 12,
+          "x": 8,
           "y": 67,
           "w": 30,
           "h": 20,
@@ -193,7 +194,9 @@
           "style": {
             "font-size": "16px",
             "font-weight": "bold",
-            "color": "#202020"
+            "color": {
+              "$": "TEXT_COLOR"
+            }
           }
         },
         {
@@ -207,7 +210,9 @@
           "style": {
             "font-size": "12px",
             "font-weight": "normal",
-            "color": "#202020"
+            "color": {
+              "$": "TEXT_COLOR"
+            }
           }
         }
       ]

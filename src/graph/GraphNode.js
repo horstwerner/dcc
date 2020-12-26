@@ -174,9 +174,6 @@ export default class GraphNode {
       debugger
     }
 
-    if(this.originalNode) {
-      console.log(`Contextual:`);
-    }
     const property = this[associationTypeUri];
     if (property === undefined) {
       this[associationTypeUri] = graphNode;

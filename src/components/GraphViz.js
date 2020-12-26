@@ -24,7 +24,6 @@ const inspect = function inspect(associationName) {
 const bumpSuccessorDepth = function bumpSuccessorDepth(edgeList, depth, vizNodesByKey, touchedKeyMap) {
   if (!edgeList) return;
   edgeList.forEach(edge => {
-    console.log(`bumping ${edge.targetKey} to ${depth}`);
     if (!touchedKeyMap[edge.targetKey]) {
       touchedKeyMap[edge.targetKey] = true;
       const targetVizNode = vizNodesByKey[edge.targetKey];
@@ -32,8 +31,6 @@ const bumpSuccessorDepth = function bumpSuccessorDepth(edgeList, depth, vizNodes
         targetVizNode.depth = depth;
         bumpSuccessorDepth(targetVizNode.outEdges, depth + 1, vizNodesByKey, touchedKeyMap);
       }
-    } else {
-      console.log(`not... already touched`);
     }
   })
 }

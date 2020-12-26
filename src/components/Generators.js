@@ -207,7 +207,7 @@ ChildSet.propTypes = {key: P.string.isRequired,
   template: P.string.isRequired
 }
 
-export const hoverCardMenu = function hoverCardMenu(top, right, onClose, onPin, onStash) {
+export const hoverCardMenu = function hoverCardMenu(key, top, right, onClose, onPin, onStash) {
   const iconSize = 18;
   const iconMargin = 6;
   const width = iconSize;
@@ -219,5 +219,5 @@ export const hoverCardMenu = function hoverCardMenu(top, right, onClose, onPin, 
     Image_({className: hoverMenuCss.icon, width, height, source: 'public/CloseButton.svg', onClick: onClose})._Image,
   ];
 
-  return Div_({className: hoverMenuCss.menu, children, style: {width: totalWidth, height}, spatial: {x: right - totalWidth - iconMargin, y: top + iconMargin, scale: 1}})._Div
+  return Div_({key, className: hoverMenuCss.menu, children, style: {width: totalWidth, height}, spatial: {x: right - totalWidth - iconMargin, y: top + iconMargin, scale: 1}})._Div
 }

@@ -31,11 +31,11 @@ class BreadcrumbLane extends Component {
 
   createChildDescriptors(props) {
 
-    const { children } = props;
+    const { children, canvasWidth } = props;
     const canvas =  Div_(
         { key:'workbook-canvas',
           className: css.canvas,
-          style: {width: 10000, height: 1}}
+          style: {width: canvasWidth, height: 1}}
     )._Div
 
     return [canvas, ...children];
