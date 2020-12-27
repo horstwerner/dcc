@@ -77,7 +77,7 @@ export default class Component {
   getRelativeSpatial(refComponent) {
     let current = this;
     const spatial = {...(this.spatial || DEFAULT_SPATIAL)};
-    while (current.parent && current !== refComponent) {
+    while (current.parent && current.parent !== refComponent) {
       const parent = current.parent;
       const parentSpatial = parent.spatial || DEFAULT_SPATIAL;
       spatial.x = (spatial.x - parent.dom.scrollLeft) * parentSpatial.scale + parentSpatial.x;
@@ -85,7 +85,7 @@ export default class Component {
       spatial.scale *= parentSpatial.scale;
       current = current.parent;
     }
-    if (current !== refComponent) {
+    if (current.parent !== refComponent) {
       const downPath = refComponent.getAncestry([]);
       for (let idx = 1; idx < downPath.length; idx++) {
         const currentSpatial = downPath[idx].spatial || DEFAULT_SPATIAL;
