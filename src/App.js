@@ -17,7 +17,7 @@ import {ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 import {RadioButtons_} from "@/components/RadioButtons";
 import Trellis from "@/generators/Trellis";
-import {CLICK_DISABLED, CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
+import { CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT } from "@/components/Constants";
 import {getCardDescriptorsFromDb, getDataFromDb, getDictionaryFromDb, getToolDescriptorsFromDb} from "@/Data";
 
 const APP = 'app';
@@ -88,6 +88,7 @@ export default class App extends Component {
     this.handleHoverCardStash = this.handleHoverCardStash.bind(this);
     this.handleHoverCardPin = this.handleHoverCardPin.bind(this);
     this.handleHoverCardClose = this.handleHoverCardClose.bind(this);
+    this.handleFocusCardStash = this.handleFocusCardStash.bind(this);
     this.handleToolToggle = this.handleToolToggle.bind(this);
     this.handleViewSelect = this.handleViewSelect.bind(this);
     this.onError = this.onError.bind(this);
@@ -118,6 +119,12 @@ export default class App extends Component {
     this.moveCardToBreadcrumbs(  {...hoverCard,  hover: false, onClick: this.handleNodeClick, clickMode: CLICK_NORMAL}, {});
   }
 
+  handleFocusCardStash() {
+    const { focusCard } = this.state;
+    const hoverCard = {...focusCard, key: this.createChildKey()};
+    this.setState({ hoverCard });
+    this.moveCardToBreadcrumbs(  {...hoverCard, onClick: this.handleNodeClick, clickMode: CLICK_NORMAL}, {});
+  }
 
   handleHoverCardClose() {
     this.setState({hoverCard: null});
@@ -164,7 +171,9 @@ export default class App extends Component {
 
     const spatial = component.getRelativeSpatial(this.getFocusPlane());
 
-    const clone = Card_({key: this.createChildKey(), data, hover: true, template, spatial, clickMode: CLICK_DISABLED, style: {zIndex: 2}})._Card
+    const clone = Card_({key: this.createChildKey(), data, hover: true, template, spatial, clickMode: CLICK_OPAQUE,
+      onClick: this.handleHoverCardPin,
+      style: {zIndex: 2}})._Card
     this.setState({hoverCard: clone, allowInteractions: false});
 
     const newSpatial = this.calcHoverCardSpatial({hoverCard: clone, mainWidth, focusHeight, breadCrumbHeight});
@@ -177,16 +186,17 @@ export default class App extends Component {
 
   moveCardToFocus(newFocusCard, data) {
     const { focusCard } = this.state;
-    this.moveCardToBreadcrumbs(focusCard, this.createStateForFocusCard(newFocusCard, data));
+    const targetState = this.createStateForFocusCard(newFocusCard, data);
+    const endState = {focusCard: {...targetState.focusCard, style: {zIndex: 0}}};
+    this.moveCardToBreadcrumbs(focusCard, targetState, endState);
   }
 
 
-  moveCardToBreadcrumbs(card, targetState) {
+  moveCardToBreadcrumbs(card, targetState, endState) {
     const { breadCrumbCards, breadCrumbHeight } = this.state;
     const focusPlane = this.getFocusPlane();
 
     // old card will be transformed into breadcrumb card. For the time of transition, it is the hoverCard
-    const newBreadcrumbInstance = focusPlane.childByKey[card.key];
     const { breadCrumbCard, nextChildPos, targetScrollPos, adoptCard } = this.turnIntoBreadCrumbCard(card);
       const newHoverCard = {
       ...breadCrumbCard,
@@ -202,10 +212,9 @@ export default class App extends Component {
     };
 
     const tween = this.transitionToState(targetState).onEndCall(() => {
-      const newState = { allowInteractions: true, hoverCard: null,
-        focusCard: {...(targetState.focusCard || this.state.focusCard), style: {zIndex: 0}}};
+      const newState = { ...(endState || {}), allowInteractions: true, hoverCard: null};
       if (adoptCard) {
-        this.getBreadcrumbLane().adoptChild(newBreadcrumbInstance);
+        this.getBreadcrumbLane().adoptChild( focusPlane.childByKey[card.key]);
         newState.breadCrumbCards = [...breadCrumbCards, breadCrumbCard];
       }
       this.setState(newState);
@@ -446,6 +455,18 @@ export default class App extends Component {
   }
 
 
+  onResize(width, height) {
+    this.dom.style.width = `${width}px`;
+    this.dom.style.height = `${height}px`;
+    const {toolControls, hoverCard, focusCard} = this.state;
+    const windowWidth = width;
+    const windowHeight = height;
+    this.setState({windowWidth, windowHeight, ...this.recalcLayout(
+          {toolControls: toolControls || {}, windowWidth, windowHeight, hoverCard, focusCard})});
+    this.renderStateChange();
+  }
+
+
   createChildDescriptors(props) {
 
     const {focusCard, tools, activeTools, views, error, mainWidth, focusHeight, sideBarWidth, breadCrumbCards, nextChildPos,
@@ -462,8 +483,12 @@ export default class App extends Component {
       hoverChildren.push(hoverCard);
       if (allowInteractions) {
         hoverChildren.push(hoverCardMenu(HOVER_MENU, hoverCard.spatial.y, menuRight, this.handleHoverCardClose,
-            this.handleHoverCardPin, this.handleHoverCardStash))
+             this.handleHoverCardStash));
       }
+    } else if (focusCard && focusCard.template.clickable) {
+      const menuRight = focusCard.template.getSize().width * focusCard.spatial.scale + focusCard.spatial.x;
+      hoverChildren.push(hoverCardMenu(HOVER_MENU, focusCard.spatial.y, menuRight, null,
+          this.handleFocusCardStash));
     }
 
     return [
@@ -496,18 +521,6 @@ export default class App extends Component {
         onViewClick: this.handleViewSelect,
       })._Sidebar
     ];
-  }
-
-
-  onResize(width, height) {
-    this.dom.style.width = `${width}px`;
-    this.dom.style.height = `${height}px`;
-    const {toolControls, hoverCard, focusCard} = this.state;
-    const windowWidth = width;
-    const windowHeight = height;
-    this.setState({windowWidth, windowHeight, ...this.recalcLayout(
-        {toolControls: toolControls || {}, windowWidth, windowHeight, hoverCard, focusCard})});
-    this.renderStateChange();
   }
 };
 

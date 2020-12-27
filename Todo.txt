@@ -1,5 +1,5 @@
-//TODO: stash to breadcrumbs for focus card
-//TODO: remove icon for breadcrumbs
+//TODO: remove button for breadcrumbs
+//TODO: fix toolbar layout
 //TODO: pass Context for view options to cards -> dynamic template types or elements
 //TODO: create card on click on rect
 //TODO: Data ID to determine whether view/data combination is already in breadcrumbs

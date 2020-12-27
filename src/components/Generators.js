@@ -47,7 +47,7 @@ export const Background = function Background(props, color, onClick, hover) {
     case BACKGROUND_RECT:
       return Div_({key: KEY_BACKGROUND, className, spatial,
         style:{backgroundColor: color, width: w, height: h, borderRadius: cornerRadius, border: borderColor && `solid 1px ${borderColor}`},
-        onClick: (hover ? null : onClick)})._Div;
+        onClick})._Div;
     case BACKGROUND_IMAGE:
       return Image_({key: KEY_BACKGROUND, className, spatial, source, width: w, height: h, color, cornerRadius, onClick})._Image;
     default:
@@ -207,17 +207,16 @@ ChildSet.propTypes = {key: P.string.isRequired,
   template: P.string.isRequired
 }
 
-export const hoverCardMenu = function hoverCardMenu(key, top, right, onClose, onPin, onStash) {
+export const hoverCardMenu = function hoverCardMenu(key, top, right, onClose, onStash) {
   const iconSize = 18;
   const iconMargin = 6;
   const width = iconSize;
-  const totalWidth = 3 * iconSize + 2 * iconMargin;
   const height = iconSize;
   const children = [
-    Image_({className: hoverMenuCss.icon, width, height, source: 'public/Pin.svg', onClick: onPin})._Image,
-    Image_({className: hoverMenuCss.icon, width, height, source: 'public/Dock.svg', onClick: onStash})._Image,
-    Image_({className: hoverMenuCss.icon, width, height, source: 'public/CloseButton.svg', onClick: onClose})._Image,
-  ];
+    onStash && Image_({className: hoverMenuCss.icon, width, height, source: 'public/Dock.svg', onClick: onStash})._Image,
+    onClose && Image_({className: hoverMenuCss.icon, width, height, source: 'public/CloseButton.svg', onClick: onClose})._Image,
+  ].filter(Boolean);
+  const totalWidth = children.length * iconSize + (children.length - 1) * iconMargin;
 
   return Div_({key, className: hoverMenuCss.menu, children, style: {width: totalWidth, height}, spatial: {x: right - totalWidth - iconMargin, y: top + iconMargin, scale: 1}})._Div
 }
