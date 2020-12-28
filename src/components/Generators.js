@@ -148,7 +148,7 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
     P.checkPropTypes(ChildSet.propTypes, descriptor, 'prop', 'ChildSet');
   }
 
-  const { key, source, lod, align, arrangement, x, y, w, h} = descriptor;
+  const { key, source, lod, align, arrangement, x, y, w, h, options} = descriptor;
 
   const templateName = descriptor.template;
   const template = TemplateRegistry.getTemplate(templateName);
@@ -172,7 +172,8 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
       spatial: fit(w, h, nativeChildSize.width, nativeChildSize.height, x, y),
       data:  cardNode,
       onClick,
-      clickMode
+      clickMode,
+      options
     })._Card;
   }
 
@@ -192,7 +193,8 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
     spatial: {x, y, scale: 1},
     arrangement: createArrangement(arrangementDescriptor, nativeChildSize),
     onClick,
-    clickMode})._CardSet
+    clickMode,
+    options})._CardSet
 }
 
 ChildSet.propTypes = {key: P.string.isRequired,

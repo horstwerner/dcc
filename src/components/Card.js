@@ -23,6 +23,7 @@ class Card extends Component {
   static propTypes = {
     template: P.instanceOf(Template),
     data: P.object.isRequired,
+    options: P.objectOf({"id": P.string, "value": P.any}),
     onClick: P.func,
     clickMode: P.oneOf([CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT, CLICK_DISABLED])
   };
@@ -50,9 +51,9 @@ class Card extends Component {
    */
   createChildDescriptors(props) {
 
-    const { data, template, onClick, hover, clickMode } = props;
+    const { data, template, onClick, hover, clickMode, options } = props;
 
-    const {background, elements} = template;
+    const {background} = template;
     const color = template.getCardColor(data);
     const hasBackground = background.type !== 'transparent';
     const isClickable = clickMode === CLICK_OPAQUE || (clickMode === CLICK_NORMAL && template.clickable);
@@ -62,7 +63,7 @@ class Card extends Component {
     if (hasBackground) {
       children.push(Background(background, color, isClickable && this.handleCardClick, hover));
     }
-    elements.forEach(element => {
+    template.getElementsForOptions(options).forEach(element => {
       const { key } = element;
       let childDescriptor = null;
       switch (element.type) {

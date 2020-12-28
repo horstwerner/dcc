@@ -74,12 +74,12 @@ class CardSet extends Component {
 
   createChildDescriptors(props) {
 
-    const { arrangement, nodes, template, onClick, clickMode } = props;
+    const { arrangement, nodes, template, onClick, clickMode, options } = props;
 
     const childDescriptors = [];
     arrangement.forEachRasterpos(nodes, (node, rasterPos) => {
       childDescriptors.push(
-          Card_({key: node.getUniqueKey(), spatial: rasterPos, data: node, parentSet: this, onClick, template, clickMode})._Card
+          Card_({key: node.getUniqueKey(), spatial: rasterPos, data: node, parentSet: this, onClick, template, clickMode, options})._Card
       );
     });
     return childDescriptors;

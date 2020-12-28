@@ -1,5 +1,5 @@
 import P from 'prop-types';
-import {omit} from 'lodash';
+import { get, omit } from 'lodash';
 import Component from '@symb/Component';
 import css from './App.css';
 import ComponentFactory from "@symb/ComponentFactory";
@@ -18,7 +18,7 @@ import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from 
 
 import { CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT } from "@/components/Constants";
 import {getCardDescriptorsFromDb, getDataFromDb, getDictionaryFromDb, getToolDescriptorsFromDb} from "@/Data";
-import {createToolControl, updatedToolControl} from "@/Tools";
+import {createFilterControl, updatedToolControl} from "@/Tools";
 
 const APP = 'app';
 const BREADCRUMBS = 'breadcrumbs';
@@ -50,6 +50,8 @@ export default class App extends Component {
       activeTools: {},
       toolControls: {},
       currentFilters: [],
+      currentViewOptions: {},
+      optionControls: [],
       breadCrumbCards: [],
       focusData: null,
       focusCard: null,
@@ -81,7 +83,7 @@ export default class App extends Component {
               focusData: startData,
               dataLoaded: true
             });
-            this.setFocusCard(this.createFocusCard(startData, TemplateRegistry.getTemplate('root'), []));
+            this.setFocusCard(this.createFocusCard(startData, TemplateRegistry.getTemplate('root'), {}));
           }
         });
     this.handleNodeClick = this.handleNodeClick.bind(this);
@@ -93,6 +95,7 @@ export default class App extends Component {
     this.handleViewSelect = this.handleViewSelect.bind(this);
     this.removeToolFilter = this.removeToolFilter.bind(this);
     this.setToolFilter = this.setToolFilter.bind(this);
+    this.handleOptionSelect = this.handleOptionSelect.bind(this);
     this.onError = this.onError.bind(this);
   }
 
@@ -268,13 +271,14 @@ export default class App extends Component {
   }
 
 
-  createFocusCard(data, template) {
+  createFocusCard(data, template, options) {
     const key = this.createChildKey();
 
     return Card_({
       key,
       data,
       template,
+      options,
       onClick: this.handleNodeClick,
       clickMode: CLICK_TRANSPARENT
     })._Card
@@ -291,11 +295,19 @@ export default class App extends Component {
     tools.forEach(tool => {
       activeTools[tool.id] = tool.default ? tool : null;
       if (tool.default) {
-        toolControls[tool.id] = createToolControl(tool, data, this.setToolFilter, this.removeToolFilter);
+        toolControls[tool.id] = createFilterControl(tool, data, this.setToolFilter, this.removeToolFilter);
       }
     });
+    let currentViewOptions;
+    if (focusCard.options) {
+      currentViewOptions = focusCard.options;
+    } else {
+      currentViewOptions = template.getDefaultOptions();
+      focusCard.options = currentViewOptions;
+    }
     const {windowWidth, windowHeight} = this.state;
     return { views, tools, activeTools, toolControls, filters: {}, focusData: data,
+      currentViewOptions,
       ...this.recalcLayout({ toolControls, windowWidth, windowHeight, focusCard })};
   }
 
@@ -325,11 +337,13 @@ export default class App extends Component {
     this.updateFilteredState(omit(currentFilters, toolId), toolId, null);
   }
 
+
   updatedFocusCard(focusCard, focusData, filters) {
     const data = createPreprocessedCardNode(applyFilters(Object.values(filters), focusData[TYPE_NODES]),
         {}, focusCard.template);
     return  {...focusCard, data};
   }
+
 
   updateFilteredState(newFilters, toolId, value) {
     const { focusData, focusCard, activeTools, toolControls } = this.state;
@@ -360,7 +374,7 @@ export default class App extends Component {
       const tool = tools.find(tool => tool.id === toolId);
       activeTools = {...this.state.activeTools, [toolId]: tool};
       toolControls = {...this.state.toolControls, [toolId]:
-            createToolControl(tool, focusData, this.setToolFilter, this.removeToolFilter) };
+            createFilterControl(tool, focusData, this.setToolFilter, this.removeToolFilter) };
     }
     const {windowWidth, windowHeight} = this.state;
     this.transitionToState({
@@ -379,9 +393,22 @@ export default class App extends Component {
     const data = template.aggregate ?  createPreprocessedCardNode(applyFilters(Object.values(currentFilters),
         focusData[TYPE_NODES].map(node => (node.originalNode || node))), {}, template): this.state.focusCard.data;
 
-    const focusCard = this.createFocusCard(data, template, currentFilters);
+    const currentViewOptions = template.getDefaultOptions();
+
+    const focusCard = this.createFocusCard(data, template, currentFilters, currentViewOptions);
     focusCard.spatial = this.calcFocusCardSpatial({focusCard, mainWidth, focusHeight});
-    this.setState({ focusCard });
+    this.setState({ focusCard, currentViewOptions: template.getDefaultOptions() });
+  }
+
+
+  handleOptionSelect(key, value) {
+    const {currentViewOptions, focusCard} = this.state;
+    const newViewOptions = {...currentViewOptions, [key]: value};
+
+    this.setState({
+      currentViewOptions: newViewOptions,
+      focusCard: {...focusCard, options: newViewOptions}
+    })
   }
 
 
@@ -403,6 +430,7 @@ export default class App extends Component {
 
     const breadCrumbHeight = 0.15 * windowHeight;
     const toolControlList = Object.values(toolControls);
+    // noinspection JSCheckFunctionSignatures
     const toolbarHeight = toolControlList.reduce((result, control) => Math.max(result, (control.size.height || 0)), 0) + 2 * MARGIN;
     const focusHeight = windowHeight - breadCrumbHeight - toolbarHeight;
     const mainHeight = windowHeight;
@@ -440,7 +468,7 @@ export default class App extends Component {
   createChildDescriptors(props) {
 
     const {focusCard, tools, activeTools, views, error, mainWidth, focusHeight, sideBarWidth, breadCrumbCards, nextChildPos,
-       hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions} = this.state;
+       hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions} = this.state;
 
     // const backgroundColor = (map && map.backColor) || '#ffffff';
     if (error) {
@@ -487,6 +515,9 @@ export default class App extends Component {
         spatial: {x: mainWidth, y: 0, scale: 1},
         views: views.map(view => ({id: view.id, name: view.name || view.id, selected: view.id === focusCard.template.id})),
         tools: tools && tools.map(tool => ({id: tool.id, name: tool.name, selected: activeTools[tool.id]})),
+        options: get(focusCard, ['template','options']) || {},
+        currentViewOptions,
+        onOptionSelect: this.handleOptionSelect,
         onToolToggle: this.handleToolToggle,
         onViewClick: this.handleViewSelect,
       })._Sidebar

@@ -5,6 +5,9 @@ import css from './RadioButtons.css';
 import {Div_} from "@symb/Div";
 
 const RADIO = 'radio';
+export const VERTICAL = 'vertical';
+export const HORIZONTAL = 'horizontal';
+
 
 class RadioButtons extends Component {
 
@@ -13,7 +16,7 @@ class RadioButtons extends Component {
   static propTypes = {
     options: P.arrayOf(P.shape({id: P.string.isRequired, name: P.string.isRequired, onSelect: P.func.isRequired})),
     selectedId: P.string.isRequired,
-    orientation: P.oneOf(['horizontal', 'vertical']),
+    orientation: P.oneOf([HORIZONTAL, VERTICAL]),
     label: P.string,
     width: P.number,
     height: P.number
@@ -21,7 +24,7 @@ class RadioButtons extends Component {
 
   updateDom(props, tween) {
     const { orientation } = props;
-    this.updateStyle({flexDirection: (orientation === 'vertical' ? 'flex-column' : 'flex-row')});
+    this.updateStyle({flexDirection: (orientation === VERTICAL ? 'column' : 'row')});
   }
 
   createChildDescriptors(props) {
