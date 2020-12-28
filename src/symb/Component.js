@@ -85,6 +85,7 @@ export default class Component {
       spatial.scale *= parentSpatial.scale;
       current = current.parent;
     }
+    //FIXME: doesn't work correctly
     if (current.parent !== refComponent) {
       const downPath = refComponent.getAncestry([]);
       for (let idx = 1; idx < downPath.length; idx++) {
@@ -230,8 +231,8 @@ export default class Component {
 
     if (innerProps && !isEmpty(innerProps)) {
       if (!isEqual(this.innerProps, props)) {
-        this.updateDom(innerProps, tween);
-        const childDescriptors = this.createChildDescriptors(innerProps);
+        this.updateDom(props, tween);
+        const childDescriptors = this.createChildDescriptors(props);
         if (childDescriptors != null) {
           this.createChildren(childDescriptors, tween);
         }

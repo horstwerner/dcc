@@ -433,8 +433,8 @@
       "aggregate": true,
       "background": {
         "type": "rect",
-        "w": 400,
-        "h": 800,
+        "w": 600,
+        "h": 600,
         "cornerRadius": "6px",
         "color":  {"$":  "AREA_BACKGROUND_COLOR"},
         "x": 0,
@@ -525,8 +525,8 @@
           "source": "core:subNodes",
           "x": 20,
           "y": 100,
-          "w": 360,
-          "h": 700,
+          "w": 560,
+          "h": 480,
           "arrangement": {
             "type": "grid",
             "lod": "full",

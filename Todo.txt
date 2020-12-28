@@ -1,7 +1,10 @@
-//TODO: remove button for breadcrumbs
-//TODO: fix toolbar layout
+//TODO: Clicking on focus card itself doesn't create copy
+//TODO: button to remove breadcrumbs
+//TODO: LOD for cards on magnify
+//TODO: grouping, related
 //TODO: pass Context for view options to cards -> dynamic template types or elements
 //TODO: create card on click on rect
 //TODO: Data ID to determine whether view/data combination is already in breadcrumbs
 //TODO: Card types: "menu", "analysis", "individual node"
 //TODO: Raster system and adaptive layout for cards, uniform font sizes
+//TODO: search

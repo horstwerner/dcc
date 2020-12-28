@@ -1,10 +1,10 @@
 .app {
   background-color: #7f9ea3;
 }
-.overlay {
+
+.absolute {
   position: absolute;
-  left: 0;
-  top: 0;
+  transform-origin: 0 0;
 }
 
 .focus {

@@ -9,7 +9,7 @@
       "appliesTo": "jira:ticket",
       "alignment": "horizontal",
       "values": ["1.2", "1.3", "1.4"],
-      "width": 600,
+      "width": 400,
       "height": 34,
       "filter": "jira:release"
     },
@@ -31,6 +31,17 @@
       },
       "align": {"storyPointSum": "max"},
       "filter": "jira:status"
+    }
+  ],
+  "view-options": [
+    {
+      "id":  "ticket-view",
+      "label": "Ticket Display",
+      "default": true,
+      "display": "radio-buttons",
+      "appliesTo": "jira:ticket",
+      "context-parameter": "ticket-template",
+      "options": [{"label": "Compact", "value":  "jira:ticket"}, { "label": "Detailed", "value":  "ticketdetails"}]
     }
   ]
 }

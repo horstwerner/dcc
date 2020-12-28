@@ -29,7 +29,8 @@ class Sidebar extends Component {
     const { menuTop, views, tools, onViewClick, onToolToggle } = props;
 
     return[
-      Div_({className: css.searchField, spatial: {x: 20, y: MARGIN, scale: 1}, children: Image_({className:css.searchButton, source:`public/SearchButton.svg`})._Image})._Div,
+      Div_({className: css.searchField, spatial: {x: 20, y: MARGIN, scale: 1},
+        children: Image_({className:css.searchButton, source:`public/SearchButton.svg`})._Image})._Div,
       MenuPanel_({
         size: { width:  MENU_WIDTH, height: 400 },
         views,

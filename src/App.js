@@ -15,10 +15,10 @@ import {createPreprocessedCardNode, hoverCardMenu} from "@/components/Generators
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 import {ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
-import {RadioButtons_} from "@/components/RadioButtons";
-import Trellis from "@/generators/Trellis";
+
 import { CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT } from "@/components/Constants";
 import {getCardDescriptorsFromDb, getDataFromDb, getDictionaryFromDb, getToolDescriptorsFromDb} from "@/Data";
+import {createToolControl, updatedToolControl} from "@/Tools";
 
 const APP = 'app';
 const BREADCRUMBS = 'breadcrumbs';
@@ -26,7 +26,6 @@ const SIDEBAR = 'sidebar';
 const FOCUS = 'focus';
 const HOVER_MENU = 'hover-menu';
 const TOOL_HEIGHT = 10;
-const FILTER_RESET = 'reset';
 
 export default class App extends Component {
 
@@ -38,6 +37,7 @@ export default class App extends Component {
   };
 
 
+  // noinspection DuplicatedCode
   constructor(props, parent, domNode) {
     super(props, parent, domNode);
 
@@ -91,6 +91,8 @@ export default class App extends Component {
     this.handleFocusCardStash = this.handleFocusCardStash.bind(this);
     this.handleToolToggle = this.handleToolToggle.bind(this);
     this.handleViewSelect = this.handleViewSelect.bind(this);
+    this.removeToolFilter = this.removeToolFilter.bind(this);
+    this.setToolFilter = this.setToolFilter.bind(this);
     this.onError = this.onError.bind(this);
   }
 
@@ -186,7 +188,7 @@ export default class App extends Component {
 
   moveCardToFocus(newFocusCard, data) {
     const { focusCard } = this.state;
-    const targetState = this.createStateForFocusCard(newFocusCard, data);
+    const targetState = this.createStateForFocus(newFocusCard, data);
     const endState = {focusCard: {...targetState.focusCard, style: {zIndex: 0}}};
     this.moveCardToBreadcrumbs(focusCard, targetState, endState);
   }
@@ -214,7 +216,9 @@ export default class App extends Component {
     const tween = this.transitionToState(targetState).onEndCall(() => {
       const newState = { ...(endState || {}), allowInteractions: true, hoverCard: null};
       if (adoptCard) {
-        this.getBreadcrumbLane().adoptChild( focusPlane.childByKey[card.key]);
+        const instance = focusPlane.childByKey[card.key];
+        this.getBreadcrumbLane().adoptChild( instance );
+        instance.setSpatial(breadCrumbCard.spatial);
         newState.breadCrumbCards = [...breadCrumbCards, breadCrumbCard];
       }
       this.setState(newState);
@@ -276,57 +280,8 @@ export default class App extends Component {
     })._Card
   }
 
-  createToolControl(tool) {
 
-    //FIXME: update tools when filter is set
-
-    const {focusData} = this.state;
-    let toolControl;
-    switch (tool.display) {
-      case 'radio-buttons': {
-        const {id, values, width, height, label} = tool;
-        const reset = {id: FILTER_RESET, name: 'All', onSelect: () => this.removeToolFilter(tool.id)};
-        const options = values.map(value => ({id: value, name: value, onSelect: () => this.setToolFilter(tool, value)}));
-        options.push(reset);
-        toolControl = RadioButtons_({key: id, size: {width, height}, label, options, selectedId: FILTER_RESET })._RadioButtons;
-        break;
-      }
-      case 'trellis':
-        const {id, width, filter, align, arrangement, height, template} = tool;
-        // const reset = {id: FILTER_RESET, name: 'All', onSelect: () => this.removeToolFilter(tool.id)};
-
-        toolControl = Div_({
-          key: id,
-          style: {width, height},
-          children: Trellis(focusData, {key: id, source: TYPE_NODES, template, inputSelector: null,
-                groupAttribute: filter, align, arrangement, x: 0, y: 0, w: width, h: height
-              },
-
-              ({component}) => {
-                const dataValue = component.innerProps.data[filter];
-              this.setToolFilter(tool, dataValue);},
-              CLICK_OPAQUE)
-        })._Div;
-        break;
-      default:
-        throw new Error(`Unknown tool display ${tool.display}`);
-    }
-    return toolControl;
-  }
-
-  createUpdatedToolControls(toolId, selectedValue) {
-    const { activeTools, toolControls } = this.state;
-    const tool = activeTools[toolId];
-    const control = {...toolControls[toolId]};
-    switch (tool.display) {
-      case 'radio-buttons':
-        control.selectedId = selectedValue || FILTER_RESET;
-        break;
-    }
-    return {...toolControls, [toolId]: control};
-  }
-
-  createStateForFocusCard(focusCard, data) {
+  createStateForFocus(focusCard, data) {
     const { template } = focusCard;
     const { appliesTo, aggregate } = template;
     const views = TemplateRegistry.getViewsFor(appliesTo, aggregate);
@@ -336,17 +291,17 @@ export default class App extends Component {
     tools.forEach(tool => {
       activeTools[tool.id] = tool.default ? tool : null;
       if (tool.default) {
-        toolControls[tool.id] = this.createToolControl(tool);
+        toolControls[tool.id] = createToolControl(tool, data, this.setToolFilter, this.removeToolFilter);
       }
     });
     const {windowWidth, windowHeight} = this.state;
     return { views, tools, activeTools, toolControls, filters: {}, focusData: data,
-      ...this.recalcLayout({toolControls, windowWidth, windowHeight, focusCard})};
+      ...this.recalcLayout({ toolControls, windowWidth, windowHeight, focusCard })};
   }
 
 
   setFocusCard(focusCard) {
-    this.transitionToState(this.createStateForFocusCard(focusCard, null));
+    this.transitionToState(this.createStateForFocus(focusCard, null));
   }
 
 
@@ -370,34 +325,50 @@ export default class App extends Component {
     this.updateFilteredState(omit(currentFilters, toolId), toolId, null);
   }
 
+  updatedFocusCard(focusCard, focusData, filters) {
+    const data = createPreprocessedCardNode(applyFilters(Object.values(filters), focusData[TYPE_NODES]),
+        {}, focusCard.template);
+    return  {...focusCard, data};
+  }
 
   updateFilteredState(newFilters, toolId, value) {
-    const { focusData, focusCard } = this.state;
-    const data = createPreprocessedCardNode(applyFilters(Object.values(newFilters), focusData[TYPE_NODES]), {}, focusCard.template);
-
-    const newFocusCard =  {...focusCard, data};
-        // this.createFocusCard(data, focusCard.template);
-    this.setState({currentFilters: newFilters, toolControls: this.createUpdatedToolControls(toolId, value), focusCard: newFocusCard});
+    const { focusData, focusCard, activeTools, toolControls } = this.state;
+    const { } = this.state;
+    const tool = activeTools[toolId];
+    // this.createFocusCard(data, focusCard.template);
+    this.transitionToState({currentFilters: newFilters,
+      toolControls: {...toolControls, [toolId]: updatedToolControl(tool, toolControls[toolId], value)},
+      focusCard: this.updatedFocusCard(focusCard, focusData, newFilters)});
   }
 
 
   handleToolToggle(toolId) {
-    const {tools, hoverCard, focusCard} = this.state;
-    const activeTools = {...this.state.activeTools};
-    const toolControls = {...this.state.toolControls};
-    if (activeTools[toolId]) {
-      this.removeToolFilter(toolId);
-      delete toolControls[toolId];
-      activeTools[toolId] = null;
+    const {tools, hoverCard, focusData} = this.state;
+    let activeTools;
+    let toolControls;
+    let focusCard;
+    let currentFilters;
+
+    if (this.state.activeTools[toolId]) {
+      activeTools = omit(this.state.activeTools, toolId);
+      toolControls = omit(this.state.toolControls, toolId);
+      currentFilters = omit(this.state.currentFilters, toolId);
+      focusCard = this.updatedFocusCard(this.state.focusCard, focusData, currentFilters);
     } else {
+      focusCard = this.state.focusCard;
+      currentFilters = this.state.currentFilters;
       const tool = tools.find(tool => tool.id === toolId);
-      activeTools[toolId] = tool;
-      toolControls[toolId] = this.createToolControl(tool);
+      activeTools = {...this.state.activeTools, [toolId]: tool};
+      toolControls = {...this.state.toolControls, [toolId]:
+            createToolControl(tool, focusData, this.setToolFilter, this.removeToolFilter) };
     }
     const {windowWidth, windowHeight} = this.state;
-    this.transitionToState({ activeTools,
+    this.transitionToState({
+      currentFilters,
       toolControls,
-      ...this.recalcLayout({toolControls, windowWidth, windowHeight, hoverCard, focusCard})});
+      activeTools,
+      ...this.recalcLayout({toolControls, windowWidth, windowHeight, hoverCard, focusCard})
+    });
   }
 
 
@@ -432,8 +403,7 @@ export default class App extends Component {
 
     const breadCrumbHeight = 0.15 * windowHeight;
     const toolControlList = Object.values(toolControls);
-    const toolbarHeight = toolControlList.reduce((result, control) => result + (control.height || 50), 0)
-        + 20 * (toolControlList.length + 1);
+    const toolbarHeight = toolControlList.reduce((result, control) => Math.max(result, (control.size.height || 0)), 0) + 2 * MARGIN;
     const focusHeight = windowHeight - breadCrumbHeight - toolbarHeight;
     const mainHeight = windowHeight;
     const mainWidth = windowWidth - sideBarWidth;
