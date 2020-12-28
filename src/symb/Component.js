@@ -77,16 +77,16 @@ export default class Component {
   getRelativeSpatial(refComponent) {
     let current = this;
     const spatial = {...(this.spatial || DEFAULT_SPATIAL)};
-    console.log(`${this.key} at ${JSON.stringify(this.spatial)}`);
-    while (current.parent && current !== refComponent) {
-      const parentSpatial = current.parent.spatial || DEFAULT_SPATIAL;
-      console.log(`${current.parent.key} at ${JSON.stringify(parentSpatial)}`);
-      spatial.x = spatial.x * parentSpatial.scale + parentSpatial.x;
-      spatial.y = spatial.y * parentSpatial.scale + parentSpatial.y;
+    while (current.parent && current.parent !== refComponent) {
+      const parent = current.parent;
+      const parentSpatial = parent.spatial || DEFAULT_SPATIAL;
+      spatial.x = (spatial.x - parent.dom.scrollLeft) * parentSpatial.scale + parentSpatial.x;
+      spatial.y = (spatial.y - parent.dom.scrollTop) * parentSpatial.scale + parentSpatial.y;
       spatial.scale *= parentSpatial.scale;
       current = current.parent;
     }
-    if (current !== refComponent) {
+    //FIXME: doesn't work correctly
+    if (current.parent !== refComponent) {
       const downPath = refComponent.getAncestry([]);
       for (let idx = 1; idx < downPath.length; idx++) {
         const currentSpatial = downPath[idx].spatial || DEFAULT_SPATIAL;
@@ -95,7 +95,6 @@ export default class Component {
         spatial.scale /= currentSpatial.scale;
       }
     }
-    console.log(`result = ${JSON.stringify(spatial)}`)
     return spatial;
   }
 
@@ -232,8 +231,8 @@ export default class Component {
 
     if (innerProps && !isEmpty(innerProps)) {
       if (!isEqual(this.innerProps, props)) {
-        this.updateDom(innerProps, tween);
-        const childDescriptors = this.createChildDescriptors(innerProps);
+        this.updateDom(props, tween);
+        const childDescriptors = this.createChildDescriptors(props);
         if (childDescriptors != null) {
           this.createChildren(childDescriptors, tween);
         }
@@ -351,14 +350,8 @@ export default class Component {
     this.dom.style.height = `${height}px`;
   }
 
-  transitionToState(partialState, tween) {
-    if (tween && tween.isRunning()) {
-      throw new Error(`Can't use running tween for state transition`);
-    }
-    if (tween) {
-      tween.onEndCall(() => {this.transitionTween = null}, true);
-    }
-    const transitionTween = tween || new Tween(TRANSITION_DURATION).onEndCall(() => {this.transitionTween = null});
+  transitionToState(partialState) {
+    const transitionTween = new Tween(TRANSITION_DURATION).onEndCall(() => {this.transitionTween = null});
     if (this.updateScheduled) {
       this.onStateRendered = () => {
         this.transitionTween = transitionTween;
@@ -371,6 +364,7 @@ export default class Component {
       this.setState(partialState);
       transitionTween.start();
     }
+    return transitionTween;
   }
 
   setState(partialState) {

@@ -1,5 +1,7 @@
 .radioBar {
   display: flex;
+  position: absolute;
+  transform-origin: 0 0;
 }
 
 .buttonActive,
@@ -9,7 +11,7 @@
   min-width: 60px;
   height: 20px;
   padding-top: 6px;
-  font-size: 14px;
+  font-size: 12px;
   text-align: center;
 }
 

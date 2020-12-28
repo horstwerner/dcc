@@ -6,8 +6,11 @@ import {MARGIN, MENU_WIDTH} from "@/Config";
 import {MenuPanel_} from "@/components/MenuPanel";
 import {Div_} from "@symb/Div";
 import {Image_} from "@symb/Image";
+import {createOptionControls} from "@/Tools";
 
 const SIDEBAR = 'sidebar';
+
+const PANEL_HEIGHT = 300;
 
 class Sidebar extends Component {
 
@@ -26,18 +29,23 @@ class Sidebar extends Component {
 
   createChildDescriptors(props) {
 
-    const { menuTop, views, tools, onViewClick, onToolToggle } = props;
+    const { menuTop, views, tools, onViewClick, onToolToggle, options, currentViewOptions, onOptionSelect} = props;
+    const optionsSize = MENU_WIDTH - 2 * 16;
+
+    const optionControls = createOptionControls(options, onOptionSelect, currentViewOptions, optionsSize, optionsSize, 16, menuTop + PANEL_HEIGHT + 16);
 
     return[
-      Div_({className: css.searchField, spatial: {x: 20, y: MARGIN, scale: 1}, children: Image_({className:css.searchButton, source:`public/SearchButton.svg`})._Image})._Div,
+      Div_({className: css.searchField, spatial: {x: 20, y: MARGIN, scale: 1},
+        children: Image_({className:css.searchButton, source:`public/SearchButton.svg`})._Image})._Div,
       MenuPanel_({
-        size: { width:  MENU_WIDTH, height: 400 },
+        size: { width:  MENU_WIDTH, height: PANEL_HEIGHT },
         views,
         tools,
         onViewClick,
         onToolToggle,
         spatial: {x: 0, y: menuTop, scale: 1}
-      })._MenuPanel
+      })._MenuPanel,
+        ...optionControls
     ];
   }
 

@@ -1,9 +1,19 @@
 import P from 'prop-types';
+import { mapValues } from 'lodash';
 import CheckedObject from "@/CheckedObject";
 import ColorCoder from "@symb/ColorCoder";
 
 export const sizeType = {w: P.number, h: P.number};
 export const positionType = {...sizeType, x: P.number, y: P.number};
+
+const fillPlaceholders = function fillPlaceholders(element, options, defaultValues) {
+  return mapValues(element,(value) => {
+    if (typeof value === 'string' && value.charAt(0)==='$') {
+      const key = value.substring(1);
+      return options[key] != null ? options[key] : defaultValues[key];
+    } else return value;
+  })
+}
 
 export default class Template extends CheckedObject{
 
@@ -21,6 +31,7 @@ export default class Template extends CheckedObject{
     clickable: P.bool,
     preprocessing: P.arrayOf(P.shape({method: P.string.isRequired, result: P.string, inputSelector: P.object})),
     colorcoding: P.shape(ColorCoder.propTypes),
+    options: P.objectOf(P.shape({options: P.arrayOf(P.shape({label: P.string, value: P.any})), default: P.any})),
     elements: P.arrayOf(P.shape(
         {
           key: P.string.isRequired,
@@ -38,6 +49,20 @@ export default class Template extends CheckedObject{
     if (descriptor.colorcoding) {
       this.colorCoder = new ColorCoder(descriptor.colorcoding);
     }
+  }
+
+  getDefaultOptions() {
+    return this.options ?
+        mapValues(this.options, (option) => option.defaultValue) :
+        {};
+  }
+
+  getElementsForOptions(options) {
+    if (this.options) {
+      const defaultValues = mapValues(this.options, option => option.defaultValue);
+      return this.elements.map(element => fillPlaceholders(element, options || {}, defaultValues));
+    }
+    return this.elements;
   }
 
   getType() {
