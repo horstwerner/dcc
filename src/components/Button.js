@@ -8,6 +8,8 @@ export const BUTTON = 'button';
 
 class Button extends Component {
 
+  static type = BUTTON;
+
   static propTypes = {
     text: P.string,
     onClick: P.func
@@ -15,11 +17,10 @@ class Button extends Component {
 
   createChildDescriptors(props) {
     const {text, onClick} = props;
-    return Div_({className: css.button, onclick: onClick}, text)._Div;
+    return Div_({className: css.button, onClick}, text)._Div;
   }
-
 }
 
-ComponentFactory.registerType(BUTTON, Button);
+ComponentFactory.registerType( Button);
 
 export const Button_ = (props) => ({_Button: {type: BUTTON, ...props}});

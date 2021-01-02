@@ -221,7 +221,7 @@ export default class App extends Component {
       if (adoptCard) {
         const instance = focusPlane.childByKey[card.key];
         this.getBreadcrumbLane().adoptChild( instance );
-        instance.setSpatial(breadCrumbCard.spatial);
+        // instance.setSpatial(breadCrumbCard.spatial);
         newState.breadCrumbCards = [...breadCrumbCards, breadCrumbCard];
       }
       this.setState(newState);
@@ -349,10 +349,11 @@ export default class App extends Component {
     const { focusData, focusCard, activeTools, toolControls } = this.state;
     const { } = this.state;
     const tool = activeTools[toolId];
+    const newFocusCard = this.updatedFocusCard(focusCard, focusData, newFilters);
     // this.createFocusCard(data, focusCard.template);
     this.transitionToState({currentFilters: newFilters,
-      toolControls: {...toolControls, [toolId]: updatedToolControl(tool, toolControls[toolId], value)},
-      focusCard: this.updatedFocusCard(focusCard, focusData, newFilters)});
+      toolControls: {...toolControls, [toolId]: updatedToolControl(tool, toolControls[toolId], value, newFocusCard.data, this.setToolFilter, this.removeToolFilter)},
+      focusCard: newFocusCard});
   }
 
 

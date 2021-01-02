@@ -1,9 +1,10 @@
-//TODO: Clicking on focus card itself doesn't create copy
+//TODO: Clicking on focus card itself doesn't create copy (maybe useful though?)
 //TODO: button to remove breadcrumbs
+//FIXME: switching templates in graph: background creeps to front
+//FIXME: card options not preserved when cloning from breadcrumb
 //TODO: LOD for cards on magnify
-//TODO: grouping, related
-//TODO: pass Context for view options to cards -> dynamic template types or elements
-//TODO: create card on click on rect
+//TODO: related
+//TODO: create card on click on rect in stacked bar
 //TODO: Data ID to determine whether view/data combination is already in breadcrumbs
 //TODO: Card types: "menu", "analysis", "individual node"
 //TODO: Raster system and adaptive layout for cards, uniform font sizes

@@ -218,6 +218,50 @@
       ]
     },
     {
+      "id": "ticket-compact",
+      "name": "Default",
+      "appliesTo": "jira:ticket",
+      "aggregate": false,
+      "size": {
+        "w": 220,
+        "h": 120
+      },
+      "background": {
+        "type": "rect",
+        "w": 220,
+        "h": 120,
+        "cornerRadius": "6px"
+      },
+      "clickable": true,
+      "colorcoding": {
+        "type": "selection",
+        "attribute": "jira:status",
+        "cases": {
+          "$": "COLOR_BY_STATUS"
+        },
+        "default": {
+          "$": "DEFAULT_TICKET_COLOR"
+        }
+      },
+      "elements": [
+        {
+          "key": "heading-large",
+          "type": "textfield",
+          "x": 10,
+          "y": 35,
+          "w": 200,
+          "h": 50,
+          "attribute": "uri",
+          "style": {
+            "font-weight": "bold",
+            "color": "white",
+            "font-size": "30px",
+            "h-align": "center"
+          }
+        }
+      ]
+    },
+    {
       "id": "jira:team",
       "name": "Default",
       "appliesTo": "jira:team",
@@ -299,6 +343,16 @@
         "cornerRadius": "6px"
       },
       "clickable": true,
+      "options":  {
+        "grouping": {
+          "caption": "Group by",
+          "display": "radio-buttons",
+          "selection": [
+            {"label":  "Feature", "value": "jira:feature"}, {"label": "Team", "value": "jira:team"},
+            {"label":  "Status", "value": "jira:status"}, {"label": "Release", "value": "jira:release"}],
+          "defaultValue": "jira:team"
+        }
+      },
       "elements": [
         {
           "key": "label_features",
@@ -320,7 +374,7 @@
           },
           "align": {"storyPointSum": "max"},
           "template": "storyBarWithTitle",
-          "groupAttribute": "jira:feature"
+          "groupAttribute": "$grouping"
         }
       ]
     },
@@ -404,6 +458,16 @@
         "color": {"$": "AREA_BACKGROUND_COLOR"},
         "cornerRadius": "6px"
       },
+      "options":  {
+        "view": {
+          "caption": "Ticket Style",
+          "display": "radio-buttons",
+          "selection": [
+            {"label":  "Compact", "value": "ticket-compact"}, {"label": "Full", "value": "jira:ticket"}
+          ],
+          "defaultValue": "ticket-compact"
+        }
+      },
       "clickable": true,
       "elements": [
         {
@@ -422,7 +486,7 @@
           "chartType": "graph",
           "x": 20, "y": 20, "w": 680, "h": 480,
           "path": "jira:is-prerequisite-for*",
-          "template": "jira:ticket"
+          "template": "$view"
         }
       ]
     },

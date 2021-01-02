@@ -85,13 +85,13 @@ export default class Component {
       spatial.scale *= parentSpatial.scale;
       current = current.parent;
     }
-    //FIXME: doesn't work correctly
     if (current.parent !== refComponent) {
       const downPath = refComponent.getAncestry([]);
       for (let idx = 1; idx < downPath.length; idx++) {
-        const currentSpatial = downPath[idx].spatial || DEFAULT_SPATIAL;
-        spatial.x = (spatial.x - currentSpatial.x) / currentSpatial.scale;
-        spatial.y = (spatial.y - currentSpatial.y) / currentSpatial.scale;
+        const current = downPath[idx];
+        const currentSpatial = current.spatial || DEFAULT_SPATIAL;
+        spatial.x = (spatial.x - currentSpatial.x) / currentSpatial.scale + current.dom.scrollLeft;
+        spatial.y = (spatial.y - currentSpatial.y) / currentSpatial.scale + current.dom.scrollTop;
         spatial.scale /= currentSpatial.scale;
       }
     }

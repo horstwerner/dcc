@@ -20,7 +20,7 @@ class ToolPanel extends Component {
     let xCursor = MARGIN;
     return children.map(child => {
       const spatial = {x: xCursor, y: 0.5 * (height - child.size.height), scale: 1};
-      xCursor += child.size.width;
+      xCursor += child.size.width + MARGIN;
       return {...child, spatial};
     });
   }
