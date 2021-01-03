@@ -416,6 +416,7 @@
     {
       "id": "root",
       "name": "Start View",
+      "appliesTo": "core:start",
       "aggregate": true,
       "background": {
         "type": "rect",
