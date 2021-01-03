@@ -1,5 +1,5 @@
 import P from 'prop-types';
-import { get, omit } from 'lodash';
+import {get, omit} from 'lodash';
 import Component from '@symb/Component';
 import css from './App.css';
 import ComponentFactory from "@symb/ComponentFactory";
@@ -16,8 +16,14 @@ import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 import {ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 
-import { CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT } from "@/components/Constants";
-import {getCardDescriptorsFromDb, getDataFromDb, getDictionaryFromDb, getToolDescriptorsFromDb} from "@/Data";
+import {CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
+import {
+  getCardDescriptorsFromDb,
+  getClientConfig,
+  getDataFromBackend,
+  getDictionaryFromDb,
+  getToolDescriptorsFromDb
+} from "@/Data";
 import {createFilterControl, updatedToolControl} from "@/Tools";
 
 const APP = 'app';
@@ -68,8 +74,8 @@ export default class App extends Component {
     this.nextChildIndex = 1;
     this.onResize(window.innerWidth, window.innerHeight);
 
-    getDictionaryFromDb(this.onError)
-        .then(() => Promise.all([...Cache.getEntityTypes().map(type => getDataFromDb(type, this.onError)),
+    Promise.all([getClientConfig(this.onError), getDictionaryFromDb(this.onError)])
+        .then(() => Promise.all([...getDataFromBackend(this.onError),
           getCardDescriptorsFromDb(this.onError),
           getToolDescriptorsFromDb(this.onError)]))
         .then(() => {
@@ -221,7 +227,7 @@ export default class App extends Component {
       if (adoptCard) {
         const instance = focusPlane.childByKey[card.key];
         this.getBreadcrumbLane().adoptChild( instance );
-        instance.setSpatial(breadCrumbCard.spatial);
+        // instance.setSpatial(breadCrumbCard.spatial);
         newState.breadCrumbCards = [...breadCrumbCards, breadCrumbCard];
       }
       this.setState(newState);
@@ -349,10 +355,11 @@ export default class App extends Component {
     const { focusData, focusCard, activeTools, toolControls } = this.state;
     const { } = this.state;
     const tool = activeTools[toolId];
+    const newFocusCard = this.updatedFocusCard(focusCard, focusData, newFilters);
     // this.createFocusCard(data, focusCard.template);
     this.transitionToState({currentFilters: newFilters,
-      toolControls: {...toolControls, [toolId]: updatedToolControl(tool, toolControls[toolId], value)},
-      focusCard: this.updatedFocusCard(focusCard, focusData, newFilters)});
+      toolControls: {...toolControls, [toolId]: updatedToolControl(tool, toolControls[toolId], value, newFocusCard.data, this.setToolFilter, this.removeToolFilter)},
+      focusCard: newFocusCard});
   }
 
 

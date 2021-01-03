@@ -30,7 +30,6 @@ class RadioButtons extends Component {
   createChildDescriptors(props) {
 
     const { label, options, selectedId } = props;
-
     const children = [Div_({key: 'label', className: css.label, children: label})._Div];
 
     options.forEach(option => children.push(Div_({

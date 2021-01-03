@@ -30,9 +30,9 @@ class Sidebar extends Component {
   createChildDescriptors(props) {
 
     const { menuTop, views, tools, onViewClick, onToolToggle, options, currentViewOptions, onOptionSelect} = props;
-    const optionsSize = MENU_WIDTH - 2 * 16;
+    const optionsWidth = MENU_WIDTH - 16;
 
-    const optionControls = createOptionControls(options, onOptionSelect, currentViewOptions, optionsSize, optionsSize, 16, menuTop + PANEL_HEIGHT + 16);
+    const optionControls = createOptionControls(options, onOptionSelect, currentViewOptions, optionsWidth, 10, menuTop + PANEL_HEIGHT + 16);
 
     return[
       Div_({className: css.searchField, spatial: {x: 20, y: MARGIN, scale: 1},

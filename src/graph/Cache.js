@@ -1,6 +1,5 @@
 import Type from './Type';
 import GraphNode from './GraphNode';
-import instance from "@symb/ComponentFactory";
 
 export const DATATYPE_INTEGER = 'INTEGER';
 export const DATATYPE_STRING = 'STRING';
@@ -22,6 +21,7 @@ class Cache {
 
   idCount = 0;
 
+  config;
   typeDic;
   lookUpGlobal;
   rootNode = {};
@@ -30,11 +30,16 @@ class Cache {
     this.typeDic = {};
     this.lookUpGlobal = {};
     this.rootNode = {};
+    this.config = null;
     this.createType({uri: TYPE_CONTEXTUAL_NODE, name: 'contextual', dataType: DATATYPE_ENTITY, isAssociation: false});
     this.createType({uri: TYPE_AGGREGATOR, name: 'aggregated', dataType: DATATYPE_ENTITY, isAssociation: false});
     this.createType({uri: TYPE_NODES, name: 'nodes', dataType: DATATYPE_ENTITY, isAssociation: true});
     this.createType({uri: TYPE_NODE_COUNT, name: 'node count', dataType: DATATYPE_INTEGER, isAssociation: false});
   };
+
+  setConfig(config) {
+    this.config = config;
+  }
 
   createUri() {
     return `core:surrogate${this.idCount++}`;

@@ -1,15 +1,27 @@
 .button {
   position: absolute;
-  font-family: Arial, sans-serif;
+  transform-origin: 0 0;
+  border-radius: 3px;
+  margin: 1px;
+  min-width: 60px;
+  height: 23px;
+  box-sizing: border-box;
+  padding: 3px 2px 4px 2px;
   font-size: 12px;
-  color: #FEFEFE;
-  background-color: #808080;
-  padding: 4px;
-  height: 20px;
-  border-radius: 10px;
-  border: solid 1px #c0c0c0;
+  text-align: center;
+  user-select: none;
+  color: #696966;
+  border: solid 1px #d4d4d2;
+  box-shadow: 1px 1px 2px 0 rgba(0,0,0,0.15);
+  background-color: #e0e0dc;
+  cursor: pointer;
 }
 
-button:hover {
-  background-color: #404040;
+.button:hover {
+  background-color: #d9d9d9
+}
+
+.button:active {
+  background-color: #696966;
+  color: #EEEEEA;
 }
