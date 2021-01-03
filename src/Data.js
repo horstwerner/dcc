@@ -72,7 +72,7 @@ export const preprocess = function preprocess(constantList, templates) {
 }
 
 
-export const getDictionaryFromDb = function (onError){
+export const getDictionaryFromDb = function (onError) {
   return fetch('/api/dictionary')
       .then(handleResponse)
       .then(result => {
@@ -82,6 +82,18 @@ export const getDictionaryFromDb = function (onError){
         onError(error);
       });
 };
+
+
+export const getClientConfig = function (onError) {
+  return fetch('/api/config')
+      .then(handleResponse)
+      .then(result => {
+        Cache.setConfig(result.data)})
+      .catch(error => {
+        console.log(error.stack);
+        onError(error);
+      });
+}
 
 
 export const getCardDescriptorsFromDb = function (onError) {
@@ -117,16 +129,45 @@ export const getToolDescriptorsFromDb = function (onError) {
 };
 
 
-export const getDataFromDb = function(type, onError) {
-  return fetch(`/api/data?type=${encodeURI(type)}`, {})
-      .then(handleResponse)
-      .then(res => {
-        if (res.data) {
-          Cache.importNodeTable(res.data.type, res.data.headerRow, res.data.valueRows);
-        }
-      })
-      .catch(error => {
-        console.log(error.stack);
-        onError(error);
-      });
+export const getDataFromBackend = function(onError) {
+  const config = Cache.config;
+
+  /**
+   * @type {Promise[]}
+   */
+  const result = [];
+  const {getTables, getGraph} = config;
+  if (getGraph) {
+    result.push(
+        fetch(`/api/graph`, {})
+            .then(handleResponse)
+            .then(res => {
+              if (res.data) {
+                Cache.importNodes(res.data);
+              }
+            }).catch(error => {
+              console.log(error.stack);
+              onError(error);
+            })
+    );
+  }
+
+  if (getTables) {
+    getTables.forEach(tableName => {
+      result.push(fetch(`/api/data?type=${encodeURI(tableName)}`, {})
+          .then(handleResponse)
+          .then(res => {
+            if (res.data) {
+              Cache.importNodeTable(res.data.type, res.data.headerRow, res.data.valueRows);
+            }
+          })
+          .catch(error => {
+            console.log(error.stack);
+            onError(error);
+          })
+      );
+    });
+  }
+
+  return result;
 }

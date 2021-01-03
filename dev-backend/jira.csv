@@ -1,4 +1,4 @@
-    jira:ticket,core:name,jira:status,jira:storypoints,jira:depends-on->jira:ticket,jira:team,jira:ticket-type,jira:feature,jira:sprint,jira:release
+jira:ticket,core:name,jira:status,jira:storypoints,jira:depends-on->jira:ticket,jira:team,jira:ticket-type,jira:feature,jira:sprint,jira:release
 TQC-10348,Add flux field parameters,closed,8,,Datastore,Story,Flux Compensation,2020-05,1.2
 TQC-10349,Flux calculation,in validation,20,TQC-10348,Simulation,Story,Flux Compensation,2020-06,1.2
 TQC-10350,Add Flux to UI,in progress,10,TQC-10348+TQC-10351+TQC-10352+TQC-10353,Frontend,Story,Flux Compensation,2020-06,1.2

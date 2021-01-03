@@ -219,7 +219,7 @@
     },
     {
       "id": "ticket-compact",
-      "name": "Default",
+      "name": "Compact",
       "appliesTo": "jira:ticket",
       "aggregate": false,
       "size": {

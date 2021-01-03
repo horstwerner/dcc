@@ -1,0 +1,4 @@
+{
+  "dataFiles": ["jira.csv", "teams.csv"],
+  "clientConfig": {"getGraph": false, "getTables":  ["jira:ticket", "jira:team"]}
+}
