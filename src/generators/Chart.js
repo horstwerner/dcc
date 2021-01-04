@@ -3,9 +3,7 @@ import {resolveAttribute, resolveProperty, TYPE_NODES} from "@/graph/Cache";
 import Filter from "@/graph/Filter";
 import {Svg_} from "@/components/Svg";
 import {Rect_} from "@/components/Rect";
-import {sum} from "@/Aggregator";
 import StackedBarChart from "@/generators/StackedBarChart";
-import TemplateRegistry from "@/templates/TemplateRegistry";
 import {GraphViz_} from "@/components/GraphViz";
 import {DEBUG_MODE} from "@/Config";
 import {PolarChart_} from "@/components/PolarChart";
@@ -78,9 +76,9 @@ const Chart = function Chart({key, data, descriptor, onClick}) {
       const {totalWidthValue} = chartProps;
       return StackedBarChart({data: chartData, spatial, totalWidthVal: fillInNumber(data, totalWidthValue), ...chartProps, onRectClick: onClick})
     case 'graph':
-      const nodeTemplate = TemplateRegistry.getTemplate(descriptor.template);
+      const {viewName, nodeAspectRatio} = descriptor;
       const scope = descriptor['bounded'] ? NodeArray(unfilteredData) : null;
-      return GraphViz_({spatial, startNodes: NodeArray(chartData), scope, ...chartProps, nodeTemplate, onNodeClick: onClick})._GraphViz;
+      return GraphViz_({spatial, startNodes: NodeArray(chartData), scope, ...chartProps, viewName, nodeAspectRatio, onNodeClick: onClick})._GraphViz;
     case 'polar':
       return PolarChart_({data, ...chartProps, spatial:{x, y, scale:1}})._PolarChart
     default:

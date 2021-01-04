@@ -6,8 +6,8 @@ import Cache, {
   TYPE_CONTEXTUAL_NODE,
   TYPE_NAME
 } from './Cache';
-import cacheInstance from "./Cache";
 
+// noinspection JSUnusedGlobalSymbols
 export default class GraphNode {
 
   uri;
@@ -54,9 +54,10 @@ export default class GraphNode {
   }
 
   getTypeUri() {
-    return this.type.uri;
+    return this.originalNode ? this.originalNode.type.uri : this.type.uri;
   };
 
+  // noinspection JSUnusedGlobalSymbols
   isOfType (typeUri) {
     let curParent = this.type;
     while (curParent) {
@@ -162,6 +163,28 @@ export default class GraphNode {
   removeBulkAssociation(associationTypeUri) {
     delete this[associationTypeUri];
   }
+
+  getSummary() {
+    let result = [];
+    Object.keys(this).forEach(key => {
+      let valueStr;
+      const value = this[key];
+      if (value == null || key === 'originalNode') return;
+      if (key === 'type') {
+        valueStr = value.uri;
+      }
+      else if (Array.isArray(value)) {
+        valueStr = value.map(node => node.uri).join(', ');
+      } else if (value.constructor === GraphNode) {
+        valueStr = value.uri;
+      } else {
+        valueStr = String(value);
+      }
+      result.push(`${key}: ${valueStr}`);
+    });
+    return result.join(`\n`) + (this.originalNode ? `------------>\n${this.originalNode.getSummary()}`: '');
+  }
+
 
   /**
    * private, lower level, one-directional addition of association
