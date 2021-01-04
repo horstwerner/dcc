@@ -209,7 +209,7 @@ export default class App extends Component {
 
     // old card will be transformed into breadcrumb card. For the time of transition, it is the hoverCard
     const { breadCrumbCard, nextChildPos, targetScrollPos, adoptCard } = this.turnIntoBreadCrumbCard(card);
-      const newHoverCard = {
+    const newHoverCard = {
       ...breadCrumbCard,
       style: {zIndex: 1},
       spatial: relSpatial(breadCrumbCard.spatial, -(targetScrollPos || this.getBreadcrumbLane().dom.scrollLeft), -breadCrumbHeight)
@@ -292,10 +292,24 @@ export default class App extends Component {
 
 
   createStateForFocus(focusCard, data) {
+    if (data && data.constructor === GraphNode) {
+      console.log(`----------------------------------------------------------`);
+      console.log(`focus data is ${data.getSummary()}`);
+    }
+    //TODO: More elegant way to deal with root card
     const { template } = focusCard;
-    const { appliesTo, aggregate } = template;
-    const views = TemplateRegistry.getViewsFor(appliesTo, aggregate);
-    const tools = aggregate ? TemplateRegistry.getToolsFor(appliesTo) : [];
+    const { aggregate } = template;
+    let nodeTypeUri = 'core:start';
+    if (data && data.getTypeUri() === TYPE_AGGREGATOR ) {
+      const subNodes = data[TYPE_NODES];
+      if (subNodes && subNodes.length > 0) {
+        nodeTypeUri = subNodes[0].getTypeUri();
+      }
+    } else if (data){
+      nodeTypeUri = data.getTypeUri();
+    }
+    const views = TemplateRegistry.getViewsFor(nodeTypeUri, aggregate);
+    const tools = aggregate ? TemplateRegistry.getToolsFor(nodeTypeUri) : [];
     const activeTools = {};
     const toolControls = {};
     tools.forEach(tool => {
@@ -475,7 +489,7 @@ export default class App extends Component {
   createChildDescriptors(props) {
 
     const {focusCard, tools, activeTools, views, error, mainWidth, focusHeight, sideBarWidth, breadCrumbCards, nextChildPos,
-       hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions} = this.state;
+      hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions} = this.state;
 
     // const backgroundColor = (map && map.backColor) || '#ffffff';
     if (error) {
@@ -488,7 +502,7 @@ export default class App extends Component {
       hoverChildren.push(hoverCard);
       if (allowInteractions) {
         hoverChildren.push(hoverCardMenu(HOVER_MENU, hoverCard.spatial.y, menuRight, this.handleHoverCardClose,
-             this.handleHoverCardStash));
+            this.handleHoverCardStash));
       }
     } else if (focusCard && focusCard.template.clickable) {
       const menuRight = focusCard.template.getSize().width * focusCard.spatial.scale + focusCard.spatial.x;
@@ -505,17 +519,17 @@ export default class App extends Component {
         canvasWidth: nextChildPos
       })._BreadcrumbLane,
       ToolPanel_({
-          key: 'tools',
-          size: { width: mainWidth, height: toolbarHeight},
-          spatial: {x: 0, y: focusHeight + breadCrumbHeight, scale: 1},
-          children: Object.values(toolControls)
-        })._ToolPanel,
+        key: 'tools',
+        size: { width: mainWidth, height: toolbarHeight},
+        spatial: {x: 0, y: focusHeight + breadCrumbHeight, scale: 1},
+        children: Object.values(toolControls)
+      })._ToolPanel,
       Div_({
-          key: FOCUS,
-          className: css.focus,
-          spatial: {x: 0, y: breadCrumbHeight, scale: 1},
-          children: [focusCard, ...hoverChildren]
-        })._Div,
+        key: FOCUS,
+        className: css.focus,
+        spatial: {x: 0, y: breadCrumbHeight, scale: 1},
+        children: [focusCard, ...hoverChildren]
+      })._Div,
       Sidebar_({size: {width: sideBarWidth, height: windowHeight},
         menuTop: breadCrumbHeight,
         key: SIDEBAR,

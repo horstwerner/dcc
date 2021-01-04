@@ -8,7 +8,6 @@ import Cache, {
   TYPE_PREDECESSOR_COUNT,
   TYPE_SUCCESSOR_COUNT
 } from "@/graph/Cache";
-import Aggregator from "@/Aggregator";
 
 export const getAssociated = function getAssociated(node, association) {
 
@@ -116,15 +115,33 @@ export const pathAnalysis = function pathAnalysis(sourceNodes, associationType, 
       .setBulkAssociation(TYPE_NODES, Object.values(allTouchedNodes));
 }
 
-export const deriveAssociations = function deriveAssociations(sourceNodes, path, derivedAssociation) {
+export const deriveAssociations = function deriveAssociations(sourceNodes, path, derivedAssociation, recursive) {
+  const processedNodes = {};
   const result = [];
-  sourceNodes.forEach(node => {
-    const associated = traverse(node, path);
-    if (associated.size !== 0) {
-      const contextual = node.createContextual();
-      contextual.setBulkAssociation(derivedAssociation, associated);
-      result.push(contextual);
+  let currentNodes = sourceNodes;
+  while (currentNodes.length > 0) {
+    let newNodes = {};
+    currentNodes  .forEach(node => {
+      const associated = traverse(node, path);
+      associated.delete(node);
+      if (associated.size !== 0) {
+        const contextual = node.createContextual();
+        contextual.setBulkAssociation(derivedAssociation, associated);
+        result.push(contextual);
+        associated.forEach(node => {
+          const key = node.getUniqueKey();
+          if (!processedNodes[key]) {
+            newNodes[key] = node;
+            processedNodes[key] = true;
+          }
+        });
+      }
+    });
+    if (recursive) {
+      currentNodes = Object.values(newNodes);
+    } else {
+      currentNodes = [];
     }
-  });
+  }
   return result;
 }

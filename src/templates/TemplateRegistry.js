@@ -11,27 +11,40 @@ class TemplateRegistry {
     this.toolsByContentType = {};
   }
 
+  registerTemplateForType(type, template) {
+    if (!this.templatesByContentType[type]) {
+      this.templatesByContentType[type] = [];
+    }
+    this.templatesByContentType[type].push(template);
+  }
+
   registerTemplate(descriptor) {
     const {id, appliesTo} = descriptor;
     console.log(`registered template '${descriptor.id}'`);
-    if (!this.toolsByContentType[appliesTo]) {
-      this.toolsByContentType[appliesTo] = [];
-    }
     const template = new Template(descriptor);
-    if (!this.templatesByContentType[appliesTo]) {
-      this.templatesByContentType[appliesTo] = [];
+    if (Array.isArray(appliesTo)) {
+      appliesTo.forEach(type => this.registerTemplateForType(type, template));
+    } else {
+      this.registerTemplateForType(appliesTo, template);
     }
-    this.templatesByContentType[appliesTo].push(template);
     this.templateById[id] = template;
+  }
+
+  registerToolForType(type, descriptor) {
+    if (!this.toolsByContentType[type]) {
+      this.toolsByContentType[type] = [];
+    }
+    this.toolsByContentType[type].push(descriptor);
   }
 
   registerTool(descriptor) {
     const {id, appliesTo} = descriptor;
     this.toolsById[id] = descriptor;
-    if (!this.toolsByContentType[appliesTo]) {
-      this.toolsByContentType[appliesTo] = [];
+    if (Array.isArray(appliesTo)) {
+      appliesTo.forEach(type => this.registerToolForType(type, descriptor));
+    } else {
+      this.registerToolForType(appliesTo, descriptor);
     }
-    this.toolsByContentType[appliesTo].push(descriptor);
   }
 
   getTemplate(id) {
@@ -39,6 +52,28 @@ class TemplateRegistry {
       throw new Error(`No template for type ${id} registered`)
     }
     return this.templateById[id];
+  }
+
+  getDefaultTemplateFor(typeUri) {
+    return this.getTemplateFor(typeUri, 'default');
+  }
+
+  getTemplateFor(typeUri, viewName) {
+    const searchName = viewName.toLowerCase();
+    const candidates = this.getViewsFor(typeUri, false);
+    if (candidates.length === 0)  {
+      console.log(`Error: No template registered for type ${typeUri}`);
+      return null;
+    }
+    let result = candidates.find(template => (template.name || '').toLowerCase() === searchName);
+    if (result) return result;
+    console.log(`Warning: Can't find view ${viewName} for ${typeUri}. Falling back to default or other`);
+    if (searchName !== 'default') {
+      result = candidates.find(template => (template.name || '').toLowerCase() === 'default');
+    }
+    if (result) return result;
+
+    return candidates[0];
   }
 
   getToolsFor(nodeType) {
@@ -49,38 +84,13 @@ class TemplateRegistry {
     return this.toolsById[toolId];
   }
 
-  // getAggregator(type) {
-  //   return this.aggregatorsByType[type];
-  // }
-
-  getViewsFor(type, aggregate) {
-    if (!this.templatesByContentType[type]) {
-      throw new Error(`No template for content type ${type} registered`)
+  getViewsFor(typeUri, aggregate) {
+    if (!this.templatesByContentType[typeUri]) {
+      throw new Error(`No template for content type ${typeUri} registered`)
     }
-    return this.templatesByContentType[type].filter(template => template.aggregate === aggregate);
+    // convert undefined to boolean
+    return this.templatesByContentType[typeUri].filter(template => !template.aggregate === !aggregate);
   }
-
-  // registerNavigationMaps(descriptor) {
-  //   if (!descriptor) {
-  //     throw new Error("Missing navigation map descriptor");
-  //   }
-  //   this.navigationMapByName = descriptor;
-  // }
-  //
-  // setStartMap(name) {
-  //   this.startMap = this.navigationMapByName[name];
-  //   if (!this.startMap) {
-  //     throw new Error(`Can't find start map ${name} `);
-  //   }
-  // }
-  //
-  // getMap(name) {
-  //   const result = this.navigationMapByName[name];
-  //   if (!result) {
-  //     throw new Error(`Can't find map ${name} `);
-  //   }
-  //   return result;
-  // }
 
 }
 

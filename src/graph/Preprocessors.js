@@ -69,8 +69,8 @@ export const preprocess = function preprocess(data, context, preprocessors) {
         break;
       }
       case DERIVE_ASSOCIATIONS: {
-        const {path, derived} = descriptor;
-        data[result] = deriveAssociations(data[TYPE_NODES], path, derived);
+        const {path, derived, recursive} = descriptor;
+        data[result] = deriveAssociations(data[TYPE_NODES], path, derived, recursive);
         break;
       }
       default:

@@ -7,10 +7,10 @@ import {getAssociated} from "@/graph/Analysis";
 import {Svg_} from "@/components/Svg";
 import {fit, roundCorners} from "@symb/util";
 import P from "prop-types";
-import Template from "@/templates/Template";
 import GraphNode from "@/graph/GraphNode";
 import ComponentFactory from "@symb/ComponentFactory";
 import {CLICK_OPAQUE} from "@/components/Constants";
+import TemplateRegistry from "@/templates/TemplateRegistry";
 
 const inspect = function inspect(associationName) {
   const lastPos = associationName.length - 1;
@@ -55,7 +55,6 @@ const traverseGraph = function traverseGraph(startNodes, scopeKeys, path) {
       sourceVizNode.outEdges = [];
       const associated = getAssociated(node, edgeType);
       associated.forEach(targetNode => {
-
         const targetKey = targetNode.getUniqueKey();
         if (scopeKeys && !scopeKeys[targetKey]) return;
 
@@ -121,12 +120,13 @@ class GraphViz extends Component {
     path: P.string.isRequired,
     w: P.number.isRequired,
     h: P.number.isRequired,
-    nodeTemplate: P.instanceOf(Template).isRequired
+    nodeAspectRatio: P.number,
+    viewName: P.string
   }
 
   createChildDescriptors(props) {
 
-    const {startNodes, scope, w, h, path, nodeTemplate, onNodeClick} = props;
+    const {startNodes, scope, w, h, nodeAspectRatio, path, viewName, onNodeClick} = props;
 
     let scopeKeys = null;
     if (scope) {
@@ -149,8 +149,8 @@ class GraphViz extends Component {
     const maxChildH = 0.85 * h / ((maxNodesPerLane || 1) + 1);
     const maxChildW = 0.5 * w / (lanes.length || 1);
     const maxAR = maxChildW / (maxChildH || 1);
-    const childAR = nodeTemplate.getAspectRatio();
     let childW, childH;
+    const childAR = nodeAspectRatio || 1;
     if (maxAR > childAR) { // height is limiting factor
       childH = maxChildH;
       childW = childH * childAR;
@@ -210,9 +210,12 @@ class GraphViz extends Component {
     const roundDist = 0.3 * edgeDist;
     const children = [];
     children.push(Svg_({style:{pointerEvents: 'none'}, width: w, height: h, children: lines.map(line => createSvgPath(line, roundDist))})._Svg);
-    const {width, height} = nodeTemplate.getSize();
 
-    vizNodes.forEach(vizNode => {children.push(Card_({data: vizNode.graphNode, template: nodeTemplate, onClick: onNodeClick, clickMode: CLICK_OPAQUE, spatial: fit(childW, childH, width, height, vizNode.pos.x - 0.5 * childW, vizNode.pos.y - 0.5 * childH)})._Card)});
+    vizNodes.forEach(vizNode => {
+      const template = TemplateRegistry.getTemplateFor(vizNode.graphNode.getTypeUri(), viewName || 'default');
+      const { width, height } = template.getSize();
+      children.push(Card_({data: vizNode.graphNode, template, onClick: onNodeClick, clickMode: CLICK_OPAQUE, spatial: fit(childW, childH, width, height, vizNode.pos.x - 0.5 * childW, vizNode.pos.y - 0.5 * childH)})._Card)
+    });
 
     return children;
   }
