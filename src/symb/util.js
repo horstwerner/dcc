@@ -100,8 +100,9 @@ export const roundCorners = function roundCorners(polygon, dist, closed) {
   const startP = closed ? interpolate(polygon[0], polygon[1], dist) : polygon[0];
   const segments = [`M${startP.x} ${startP.y}`];
   const maxI = closed ? polygon.length + 1 : (polygon.length - 1);
+  const len = polygon.length;
   for (let i = 1; i < maxI; i++) {
-    const cornerP = polygon[i];
+    const cornerP = polygon[i % len];
     const before = interpolate(cornerP, polygon[i - 1], dist);
     const after = interpolate(cornerP, polygon[(i + 1) % polygon.length], dist);
     segments.push(`L${before.x} ${before.y}Q${cornerP.x} ${cornerP.y} ${after.x} ${after.y}`);
