@@ -1,12 +1,6 @@
-import Component from "@symb/Component";
-import App from "@/App";
-
 class ComponentFactory {
   constructor() {
-    this.constructorByType = {
-      app: App,
-      div: Component
-    };
+    this.constructorByType = {};
   }
 
   registerType(constructor) {
