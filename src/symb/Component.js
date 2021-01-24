@@ -2,7 +2,7 @@ import P from 'prop-types';
 import {clone, isEmpty, isEqual, mapValues} from 'lodash';
 import {DEBUG_MODE, TRANSITION_DURATION} from '@/Config';
 import ComponentFactory from './ComponentFactory'
-import {getTransformString} from "@symb/util";
+import {cloneObject, getTransformString} from "@symb/util";
 import Tween from "@/arrangement/Tween";
 
 export function setStyle(dom, style) {
@@ -236,11 +236,7 @@ export default class Component {
         if (childDescriptors != null) {
           this.createChildren(childDescriptors, tween);
         }
-        this.innerProps = {...props};
-        //TODO: recursive clone of children plain objects
-        if (props.children) {
-          this.innerProps.children = clone(props.children);
-        }
+        this.innerProps = cloneObject(props);
       }
     }
   }

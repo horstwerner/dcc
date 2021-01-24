@@ -134,3 +134,21 @@ export const createCardNode = function createCardNode(contents, key) {
     return contents.createContextual();
   }
 }
+
+const cloneX = function (element) {
+  if (Array.isArray(element)) {
+    return element.map(a => cloneX(a));
+  } else if (element !== null && element !== undefined && element.constructor === Object) {
+    return cloneObject(element);
+  }
+  // other cases: primitive or not a plain JS object, don't clone
+  return element;
+}
+
+export const cloneObject = function cloneObject(object) {
+  const result = {};
+  Object.keys(object).forEach(key => {
+    result[key] = cloneX(object[key]);
+  });
+  return result;
+}
