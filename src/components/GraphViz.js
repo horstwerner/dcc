@@ -166,7 +166,7 @@ class GraphViz extends Component {
     let xCursor = childW;
 
     lanes.forEach(lane => {
-          let yCursor = (netLaneH - rasterH * (lane.length - 1)) / 2
+          let yCursor = (netLaneH - rasterH * (lane.length - 1) + childH) / 2
           const yStep = rasterH; //netLaneH / ((lane.length - 1) || 1);
           lane.forEach(node => {
             node.rank = sum(node.inEdges.map(edge => get(vizNodesByKey[edge.sourceKey],'pos.y'))) / (node.inEdges.length || 1);

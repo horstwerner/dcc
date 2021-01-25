@@ -130,7 +130,7 @@ export const getToolDescriptorsFromDb = function (onError) {
 
 
 export const getDataFromBackend = function(onError) {
-  const config = Cache.config;
+  const config = Cache.getConfig();
 
   /**
    * @type {Promise[]}

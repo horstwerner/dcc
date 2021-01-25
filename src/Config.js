@@ -1,5 +1,4 @@
 export const DEBUG_MODE = true;
-export const DURATION_REARRANGEMENT = 1000;
 
 if (DEBUG_MODE) {
   const error = console.error;
