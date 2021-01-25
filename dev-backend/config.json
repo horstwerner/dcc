@@ -1,4 +1,4 @@
 {
   "dataFiles": ["jira.csv", "teams.csv"],
-  "clientConfig": {"getGraph": false, "getTables":  ["jira:ticket", "jira:team"]}
+  "clientConfig": {"getGraph": false, "getTables":  ["jira:ticket", "jira:team"], "startTemplate":  "root"}
 }

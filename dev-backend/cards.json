@@ -222,16 +222,8 @@
       "name": "Compact",
       "appliesTo": "jira:ticket",
       "aggregate": false,
-      "size": {
-        "w": 220,
-        "h": 120
-      },
-      "background": {
-        "type": "rect",
-        "w": 220,
-        "h": 120,
-        "cornerRadius": "6px"
-      },
+      "size": { "w": 220, "h": 120},
+      "background": { "type": "rect", "w": 220, "h": 120, "cornerRadius": "6px"},
       "clickable": true,
       "colorcoding": {
         "type": "selection",
@@ -247,17 +239,9 @@
         {
           "key": "heading-large",
           "type": "textfield",
-          "x": 10,
-          "y": 35,
-          "w": 200,
-          "h": 50,
+          "x": 10, "y": 35, "w": 200, "h": 50,
           "attribute": "uri",
-          "style": {
-            "font-weight": "bold",
-            "color": "white",
-            "font-size": "30px",
-            "h-align": "center"
-          }
+          "style": {"font-weight": "bold", "color": "white", "font-size": "30px", "h-align": "center"}
         }
       ]
     },

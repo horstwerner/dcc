@@ -33,7 +33,7 @@ const FOCUS = 'focus';
 const HOVER_MENU = 'hover-menu';
 const TOOL_HEIGHT = 10;
 
-export default class App extends Component {
+class App extends Component {
 
   static type = APP;
   static className = css.app;
@@ -50,7 +50,6 @@ export default class App extends Component {
     this.state = {
       nextChildPos: MARGIN,
       currentData: Cache.rootNode,
-      currentTemplate: 'root',
       views: [],
       tools: [],
       activeTools: {},
@@ -89,7 +88,8 @@ export default class App extends Component {
               focusData: startData,
               dataLoaded: true
             });
-            this.setFocusCard(this.createFocusCard(startData, TemplateRegistry.getTemplate('root'), {}));
+            const { startTemplate } = Cache.getConfig();
+                this.setFocusCard(this.createFocusCard(startData, TemplateRegistry.getTemplate(startTemplate), {}));
           }
         });
     this.handleNodeClick = this.handleNodeClick.bind(this);
@@ -544,7 +544,7 @@ export default class App extends Component {
       })._Sidebar
     ];
   }
-};
+}
 
 ComponentFactory.registerType(App);
 

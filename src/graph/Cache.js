@@ -41,6 +41,10 @@ class Cache {
     this.config = config;
   }
 
+  getConfig() {
+    return this.config;
+  }
+
   createUri() {
     return `core:surrogate${this.idCount++}`;
   }

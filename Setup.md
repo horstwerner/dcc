@@ -15,4 +15,5 @@ open a console window, navigate to the application root directory and type `npm 
 
 ## Start the UI
 in the console (application root directory) type `npm start`
-A browser window or tab with the address http://localhost:3000/ should open
+A browser window or tab with the address http://localhost:8080/ should open
+
