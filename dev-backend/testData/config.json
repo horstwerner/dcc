@@ -1,0 +1,7 @@
+{
+  "dictionaryFile": "testData/dictionary.json",
+  "templateFile": "testData/templates.json",
+  "toolFile": "testData/tools.json",
+  "dataFiles": ["testData/jira.csv", "testData/teams.csv"],
+  "clientConfig": {"getGraph": false, "getTables":  ["jira:ticket", "jira:team"], "startTemplate":  "root"}
+}

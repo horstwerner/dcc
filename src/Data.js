@@ -97,7 +97,7 @@ export const getClientConfig = function (onError) {
 
 
 export const getCardDescriptorsFromDb = function (onError) {
-  return fetch('/api/cards')
+  return fetch('/api/templates')
       .then(handleResponse)
       .then(result => {
         const {constants, cards} = result.data;
