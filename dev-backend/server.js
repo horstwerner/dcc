@@ -34,74 +34,23 @@ const compressArray = function (jsonArray) {
   }
 };
 
-router.get("/dictionary", (req, res) => {
-  return res.json({success: true, data: dictionary});
-});
-
-router.get("/data", (req, res) => {
-  const type = req.query && req.query.type;
-  console.log(`requested: ${type}`);
-  if (tablesByType[type]) {
-    return res.json({success: true, data: tablesByType[type]});
-  } else {
-    return res.json({success: false, message: `unknown entity type: ${type}`});
-  }
-});
-
-router.get("/graph", (req, res) => {
-  console.log(`serving graph`);
-  return res.json({success: true, data: nodeArray});
-});
-
-router.get("/config", (req, res) => {
-  console.log(`serving config`);
-  return res.json({success: true, data: config['clientConfig']});
-});
-
-router.get("/cards", (req, res) => {
-  let templates;
-  try {
-    const data = fs.readFileSync(path.join(__dirname, 'cards.json'), 'utf-8');
-    templates = JSON.parse(data.toString());
-  } catch (err) {
-    throw new Error(`Couldn't load data: ${err}`);
-  }
-  console.log(`serving cards`);
-  return res.json({success: true, data: templates});
-});
-
-router.get("/tools", (req, res) => {
-  let tools;
-  try {
-    const data = fs.readFileSync(path.join(__dirname, 'tools.json'), 'utf-8');
-    tools = JSON.parse(data.toString());
-  } catch (err) {
-    throw new Error(`Couldn't load data: ${err}`);
-  }
-  console.log(`serving tools`);
-  return res.json({success: true, data: tools});
-});
-
-app.use(express.static('static'));
-app.use("/api", router);
-
-const parentDir = __dirname.substring(0, __dirname.lastIndexOf(path.sep));
-
-app.use(express.static(path.join(parentDir, 'build')));
-
-app.get('/', function (req, res) {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-
-const configPath = path.join(__dirname, 'config.json');
+const configPath = path.join(__dirname, `data/config.json`);
 try {
   const configData = fs.readFileSync(configPath, 'utf-8');
    config = JSON.parse(configData.toString());
 } catch (err) {
-  throw new Error(`Couldn't load config file: ${err}`);
+  try {
+    const fallbackPath = path.join(__dirname, 'testData/config.json');
+    const configData = fs.readFileSync(fallbackPath, 'utf-8');
+    config = JSON.parse(configData.toString());
+  } catch (err) {
+    throw new Error(`Couldn't load config file: ${err}`);
+  }
 }
 
-const dicPath = path.join(__dirname, 'dictionary.json');
+const {dictionaryFile, templateFile, toolFile, dataFiles, clientConfig} = config;
+
+const dicPath = path.join(__dirname, dictionaryFile);
 try {
   const dicdata = fs.readFileSync(dicPath, 'utf-8');
   dictionary = JSON.parse(dicdata.toString())['TypeDictionary'];
@@ -109,7 +58,7 @@ try {
   throw new Error(`Couldn't load dictionary: ${err}`);
 }
 
-const {dataFiles, clientConfig} = config;
+
 if (!dataFiles) {
   throw new Error(`Missing key 'dataFiles' in config.json`);
 }
@@ -137,6 +86,67 @@ dataFiles.forEach(fileName => {
     throw new Error(`Couldn't load tickets: ${err}`);
   }
 });
+
+
+router.get("/dictionary", (req, res) => {
+  return res.json({success: true, data: dictionary});
+});
+
+router.get("/data", (req, res) => {
+  const type = req.query && req.query.type;
+  console.log(`requested: ${type}`);
+  if (tablesByType[type]) {
+    return res.json({success: true, data: tablesByType[type]});
+  } else {
+    return res.json({success: false, message: `unknown entity type: ${type}`});
+  }
+});
+
+router.get("/graph", (req, res) => {
+  console.log(`serving graph`);
+  return res.json({success: true, data: nodeArray});
+});
+
+router.get("/config", (req, res) => {
+  console.log(`serving config`);
+  return res.json({success: true, data: config['clientConfig']});
+});
+
+router.get("/templates", (req, res) => {
+  let templates;
+  try {
+    const data = fs.readFileSync(path.join(__dirname, templateFile), 'utf-8');
+    templates = JSON.parse(data.toString());
+  } catch (err) {
+    throw new Error(`Couldn't load data: ${err}`);
+  }
+  console.log(`serving cards`);
+  return res.json({success: true, data: templates});
+});
+
+router.get("/tools", (req, res) => {
+  let tools;
+  try {
+    const data = fs.readFileSync(path.join(__dirname, toolFile), 'utf-8');
+    tools = JSON.parse(data.toString());
+  } catch (err) {
+    throw new Error(`Couldn't load data: ${err}`);
+  }
+  console.log(`serving tools`);
+  return res.json({success: true, data: tools});
+});
+
+app.use(express.static('static'));
+app.use("/api", router);
+
+const parentDir = __dirname.substring(0, __dirname.lastIndexOf(path.sep));
+
+app.use(express.static(path.join(parentDir, 'build')));
+
+app.get('/', function (req, res) {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
 
 app.listen(API_PORT, function(){
   console.log('Development Control Center mock backend is running');

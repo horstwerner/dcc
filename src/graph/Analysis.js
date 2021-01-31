@@ -121,7 +121,7 @@ export const deriveAssociations = function deriveAssociations(sourceNodes, path,
   let currentNodes = sourceNodes;
   while (currentNodes.length > 0) {
     let newNodes = {};
-    currentNodes  .forEach(node => {
+    currentNodes.forEach(node => {
       const associated = traverse(node, path);
       associated.delete(node);
       if (associated.size !== 0) {
