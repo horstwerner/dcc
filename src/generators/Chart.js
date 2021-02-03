@@ -22,6 +22,7 @@ const fillInNumber = function fillInNumber(data, valueString) {
 }
 
 const NodeArray = function NodeArray(source) {
+  if (!source) return null;
   return Array.isArray(source) ? source : [source];
 }
 

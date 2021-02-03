@@ -128,6 +128,8 @@ class GraphViz extends Component {
 
     const {startNodes, scope, w, h, nodeAspectRatio, path, viewName, onNodeClick} = props;
 
+    if (!startNodes) return null;
+
     let scopeKeys = null;
     if (scope) {
       scopeKeys = {};
