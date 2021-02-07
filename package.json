@@ -3,14 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@babel/preset-env": "^7.3.1",
-    "tree-kill": ">=1.2.2",
-    "elliptic": ">=6.5.3",
-    "concurrently": "^4.1.0",
-    "lodash": "^4.17.20",
-    "npm": "^6.14.6",
-    "webpack": "^4.44.2",
-    "prop-types": "^15.6.2"
+    "lodash": "^4.17.20"
   },
   "scripts": {
     "start": "concurrently \"cd dev-backend && node server.js\" \"webpack-dev-server -d --open --env.development\"",
@@ -32,15 +25,20 @@
   "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
   "main": "index.js",
   "devDependencies": {
+    "prop-types": "^15.6.2",
     "@babel/core": "^7.3.3",
+    "@babel/preset-env": "^7.3.1",
     "@babel/plugin-proposal-class-properties": "^7.3.3",
     "babel-loader": "^8.0.5",
     "babel-preset-env": "^1.7.0",
     "css-loader": "0.28.11",
+    "concurrently": "^4.1.0",
     "html-webpack-plugin": "^3.2.0",
     "mini-css-extract-plugin": "^0.5.0",
     "style-loader": "^0.23.1",
     "webpack-cli": "^3.2.3",
+    "webpack": "^4.44.2",
+    "npm": "^6.14.6",
     "webpack-combine-loaders": "^2.0.4",
     "webpack-dev-server": "^3.11.1"
   },

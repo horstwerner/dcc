@@ -62,7 +62,7 @@ module.exports = function(webpackEnv) {
     mode: isEnvProduction ? 'production' : isEnvDevelopment && 'development',
     // Stop compilation early in production
     bail: isEnvProduction,
-    devtool: 'inline-source-map',
+    devtool: isEnvProduction ? '' : 'inline-source-map',
     devServer: {
       proxy: {
             '/api': 'http://localhost:3001',
