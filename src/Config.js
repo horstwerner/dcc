@@ -1,4 +1,5 @@
 export const DEBUG_MODE = true;
+export const OFFLINE_MODE = false;
 
 if (DEBUG_MODE) {
   const error = console.error;

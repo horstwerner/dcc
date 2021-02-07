@@ -1,6 +1,13 @@
 import {omit} from "lodash";
 import Cache from "@/graph/Cache";
 import TemplateRegistry from "@/templates/TemplateRegistry";
+import {OFFLINE_MODE} from "@/Config";
+import {
+  getCardDescriptorsOffline,
+  getClientConfigOffline, getDataOffline,
+  getDictionaryOffline,
+  getToolDescriptorsOffline
+} from "@/OfflineData/pseudobackend";
 
 export const handleResponse = function (response) {
   if (response.ok) {
@@ -71,6 +78,9 @@ export const preprocess = function preprocess(constantList, templates) {
   processArray(constants, templates);
 }
 
+export const getDictionary = function (onError) {
+  return OFFLINE_MODE ? getDictionaryOffline(onError) : getDictionaryFromDb(onError);
+}
 
 export const getDictionaryFromDb = function (onError) {
   return fetch('/api/dictionary')
@@ -83,8 +93,11 @@ export const getDictionaryFromDb = function (onError) {
       });
 };
 
-
 export const getClientConfig = function (onError) {
+  return OFFLINE_MODE ? getClientConfigOffline(onError) : getClientConfigFromDB(onError);
+}
+
+export const getClientConfigFromDB = function (onError) {
   return fetch('/api/config')
       .then(handleResponse)
       .then(result => {
@@ -95,6 +108,9 @@ export const getClientConfig = function (onError) {
       });
 }
 
+export const getCardDescriptors = function (onError) {
+  return OFFLINE_MODE ? getCardDescriptorsOffline(onError) : getCardDescriptorsFromDb(onError);
+}
 
 export const getCardDescriptorsFromDb = function (onError) {
   return fetch('/api/templates')
@@ -112,6 +128,9 @@ export const getCardDescriptorsFromDb = function (onError) {
       });
 };
 
+export const getToolDescriptors = function (onError) {
+  return OFFLINE_MODE ? getToolDescriptorsOffline(onError) : getToolDescriptorsFromDb(onError);
+}
 
 export const getToolDescriptorsFromDb = function (onError) {
   return fetch('/api/tools')
@@ -128,8 +147,11 @@ export const getToolDescriptorsFromDb = function (onError) {
       });
 };
 
+export const getData = function (onError) {
+  return OFFLINE_MODE ? getDataOffline(onError) : getDataFromDB(onError);
+}
 
-export const getDataFromBackend = function(onError) {
+export const getDataFromDB = function(onError) {
   const config = Cache.getConfig();
 
   /**

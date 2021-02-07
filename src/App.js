@@ -17,13 +17,7 @@ import {ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 
 import {CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
-import {
-  getCardDescriptorsFromDb,
-  getClientConfig,
-  getDataFromBackend,
-  getDictionaryFromDb,
-  getToolDescriptorsFromDb
-} from "@/Data";
+import {getCardDescriptors, getClientConfig, getData, getDictionary, getToolDescriptors} from "@/Data";
 import {createFilterControl, updatedToolControl} from "@/Tools";
 
 const APP = 'app';
@@ -73,10 +67,10 @@ class App extends Component {
     this.nextChildIndex = 1;
     this.onResize(window.innerWidth, window.innerHeight);
 
-    Promise.all([getClientConfig(this.onError), getDictionaryFromDb(this.onError)])
-        .then(() => Promise.all([...getDataFromBackend(this.onError),
-          getCardDescriptorsFromDb(this.onError),
-          getToolDescriptorsFromDb(this.onError)]))
+    Promise.all([getClientConfig(this.onError), getDictionary(this.onError)])
+        .then(() => Promise.all([...getData(this.onError),
+          getCardDescriptors(this.onError),
+          getToolDescriptors(this.onError)]))
         .then(() => {
           if (!this.state.error) {
             const startData = new GraphNode(TYPE_AGGREGATOR, Cache.createUri());
