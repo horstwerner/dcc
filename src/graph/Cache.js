@@ -108,6 +108,10 @@ class Cache {
   };
 
   importNodes(nodeArray) {
+    if (!nodeArray) {
+      console.log('Warning: Cache.importNodes called without argument');
+      return;
+    }
     nodeArray.forEach(rawNode => {
       const { id, type } = rawNode;
       const node = this.getNode(type, id);

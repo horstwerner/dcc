@@ -1,5 +1,4 @@
 const path = require("path");
-const webpack = require("webpack");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
@@ -7,7 +6,6 @@ module.exports = function(webpackEnv) {
   const isEnvDevelopment = webpackEnv.development;
   const isEnvProduction = webpackEnv.production;
   console.log(webpackEnv);
-  const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false';
 
   return ({
     entry: "./src/index.js",
@@ -64,7 +62,7 @@ module.exports = function(webpackEnv) {
     mode: isEnvProduction ? 'production' : isEnvDevelopment && 'development',
     // Stop compilation early in production
     bail: isEnvProduction,
-    devtool: 'inline-source-map',
+    devtool: isEnvProduction ? '' : 'inline-source-map',
     devServer: {
       proxy: {
             '/api': 'http://localhost:3001',

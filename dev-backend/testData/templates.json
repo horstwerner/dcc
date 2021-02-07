@@ -124,7 +124,7 @@
       },
       "background": {
         "type": "image",
-        "source": "/images/SimpleCard.svg",
+        "source": "images/SimpleCard.svg",
         "w": 220,
         "h": 120,
         "cornerRadius": 6
