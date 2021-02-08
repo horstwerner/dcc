@@ -13,6 +13,7 @@ class RadioButtons extends Component {
 
   static type = RADIO;
   static className = css.radioBar;
+
   static propTypes = {
     options: P.arrayOf(P.shape({id: P.string.isRequired, name: P.string.isRequired, onSelect: P.func.isRequired})),
     selectedId: P.string.isRequired,
@@ -24,6 +25,7 @@ class RadioButtons extends Component {
 
   updateDom(props, tween) {
     const { orientation } = props;
+    this.dom.className = orientation === VERTICAL ? css.radioPanel : css.radioBar;
     this.updateStyle({flexDirection: (orientation === VERTICAL ? 'column' : 'row')});
   }
 

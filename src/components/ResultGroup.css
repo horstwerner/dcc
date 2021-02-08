@@ -1,0 +1,53 @@
+.group, .header, .list {
+}
+
+.header {
+  position: relative;
+  top: -1px;
+  padding-left: 4px;
+  padding-top: 5px;
+  padding-bottom: 4px;
+  color: #404040;
+  font-size: 16px;
+  background-color: #EEEEEA;
+  border-bottom: solid 1px #bfbfbb;
+  border-top: solid 1px #bfbfbb;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  max-height: 200px;
+  overflow-x: hidden;
+}
+
+.listItem {
+  padding: 3px 3px 3px 4px;
+  font-size: 13px;
+  color: #404040;
+  cursor: pointer;
+}
+
+.listItem:hover, .listItem:focus {
+  background-color: #EEEEEA;
+  outline: none;
+}
+
+.list::-webkit-scrollbar {
+  width: 12px;
+}
+.list::-webkit-scrollbar-thumb {
+  background-color: #cccccc;
+  width: 100%;
+  border-radius: 6px;
+  cursor: grab;
+  transition: background-color 0.4s;
+}
+.list::-webkit-scrollbar-thumb:vertical:hover {
+  background-color: #a3a3a3;
+}
+.list::-webkit-scrollbar-track {
+  background-color: #f0f0f0;
+  height: 100%;
+  border-left: solid 1px #e6e6e6;
+}

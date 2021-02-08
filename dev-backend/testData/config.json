@@ -3,5 +3,5 @@
   "templateFile": "testData/templates.json",
   "toolFile": "testData/tools.json",
   "dataFiles": ["testData/jira.csv", "testData/teams.csv"],
-  "clientConfig": {"getGraph": false, "getTables":  ["jira:ticket", "jira:team"], "startTemplate":  "root"}
+  "clientConfig": {"getGraph": false, "getTables":  ["jira:ticket", "jira:team"], "startTemplate":  "root", "displayNameAttribute":  "core:name"}
 }

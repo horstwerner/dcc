@@ -1,3 +1,4 @@
+import {mapValues} from 'lodash';
 import Type from './Type';
 import GraphNode from './GraphNode';
 
@@ -39,6 +40,9 @@ class Cache {
 
   setConfig(config) {
     this.config = config;
+    if (!this.config.displayNameAttribute){
+      this.config.displayNameAttribute = 'core:name';
+    }
   }
 
   getConfig() {
@@ -99,6 +103,20 @@ class Cache {
     return (this.rootNode[nodeType] || []).map(callback);
   };
 
+  search(searchTerm) {
+
+    const searchString = searchTerm.toLowerCase().replace(String.fromCharCode(160), ' ');
+
+    const typeHits = mapValues(this.rootNode, (value) => value.filter(node => {
+      const name = node.getDisplayName();
+         return !!name && String(name).toLowerCase().includes(searchString)}
+         ));
+
+    return Object.keys(typeHits).filter(typeUri => typeHits[typeUri].length > 0).map(typeUri => ({
+      nodeType: this.getType(typeUri),
+      results: typeHits[typeUri]
+    }));
+  }
 
   importTypes(typeArray) {
     for (let i = 0; i < typeArray.length; i++) {

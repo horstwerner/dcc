@@ -13,9 +13,27 @@ export class Div extends Component {
   };
 
   updateDom(props) {
-    const { onClick } = props;
+    const { onClick, contentEditable, onFocus, onBlur, onKeyDown, onKeyUp, tabIndex } = props;
     if (onClick) {
       this.dom.onclick = onClick;
+    }
+    if (contentEditable) {
+      this.dom.contentEditable = contentEditable;
+    }
+    if (onFocus) {
+      this.dom.onfocus = onFocus;
+    }
+    if (onBlur) {
+      this.dom.onblur = onBlur
+    }
+    if (onKeyUp) {
+      this.dom.onkeyup = onKeyUp;
+    }
+    if (onKeyDown) {
+      this.dom.onkeydown = onKeyDown;
+    }
+    if (tabIndex) {
+      this.dom.tabIndex = tabIndex;
     }
   }
 }
