@@ -57,6 +57,11 @@ export default class GraphNode {
     return this.originalNode ? this.originalNode.type.uri : this.type.uri;
   };
 
+  getDisplayName() {
+    return this[Cache.getConfig().displayNameAttribute] || this.uri;
+  }
+
+
   // noinspection JSUnusedGlobalSymbols
   isOfType (typeUri) {
     let curParent = this.type;

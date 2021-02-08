@@ -1,5 +1,5 @@
 import P from 'prop-types';
-import {clone, isEmpty, isEqual, mapValues} from 'lodash';
+import {isEmpty, isEqual, mapValues} from 'lodash';
 import {DEBUG_MODE, TRANSITION_DURATION} from '@/Config';
 import ComponentFactory from './ComponentFactory'
 import {cloneObject, getTransformString} from "@symb/util";
@@ -158,6 +158,10 @@ export default class Component {
     child.update({spatial});
     child.parent = this;
     this.addChild(child);
+  }
+
+  getChild(key) {
+    return this.childByKey[key];
   }
 
   createChildren(descriptor, tween) {

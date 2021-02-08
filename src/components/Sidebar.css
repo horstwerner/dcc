@@ -13,6 +13,29 @@
     box-shadow: inset 1px 1px 2px 0 rgba(0,0,0,0.15);
 }
 
+.searchInput {
+    position: absolute;
+    height: 21px;
+    top: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+    border: solid 2px transparent;
+    padding-top: 5px;
+    padding-left: 8px;
+    border-right: 32px solid transparent;
+    border-radius: 16px;
+    font-size: 14px;
+    color: #404040;
+    width: 134px;
+}
+
+.searchInput:focus {
+    border: solid 2px #808080;
+    padding-right: 32px;
+    /*border-right: 32px solid #808080;*/
+    outline: none;
+}
+
 .searchButton {
     opacity: 0.5;
     position: absolute;
@@ -24,4 +47,13 @@
     width: 28px;
     height: 28px;
     border-radius: 14px;
+    cursor: pointer;
+}
+
+.searchButton:hover {
+    opacity: 0.7;
+}
+
+.searchButton:active {
+    opacity: 0.9;
 }

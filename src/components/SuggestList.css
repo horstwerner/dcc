@@ -1,0 +1,20 @@
+.suggestList {
+  user-select: none ;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  max-height: 800px;
+  transform-origin: 0 0;
+  background-color: #FEFEFE;
+  overflow: hidden;
+  border-radius: 6px;
+  border: solid 1px #bfbfbb;
+  box-shadow: 6px 6px 6px 0 rgba(0,0,0,0.2), 0 0 4px 2px rgba(0,0,0,0.12);
+  z-index: 10;
+}
+
+.emptyLabel {
+  font-size: 16px;
+  color: #404040;
+  padding: 4px;
+}

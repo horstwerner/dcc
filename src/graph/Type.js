@@ -18,4 +18,8 @@ export default class Type extends CheckedObject{
     }
     return this.inverseType || fallbackTargettype;
   }
+
+  getName() {
+    return this.name;
+  }
 }

@@ -96,7 +96,11 @@ class App extends Component {
     this.removeToolFilter = this.removeToolFilter.bind(this);
     this.setToolFilter = this.setToolFilter.bind(this);
     this.handleOptionSelect = this.handleOptionSelect.bind(this);
+    this.handleKeyUp = this.handleKeyUp.bind(this);
+    this.handleSearchResultClick = this.handleSearchResultClick.bind(this);
     this.onError = this.onError.bind(this);
+
+    document.body.onkeyup = this.handleKeyUp;
   }
 
   onError(error) {
@@ -116,6 +120,16 @@ class App extends Component {
 
   getBreadcrumbLane() {
     return this.childByKey[BREADCRUMBS];
+  }
+
+  handleKeyUp(event) {
+    if (event.key === 'Escape') {
+      this.removeModals();
+    }
+  }
+
+  removeModals() {
+    this.getChild(SIDEBAR).clearSearch();
   }
 
 
@@ -153,17 +167,17 @@ class App extends Component {
 
     if (component.parent.key === BREADCRUMBS) {
       this.cloneNodeToFocus(component);
-    } else {
+    } else if (component.key !== this.state.focusCard.key) {
       this.cloneNodeToHover(component);
     }
   }
 
 
   cloneNodeToFocus(component) {
-    const { data, template } = component.innerProps;
+    const { data, template, options } = component.innerProps;
     const spatial = component.getRelativeSpatial(this.getFocusPlane());
 
-    const newFocusCard = Card_({ key: this.createChildKey(), data, hover: false, template, spatial,
+    const newFocusCard = Card_({ key: this.createChildKey(), data, hover: false, template, options, spatial,
       onClick: this.handleNodeClick, clickMode: CLICK_TRANSPARENT, style: { zIndex: 2 } })._Card
     this.setState({hoverCard: newFocusCard, allowInteractions: false});
     this.moveCardToFocus(newFocusCard, data);
@@ -171,17 +185,17 @@ class App extends Component {
 
 
   cloneNodeToHover(component) {
-    const { data, template } = component.innerProps;
+    const { data, template, options } = component.innerProps;
     const { mainWidth, focusHeight, breadCrumbHeight } = this.state;
 
     const spatial = component.getRelativeSpatial(this.getFocusPlane());
 
-    const clone = Card_({key: this.createChildKey(), data, hover: true, template, spatial, clickMode: CLICK_OPAQUE,
+    const clone = Card_({key: this.createChildKey(), data, hover: true, template, options, spatial, clickMode: CLICK_OPAQUE,
       onClick: this.handleHoverCardPin,
       style: {zIndex: 2}})._Card
     this.setState({hoverCard: clone, allowInteractions: false});
 
-    const newSpatial = this.calcHoverCardSpatial({hoverCard: clone, mainWidth, focusHeight, breadCrumbHeight});
+    const newSpatial = this.calcHoverCardSpatial({template, mainWidth, focusHeight, breadCrumbHeight});
     this.transitionToState({hoverCard:{...clone, spatial: newSpatial}}).onEndCall(() => {
           this.setState({allowInteractions: true});
         }
@@ -193,6 +207,7 @@ class App extends Component {
     const { focusCard } = this.state;
     const targetState = this.createStateForFocus(newFocusCard, data);
     const endState = {focusCard: {...targetState.focusCard, style: {zIndex: 0}}};
+    this.removeModals();
     this.moveCardToBreadcrumbs(focusCard, targetState, endState);
   }
 
@@ -290,7 +305,7 @@ class App extends Component {
       console.log(`----------------------------------------------------------`);
       console.log(`focus data is ${data.getSummary()}`);
     }
-    //TODO: More elegant way to deal with root card
+
     const { template } = focusCard;
     const { aggregate } = template;
     let nodeTypeUri = 'core:start';
@@ -434,9 +449,29 @@ class App extends Component {
   }
 
 
-  calcHoverCardSpatial({hoverCard, mainWidth, focusHeight}) {
-    const { width, height } = hoverCard.template.getSize();
+  calcHoverCardSpatial({template, mainWidth, focusHeight}) {
+    const { width, height } = template.getSize();
     return fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, width, height, MARGIN,MARGIN,1.2);
+  }
+
+
+  handleSearchResultClick(node) {
+
+    const {hoverCard} = this.state;
+    if (hoverCard && hoverCard.data === node) {
+      this.handleHoverCardPin();
+      return;
+    }
+
+    const template = TemplateRegistry.getTemplateFor(node.getTypeUri(), 'default');
+    const { mainWidth, focusHeight, breadCrumbHeight } = this.state;
+
+    const spatial = this.calcHoverCardSpatial({template, mainWidth, focusHeight, breadCrumbHeight});
+    const newHoverCard = Card_({key: this.createChildKey(), data:node, hover: true, template, spatial, clickMode: CLICK_OPAQUE,
+      onClick: this.handleHoverCardPin,
+      style: {zIndex: 2}})._Card
+
+    this.setState({hoverCard: newHoverCard, allowInteractions: true});
   }
 
 
@@ -455,7 +490,7 @@ class App extends Component {
 
     if (hoverCard) {
       layoutState.hoverCard = {...hoverCard,
-        spatial: this.calcHoverCardSpatial({hoverCard, mainWidth, focusHeight, breadCrumbHeight})}
+        spatial: this.calcHoverCardSpatial({template: hoverCard.template, mainWidth, focusHeight, breadCrumbHeight})}
     }
 
     if (focusCard) {
@@ -535,6 +570,7 @@ class App extends Component {
         onOptionSelect: this.handleOptionSelect,
         onToolToggle: this.handleToolToggle,
         onViewClick: this.handleViewSelect,
+        onSearchResultClick: this.handleSearchResultClick
       })._Sidebar
     ];
   }
