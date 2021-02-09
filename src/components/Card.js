@@ -4,7 +4,7 @@ import css from './Card.css';
 import {resolveAttribute, TYPE_CONTEXT} from "@/graph/Cache";
 import ComponentFactory from "@symb/ComponentFactory";
 import Template from "@/templates/Template";
-import {Background, Caption, ChildSet} from "@/components/Generators";
+import {Background, Caption, ChildSet, Link} from "@/components/Generators";
 import Chart from "@/generators/Chart";
 import Trellis from "@/generators/Trellis"
 import {fillIn} from "@symb/util";
@@ -81,6 +81,12 @@ class Card extends Component {
           });
         }
           break;
+        case 'link': {
+          const { urlAttribute } = element;
+          const url =  String(resolveAttribute(data, urlAttribute));
+          childDescriptor = Link({...element, url});
+          break;
+        }
         case 'trellis': {
           childDescriptor = Trellis( data,  element, onClick, CLICK_NORMAL);
           break;

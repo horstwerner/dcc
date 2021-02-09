@@ -35,7 +35,7 @@ export default class Template extends CheckedObject{
     elements: P.arrayOf(P.shape(
         {
           key: P.string.isRequired,
-          type: P.oneOf(["caption","textfield","card","cards","chart","trellis"]).isRequired,
+          type: P.oneOf(["caption","textfield","card","cards","chart","trellis","link"]).isRequired,
           source: P.string,
           aggregate: P.object,
           template: P.string,

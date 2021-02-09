@@ -214,6 +214,20 @@
               "$": "TEXT_COLOR"
             }
           }
+        },
+        {
+          "key": "link",
+          "type": "link",
+          "x": 130,
+          "y": 82,
+          "w": 50,
+          "h": 12,
+          "urlAttribute": "core:url",
+          "style": {
+            "font-size": "12px",
+            "font-weight": "normal"
+          },
+          "text": "Jira Link"
         }
       ]
     },

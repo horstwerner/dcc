@@ -18,6 +18,7 @@ import {Card_} from "@/components/Card";
 import CompactGridArrangement from "@/arrangement/CompactGridArrangement";
 import {preprocess} from "@/graph/Preprocessors";
 import hoverMenuCss from './HoverCardMenu.css';
+import {Link_} from "@/components/Link";
 
 const PADDING = 0.2;
 const KEY_BACKGROUND = 'background';
@@ -63,22 +64,24 @@ Background.propTypes = {
   cornerRadius: P.number
 }
 
-function calcStyle(styleDescriptor, h) {
+export function calcStyle(styleDescriptor, h) {
   if (!styleDescriptor) return null;
   const result = { fontSize: h};
   Object.keys(styleDescriptor).forEach(key => {
     const value = styleDescriptor[key];
     switch (key) {
       case 'color':
+      case 'background-color':
+      case 'border-radius':
       case 'font-weight':
       case 'font-size':
+      case 'padding':
       case 'font-family':
         result[key] = value;
         break;
       case 'h-align':
-        if (value === 'center') {
-          result.margin = 'auto';
-        }
+        result['text-align'] = value;
+        break;
     }
   });
   return result;
@@ -97,6 +100,15 @@ export const Caption = function Caption(props) {
 }
 
 Caption.propTypes = CAPTION_PROPS;
+
+export const Link = function Link(props) {
+  const {key, x, y, w, h, text, image, style, url} = props;
+
+  const child = text ? Div_({key: 'button', size:{width: w, height: h}, style: calcStyle(style, h)}, text)._Div :
+      Image_({key: 'icon', source: image, width: w, height: h, cornerRadius: style && style.cornerRadius})._Image
+
+  return Link_({key, spatial: {x, y, scale: 1}, url}, child)._Link
+}
 
 
 export function createArrangement(descriptor, childSize) {
