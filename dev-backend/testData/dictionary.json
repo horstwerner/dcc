@@ -31,6 +31,12 @@
       "isAssociation": false
     },
     {
+      "uri": "core:url",
+      "dataType": "STRING",
+      "name": "URL",
+      "isAssociation": false
+    },
+    {
       "uri": "jira:ticket",
       "dataType": "ENTITY",
       "name": "Ticket",
