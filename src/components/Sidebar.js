@@ -64,6 +64,10 @@ class Sidebar extends Component {
     this.setState({currentSearchResults: Cache.search(searchString)})
   }
 
+  focusSearchBox() {
+    this.getChild(SEARCH_FIELD).getChild(SEARCH_INPUT).dom.focus();
+  }
+
   clearSearch() {
     const dom = this.getChild(SEARCH_FIELD).getChild(SEARCH_INPUT).dom;
     dom.innerText = '';

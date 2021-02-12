@@ -152,3 +152,8 @@ export const cloneObject = function cloneObject(object) {
   });
   return result;
 }
+
+export const nodeArray = function NodeArray(source) {
+  if (!source) return null;
+  return Array.isArray(source) ? source : [source];
+}

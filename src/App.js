@@ -64,6 +64,10 @@ class App extends Component {
       error: null,
     };
 
+    window.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+    }, false);
+
     this.nextChildIndex = 1;
     this.onResize(window.innerWidth, window.innerHeight);
 
@@ -97,10 +101,12 @@ class App extends Component {
     this.setToolFilter = this.setToolFilter.bind(this);
     this.handleOptionSelect = this.handleOptionSelect.bind(this);
     this.handleKeyUp = this.handleKeyUp.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleSearchResultClick = this.handleSearchResultClick.bind(this);
     this.onError = this.onError.bind(this);
 
     document.body.onkeyup = this.handleKeyUp;
+    document.body.onkeydown = this.handleKeyDown;
   }
 
   onError(error) {
@@ -122,16 +128,28 @@ class App extends Component {
     return this.childByKey[BREADCRUMBS];
   }
 
+  handleKeyDown(event) {
+    if (event.key === 'f' && (event.ctrlKey || event.altKey)) {
+      event.preventDefault();
+    }
+  }
+
   handleKeyUp(event) {
     if (event.key === 'Escape') {
-      this.removeModals();
+      const { hoverCard } = this.state;
+      if (hoverCard) {
+        this.setState({hoverCard: null});
+      } else {
+        this.removeModals();
+      }
+    } else if (event.key === 'f' && (event.ctrlKey || event.altKey)) {
+      this.getChild(SIDEBAR).focusSearchBox();
     }
   }
 
   removeModals() {
     this.getChild(SIDEBAR).clearSearch();
   }
-
 
   handleHoverCardStash() {
     const { hoverCard } = this.state;
@@ -159,13 +177,13 @@ class App extends Component {
   }
 
 
-  handleNodeClick({component}) {
+  handleNodeClick({event, component}) {
     // const {id} = clickData;
     // const node = Cache.getNodeByUniqueKey(id);
     // const template = TemplateRegistry.getTemplate(node.type.uri);
     // this.setState({inspectionCard: {template, data: node}});
 
-    if (component.parent.key === BREADCRUMBS) {
+    if (event.button === 0) {
       this.cloneNodeToFocus(component);
     } else if (component.key !== this.state.focusCard.key) {
       this.cloneNodeToHover(component);
@@ -445,7 +463,7 @@ class App extends Component {
   calcFocusCardSpatial({focusCard, mainWidth, focusHeight}) {
     const { width, height } = focusCard.template.getSize();
     return fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN - TOOL_HEIGHT, width,
-        height, MARGIN,  MARGIN, 1.2);
+        height, MARGIN,  MARGIN, 2);
   }
 
 

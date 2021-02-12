@@ -1,6 +1,6 @@
 export default class Arrangement {
 
-  constructor(padding, childSize) {
+  constructor(padding, childSize, maxScale) {
     this.xOffset = 0;
     this.yOffset = 0;
     this.areaw = 0;
@@ -9,6 +9,7 @@ export default class Arrangement {
     this.outerpadding = 0;
     this.childSize = childSize;
     this.compact = false;
+    this.maxScale = maxScale;
   };
 
   setOffset(xOffset, yOffset) {

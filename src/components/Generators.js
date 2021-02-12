@@ -12,7 +12,7 @@ import {Image_} from "@symb/Image";
 import {GRID} from "@/arrangement/GridArrangement";
 import Aggregator from "@/Aggregator";
 import TemplateRegistry from "@/templates/TemplateRegistry";
-import {createCardNode, fit, flexContentAlign} from "@symb/util";
+import {createCardNode, fit, flexContentAlign, nodeArray} from "@symb/util";
 import {CardSet_, LOD_FULL, LOD_RECT} from "@/components/CardSet";
 import {Card_} from "@/components/Card";
 import CompactGridArrangement from "@/arrangement/CompactGridArrangement";
@@ -121,8 +121,8 @@ export function createArrangement(descriptor, childSize) {
   // console.log(`rendering card set with ${width}/${height}`);
   switch (type) {
     case GRID:
-      const {x, y, w, h, padding } = descriptor;
-      return new CompactGridArrangement(padding == null ? PADDING : padding, childSize)
+      const {x, y, w, h, padding, maxScale } = descriptor;
+      return new CompactGridArrangement(padding == null ? PADDING : padding, childSize, maxScale)
           .setArea(w, h)
           .setOffset(x, y)
   }
@@ -168,9 +168,9 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
 
   let nodes;
   if (!source || source === 'this') {
-    nodes = data;
+    nodes = nodeArray(data);
   } else {
-    nodes = resolve(data, source);
+    nodes = nodeArray(resolve(data, source));
   }
 
   if (!nodes) return null;
