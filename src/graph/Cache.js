@@ -265,7 +265,7 @@ export const resolve = function (node, path) {
   if (path.charAt(0) === '~') {
     return cacheInstance.getAllNodesOf(path.substring(1));
   } else {
-    return resolveAttribute(node, path);
+    return resolveProperty(node, path);
   }
 
 }

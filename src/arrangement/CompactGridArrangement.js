@@ -31,7 +31,9 @@ export default class GridArrangement extends Arrangement{
     const {width, height} = this.childSize;
     const padding = Math.min(width, height) * this.padding;
 
-    const childScale = Math.min(1, this.areaw / ((cols * width + (cols - 1) * padding) || 1), this.areah / ((rows * height + (rows - 1) * padding)) || 1);
+    const maxScale = this.maxScale || 1;
+
+    const childScale = Math.min(maxScale, this.areaw / ((cols * width + (cols - 1) * padding) || 1), this.areah / ((rows * height + (rows - 1) * padding) || 1));
 
     const xStep = (width + padding) * childScale;
     const yStep = (height + padding) * childScale;
