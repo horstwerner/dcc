@@ -74,17 +74,18 @@ class Card extends Component {
           break;
         case 'textfield': {
           const {attribute, ...rest} = element;
+          const value = resolveAttribute(data, attribute);
           childDescriptor = Caption({
             key: attribute,
-            text: String(resolveAttribute(data, attribute)),
+            text: value != null ? String(value) : '',
             ...rest
           });
         }
           break;
         case 'link': {
           const { urlAttribute } = element;
-          const url =  String(resolveAttribute(data, urlAttribute));
-          childDescriptor = Link({...element, url});
+          const url = resolveAttribute(data, urlAttribute);
+          childDescriptor = url && Link({...element, url});
           break;
         }
         case 'trellis': {
@@ -110,8 +111,8 @@ class Card extends Component {
         } else {
           childDescriptor.style = {...(childDescriptor.style || {}), pointerEvents: ''};
         }
+        children.push(childDescriptor);
       }
-      children.push(childDescriptor);
     });
 
     return children;
