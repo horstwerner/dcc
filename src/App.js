@@ -10,7 +10,7 @@ import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
 import {MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
-import {fit, relSpatial} from "@symb/util";
+import {fit, isDataEqual, relSpatial} from "@symb/util";
 import {createPreprocessedCardNode, hoverCardMenu} from "@/components/Generators";
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 import {ToolPanel_} from "@/components/ToolPanel";
@@ -276,9 +276,7 @@ class App extends Component {
   turnIntoBreadCrumbCard(sourceCard) {
     const { nextChildPos, breadCrumbHeight, mainWidth, breadCrumbCards} = this.state;
     const existing = breadCrumbCards.find(card =>
-        card.template === sourceCard.template &&
-        (card.data === sourceCard.data ||
-            (card.data[TYPE_NODES] != null && card.data[TYPE_NODES] === sourceCard.data[TYPE_NODES])));
+        card.template === sourceCard.template && isDataEqual(card.data, sourceCard.data));
     if (existing) {
       const pos = existing.spatial.x;
       return {
@@ -386,6 +384,9 @@ class App extends Component {
 
 
   updatedFocusCard(focusCard, focusData, filters) {
+    if (!focusData.getTypeUri() === TYPE_AGGREGATOR) {
+      throw new Error('UpdateFocusCard called for non-aggregate card');
+    }
     const data = createPreprocessedCardNode(applyFilters(Object.values(filters), focusData[TYPE_NODES]),
         {}, focusCard.template, focusData[TYPE_NAME]);
     return  {...focusCard, data};
@@ -462,14 +463,14 @@ class App extends Component {
 
   calcFocusCardSpatial({focusCard, mainWidth, focusHeight}) {
     const { width, height } = focusCard.template.getSize();
-    return fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN - TOOL_HEIGHT, width,
+    return fit(mainWidth - 2 * MARGIN, focusHeight - MARGIN - TOOL_HEIGHT, width,
         height, MARGIN,  MARGIN, 2);
   }
 
 
   calcHoverCardSpatial({template, mainWidth, focusHeight}) {
     const { width, height } = template.getSize();
-    return fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, width, height, MARGIN,MARGIN,1.2);
+    return fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, width, height, MARGIN,MARGIN,2);
   }
 
 
@@ -496,7 +497,7 @@ class App extends Component {
   recalcLayout({toolControls, windowWidth, windowHeight, focusCard, hoverCard}) {
     const sideBarWidth = Math.min(Math.min(SIDEBAR_PERCENT * windowWidth, SIDEBAR_MAX), 4 * windowHeight);
 
-    const breadCrumbHeight = 0.15 * windowHeight;
+    const breadCrumbHeight = 120;
     const toolControlList = Object.values(toolControls);
     // noinspection JSCheckFunctionSignatures
     const toolbarHeight = toolControlList.reduce((result, control) => Math.max(result, (control.size.height || 0)), 0) + 2 * MARGIN;

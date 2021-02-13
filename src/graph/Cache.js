@@ -164,6 +164,7 @@ class Cache {
       const nodeUri = row[idIndex];
       const newNode = this.getNode(typeUri, nodeUri);
       for (let colIdx = 0; colIdx < headerRow.length; colIdx ++) {
+        if (row[colIdx] == null || row[colIdx] === '') continue;
         let prop = headerRow[colIdx];
         let targetType;
         if (prop.includes('->')) {
@@ -264,7 +265,10 @@ export const resolve = function (node, path) {
 
   if (path.charAt(0) === '~') {
     return cacheInstance.getAllNodesOf(path.substring(1));
-  } else {
+  }  else if (path.charAt(0) === '#') {
+    return cacheInstance.getNode(null, path.substring(1));
+  }
+  else {
     return resolveProperty(node, path);
   }
 
