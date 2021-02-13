@@ -33,10 +33,16 @@ export default class GridArrangement extends Arrangement{
 
     const maxScale = this.maxScale || 1;
 
-    const childScale = Math.min(maxScale, this.areaw / ((cols * width + (cols - 1) * padding) || 1), this.areah / ((rows * height + (rows - 1) * padding) || 1));
+    const unscaledW = ((cols * width + (cols - 1) * padding) || 1);
+    const unscaledH =  ((rows * height + (rows - 1) * padding) || 1);
+
+    const childScale = Math.min(maxScale, this.areaw / unscaledW, this.areah / unscaledH);
 
     const xStep = (width + padding) * childScale;
     const yStep = (height + padding) * childScale;
+
+    const centerPaddingX = this.centerX ? (0.5 * (this.areaw - childScale * unscaledW)) : 0;
+    const centerPaddingY = this.centerY ? (0.5 * (this.areah - childScale * unscaledH)) : 0;
 
     let index = 0;
     for (let i = 0; i < elements.length; i++) {
@@ -45,8 +51,8 @@ export default class GridArrangement extends Arrangement{
       const col = index % cols;
 
       const rasterpos = {
-        x: this.xOffset + col * xStep,
-        y: this.yOffset + row * yStep,
+        x: this.xOffset + centerPaddingX + col * xStep,
+        y: this.yOffset + centerPaddingY + row * yStep,
         scale: childScale
       };
       callback(element, rasterpos);

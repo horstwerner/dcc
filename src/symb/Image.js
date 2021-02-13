@@ -18,6 +18,7 @@ export class Image extends Component {
 
     const {source, width, height, cornerRadius, onClick, color} = props;
     this.dom.setAttribute('src', source);
+    this.dom.setAttribute('draggable', false);
     if (cornerRadius) {
       this.dom.style.borderRadius = `${cornerRadius}px`;
     }

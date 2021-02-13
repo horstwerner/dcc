@@ -46,6 +46,12 @@ export default class Arrangement {
     return this;
   };
 
+  setCenter( centerX, centerY ) {
+    this.centerX = !!centerX;
+    this.centerY = !!centerY;
+    return this;
+  }
+
   setChildAspectRatio = function (ar) {
     this.childAspectRatio = ar;
     return this;

@@ -1,5 +1,5 @@
 import {mapValues} from 'lodash';
-import {resolveAttribute, TYPE_NAME} from "@/graph/Cache";
+import {resolveAttribute} from "@/graph/Cache";
 import {createCardNode} from "@symb/util";
 
 
@@ -32,9 +32,8 @@ export const sliceBy = function sliceBy(nodes, dimension) {
   }
   return new GroupedSet(dimension, keyArray,
       mapValues(subsets,(nodes, key) => {
-        const cardNode = createCardNode(nodes, `group-${key}`);
+        const cardNode = createCardNode(nodes, `group-${key}`, (key === EMPTY ? 'unspecified' : key));
         cardNode[dimension] = key;
-        cardNode[TYPE_NAME] = (key === EMPTY ? 'unspecified' : key);
         return cardNode;})
   );
 };
