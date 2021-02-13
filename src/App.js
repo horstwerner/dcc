@@ -3,7 +3,7 @@ import {get, omit} from 'lodash';
 import Component from '@symb/Component';
 import css from './App.css';
 import ComponentFactory from "@symb/ComponentFactory";
-import Cache, {TYPE_AGGREGATOR, TYPE_CONTEXT, TYPE_NODES} from './graph/Cache';
+import Cache, {TYPE_AGGREGATOR, TYPE_CONTEXT, TYPE_NAME, TYPE_NODES} from './graph/Cache';
 import TemplateRegistry from './templates/TemplateRegistry';
 import {Div_} from '@symb/Div';
 import {Card_} from "@/components/Card";
@@ -388,7 +388,7 @@ class App extends Component {
       throw new Error('UpdateFocusCard called for non-aggregate card');
     }
     const data = createPreprocessedCardNode(applyFilters(Object.values(filters), focusData[TYPE_NODES]),
-        {}, focusCard.template);
+        {}, focusCard.template, focusData[TYPE_NAME]);
     return  {...focusCard, data};
   }
 
@@ -440,7 +440,7 @@ class App extends Component {
     const template = TemplateRegistry.getTemplate(viewId);
 
     const data = template.aggregate ?  createPreprocessedCardNode(applyFilters(Object.values(currentFilters),
-        focusData[TYPE_NODES].map(node => (node.originalNode || node))), {}, template): this.state.focusCard.data;
+        focusData[TYPE_NODES].map(node => (node.originalNode || node))), {}, template, focusData[TYPE_NAME]): this.state.focusCard.data;
 
     const currentViewOptions = template.getDefaultOptions();
 

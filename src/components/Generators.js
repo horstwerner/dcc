@@ -12,7 +12,7 @@ import {Image_} from "@symb/Image";
 import {GRID} from "@/arrangement/GridArrangement";
 import Aggregator from "@/Aggregator";
 import TemplateRegistry from "@/templates/TemplateRegistry";
-import {createCardNode, fit, flexContentAlign, nodeArray} from "@symb/util";
+import {createCardNode, fit, flexHorizontalAlign, flexVerticalAlign, nodeArray} from "@symb/util";
 import {CardSet_, LOD_FULL, LOD_RECT} from "@/components/CardSet";
 import {Card_} from "@/components/Card";
 import CompactGridArrangement from "@/arrangement/CompactGridArrangement";
@@ -64,9 +64,9 @@ Background.propTypes = {
   cornerRadius: P.number
 }
 
-export function calcStyle(styleDescriptor, h) {
+export function calcStyle(styleDescriptor) {
   if (!styleDescriptor) return null;
-  const result = { fontSize: h};
+  const result = {};
   Object.keys(styleDescriptor).forEach(key => {
     const value = styleDescriptor[key];
     switch (key) {
@@ -76,12 +76,15 @@ export function calcStyle(styleDescriptor, h) {
       case 'font-weight':
       case 'font-size':
       case 'padding':
+      case 'z-index':
       case 'font-family':
         result[key] = value;
         break;
       case 'h-align':
         result['text-align'] = value;
         break;
+      default:
+        console.log(`WARNING: Ignoring unsupported style attribute ${key}`);
     }
   });
   return result;
@@ -93,9 +96,23 @@ export const Caption = function Caption(props) {
     P.checkPropTypes(Caption.propTypes, props, 'prop', 'Caption');
   }
 
-  const {key, x, y, w, h, text, style} = props;
-  return FlexBox_({key, className: css.caption, spatial:{ x, y, scale: 1}, style: {width: w, height: h, justifyContent: (style && flexContentAlign(style['h-align'])) || 'flex-start'}},
-      Div_({key: 'innertext', style: calcStyle(style, h)}, text)._Div
+  const { key, x, y, w, h, text, style } = props;
+  let vAlign = 'flex-start';
+  let hAlign = 'flex-start';
+
+  if (style) {
+    if (style['h-align']) {
+      hAlign = flexHorizontalAlign(style['h-align']);
+    }
+    if (style['v-align']) {
+      vAlign = flexVerticalAlign(style['v-align']);
+    }
+  }
+
+  return FlexBox_({key, className: css.caption, spatial:{ x, y, scale: 1},
+        style: { width: w, height: h, justifyContent: hAlign, alignItems: vAlign }
+        },
+      Div_({key: 'innertext', style: calcStyle({fontSize: h, ...style})}, text)._Div
   )._FlexBox;
 }
 
@@ -104,7 +121,7 @@ Caption.propTypes = CAPTION_PROPS;
 export const Link = function Link(props) {
   const {key, x, y, w, h, text, image, style, url} = props;
 
-  const child = text ? Div_({key: 'button', size:{width: w, height: h}, style: calcStyle(style, h)}, text)._Div :
+  const child = text ? Div_({key: 'button', size:{width: w, height: h}, style: calcStyle({fontSize: h, ...style})}, text)._Div :
       Image_({key: 'icon', source: image, width: w, height: h, cornerRadius: style && style.cornerRadius})._Image
 
   return Link_({key, spatial: {x, y, scale: 1}, url}, child)._Link
@@ -121,10 +138,11 @@ export function createArrangement(descriptor, childSize) {
   // console.log(`rendering card set with ${width}/${height}`);
   switch (type) {
     case GRID:
-      const {x, y, w, h, padding, maxScale } = descriptor;
+      const {x, y, w, h, padding, maxScale, centerX, centerY } = descriptor;
       return new CompactGridArrangement(padding == null ? PADDING : padding, childSize, maxScale)
           .setArea(w, h)
-          .setOffset(x, y)
+          .setCenter(centerX, centerY)
+          .setOffset(x, y);
   }
 }
 
@@ -142,9 +160,10 @@ createArrangement.propTypes = {
  * @param {GraphNode || GraphNode[]} data
  * @param {Object} context
  * @param {Template} template
+ * @param {string || null} name
  */
-export const createPreprocessedCardNode = function createPreprocessedCardNode(data, context, template) {
-  const result = createCardNode(data);
+export const createPreprocessedCardNode = function createPreprocessedCardNode(data, context, template, name) {
+  const result = createCardNode(data,null, name);
   const newContext = {...context};
   result[TYPE_CONTEXT] = newContext;
   const { preprocessing } = template;
@@ -160,7 +179,7 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
     P.checkPropTypes(ChildSet.propTypes, descriptor, 'prop', 'ChildSet');
   }
 
-  const { key, source, lod, align, arrangement, x, y, w, h, options} = descriptor;
+  const { key, name, source, lod, align, arrangement, x, y, w, h, options} = descriptor;
 
   const templateName = descriptor.template;
   const template = TemplateRegistry.getTemplate(templateName);
@@ -176,7 +195,7 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
   if (!nodes) return null;
 
   if (aggregate) {
-    const cardNode = createPreprocessedCardNode(nodes, context, template)
+    const cardNode = createPreprocessedCardNode(nodes, context, template, name || key);
     return Card_({
       key,
       template,
@@ -190,7 +209,7 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
   }
 
   const arrangementDescriptor = {type: GRID, x: 0, y: 0, w, h, padding: PADDING, ...arrangement};
-  const cardNodes = nodes.map(node => createPreprocessedCardNode(node, context, template));
+  const cardNodes = nodes.map(node => createPreprocessedCardNode(node, context, template,null));
   if (align) {
     const aggregate = mapValues(align, (calculate, key) => ({attribute: key, calculate}));
     const aligned = omit(new Aggregator(aggregate).aggregate(cardNodes), TYPE_NODE_COUNT);

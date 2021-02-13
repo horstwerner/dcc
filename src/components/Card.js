@@ -4,11 +4,12 @@ import css from './Card.css';
 import {resolveAttribute, TYPE_CONTEXT} from "@/graph/Cache";
 import ComponentFactory from "@symb/ComponentFactory";
 import Template from "@/templates/Template";
-import {Background, Caption, ChildSet, Link} from "@/components/Generators";
+import {Background, calcStyle, Caption, ChildSet, Link} from "@/components/Generators";
 import Chart from "@/generators/Chart";
 import Trellis from "@/generators/Trellis"
 import {fillIn} from "@symb/util";
 import {CLICK_DISABLED, CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
+import {Div_} from "@symb/Div";
 
 const CARD = 'card';
 
@@ -80,8 +81,13 @@ class Card extends Component {
             text: value != null ? String(value) : '',
             ...rest
           });
-        }
           break;
+        }
+        case 'box': {
+          const {key, x, y, w, h, ...style} = element;
+          childDescriptor = Div_({key, size: {width: w, height: h}, spatial: {x, y, scale: 1}, style: calcStyle(style)})._Div
+          break;
+        }
         case 'link': {
           const { urlAttribute } = element;
           const url = resolveAttribute(data, urlAttribute);

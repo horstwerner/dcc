@@ -1,5 +1,6 @@
 import { isEqual } from 'lodash';
-import Cache, {resolveAttribute, TYPE_AGGREGATOR, TYPE_NODES} from "@/graph/Cache";
+import Cache, {resolveAttribute, TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/Cache";
+
 import GraphNode from "@/graph/GraphNode";
 
 export function getTransformString(x, y, scale) {
@@ -49,11 +50,21 @@ export const fillIn = function fillIn(textTemplate, data) {
   return result;
 }
 
-export const flexContentAlign = function flexContentAlign(hAlign) {
+export const flexHorizontalAlign = function flexHorizontalAlign(hAlign) {
   switch (hAlign) {
     case 'left': return 'flex-start';
     case 'right': return 'flex-end';
     case 'center': return 'center';
+    default: return 'flex-start';
+  }
+}
+
+export const flexVerticalAlign = function flexVerticalAlign(vAlign) {
+  switch (vAlign) {
+    case 'top': return 'flex-start';
+    case 'bottom': return 'flex-end';
+    case 'center': return 'center';
+    default: return 'flex-start';
   }
 }
 
@@ -117,14 +128,19 @@ export const roundCorners = function roundCorners(polygon, dist, closed) {
 
 /**
  * @param {GraphNode | GraphNode[]} contents
- * @param {string} key
+ * @param {string || null} key
+ * @param {string || null} name
  *
  * creates a data node for a card representing either a single node or a node set
  * the data node carries aggregated/derived attributes for use in the visualization
  */
-export const createCardNode = function createCardNode(contents, key) {
+export const createCardNode = function createCardNode(contents, key, name) {
   if (Array.isArray(contents)) {
     const result = new GraphNode(TYPE_AGGREGATOR, key || Cache.createUri());
+    result[TYPE_NODE_COUNT] = contents.length;
+    if (name) {
+      result[TYPE_NAME] = name;
+    }
     result.setBulkAssociation(TYPE_NODES, contents);
     return result;
   } else {
