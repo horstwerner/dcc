@@ -164,7 +164,7 @@ class Cache {
       const nodeUri = row[idIndex];
       const newNode = this.getNode(typeUri, nodeUri);
       for (let colIdx = 0; colIdx < headerRow.length; colIdx ++) {
-        if (row[colIdx] === '') continue;
+        if (row[colIdx] == null || row[colIdx] === '') continue;
         let prop = headerRow[colIdx];
         let targetType;
         if (prop.includes('->')) {

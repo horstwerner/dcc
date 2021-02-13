@@ -1,3 +1,4 @@
+import { isEqual } from 'lodash';
 import Cache, {resolveAttribute, TYPE_AGGREGATOR, TYPE_NODES} from "@/graph/Cache";
 import GraphNode from "@/graph/GraphNode";
 
@@ -130,7 +131,6 @@ export const createCardNode = function createCardNode(contents, key) {
     if (contents.getTypeUri() === TYPE_AGGREGATOR) {
       return contents;
     }
-    //TODO: why create contextual for individual nodes?
     return contents.createContextual();
   }
 }
@@ -161,7 +161,7 @@ export const nodeArray = function NodeArray(source) {
 export const isDataEqual = function isDataEqual(nodeA, nodeB) {
   if (nodeA === nodeB) return true;
   if (nodeA.getTypeUri() === TYPE_AGGREGATOR && nodeB.getTypeUri() === TYPE_AGGREGATOR) {
-    return nodeA[TYPE_NODES] === nodeB[TYPE_NODES];
+    return isEqual(nodeA[TYPE_NODES], nodeB[TYPE_NODES]);
   } else {
     return nodeA.getUniqueKey() === nodeB.getUniqueKey();
   }
