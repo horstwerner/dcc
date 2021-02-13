@@ -41,9 +41,20 @@ class Card extends Component {
   }
 
   updateDom(props, tween) {
-    const { template } = props;
+    const { template, hover, clickMode, onClick } = props;
     const { width, height } = template.getSize();
     this.updateSize({width, height}, tween);
+
+    const isClickable = onClick && (clickMode === CLICK_OPAQUE || (clickMode === CLICK_NORMAL && template.clickable));
+
+    this.dom.className =  hover ? css.hovering : (isClickable && onClick ? css.clickable : css.background);
+    if (isClickable) {
+      this.dom.onclick = this.handleCardClick;
+      this.dom.oncontextmenu = this.handleCardClick;
+    } else {
+      this.dom.onclick = null;
+      this.dom.oncontextmenu = null;
+    }
 
     if (template.background && template.background.type !== 'transparent') {
       const { cornerRadius } = template.background;
@@ -59,17 +70,16 @@ class Card extends Component {
    */
   createChildDescriptors(props) {
 
-    const { data, template, onClick, hover, clickMode, options } = props;
+    const { data, template, onClick, clickMode, options } = props;
 
     const {background} = template;
     const color = template.getCardColor(data);
     const hasBackground = background.type !== 'transparent';
-    const isClickable = clickMode === CLICK_OPAQUE || (clickMode === CLICK_NORMAL && template.clickable);
     const childrenClickable = clickMode === CLICK_TRANSPARENT || (clickMode === CLICK_NORMAL && !template.clickable);
 
     const children = [];
     if (hasBackground) {
-      children.push(Background(background, color, isClickable && this.handleCardClick, hover));
+      children.push(Background(background, color));
     }
     template.getElementsForOptions(options).forEach(element => {
       const { key } = element;

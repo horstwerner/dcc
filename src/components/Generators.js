@@ -39,18 +39,17 @@ const CAPTION_PROPS = {
 const BACKGROUND_RECT = 'rect';
 const BACKGROUND_IMAGE = 'image';
 
-export const Background = function Background(props, color, onClick, hover) {
+export const Background = function Background(props, color) {
   const {type, w, h, source, cornerRadius, borderColor} = props;
-  const className =  hover ? css.hovering : (onClick ? css.clickable : css.background);
+  const className = css.background;
   const spatial = props.spatial || {x: 0, y: 0, scale: 1};
 
   switch (type) {
     case BACKGROUND_RECT:
       return Div_({key: KEY_BACKGROUND, className, spatial,
-        style:{backgroundColor: color, width: w, height: h, borderRadius: cornerRadius, border: borderColor && `solid 1px ${borderColor}`},
-        onClick})._Div;
+        style:{backgroundColor: color, width: w, height: h, borderRadius: cornerRadius, border: borderColor && `solid 1px ${borderColor}`}})._Div;
     case BACKGROUND_IMAGE:
-      return Image_({key: KEY_BACKGROUND, className, spatial, source, width: w, height: h, color, cornerRadius, onClick})._Image;
+      return Image_({key: KEY_BACKGROUND, className, spatial, source, width: w, height: h, color, cornerRadius})._Image;
     default:
       throw new Error(`Unknown background type: ${type}`);
   }
