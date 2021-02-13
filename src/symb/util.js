@@ -157,3 +157,12 @@ export const nodeArray = function NodeArray(source) {
   if (!source) return null;
   return Array.isArray(source) ? source : [source];
 }
+
+export const isDataEqual = function isDataEqual(nodeA, nodeB) {
+  if (nodeA === nodeB) return true;
+  if (nodeA.getTypeUri() === TYPE_AGGREGATOR && nodeB.getTypeUri() === TYPE_AGGREGATOR) {
+    return nodeA[TYPE_NODES] === nodeB[TYPE_NODES];
+  } else {
+    return nodeA.getUniqueKey() === nodeB.getUniqueKey();
+  }
+}

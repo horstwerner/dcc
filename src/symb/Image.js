@@ -28,6 +28,7 @@ export class Image extends Component {
     this.dom.style.height = `${height}px`;
     if (onClick) {
       this.dom.onclick = onClick;
+      this.dom.oncontextmenu = onClick;
     }
   }
 

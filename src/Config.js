@@ -10,7 +10,7 @@ if (DEBUG_MODE) {
 }
 
 export const MENU_WIDTH = 224;
-export const MARGIN = 24;
+export const MARGIN = 12;
 export const TRANSITION_DURATION = 250;
 
 export const SIDEBAR_PERCENT = 0.2;
