@@ -112,7 +112,7 @@ export const Caption = function Caption(props) {
   return FlexBox_({key, className: css.caption, spatial:{ x, y, scale: 1},
         style: { width: w, height: h, justifyContent: hAlign, alignItems: vAlign }
         },
-      Div_({key: 'innertext', style: calcStyle({fontSize: h, ...style})}, text)._Div
+      Div_({key: 'innertext', style: calcStyle({'font-size': h, ...style})}, text)._Div
   )._FlexBox;
 }
 
@@ -121,7 +121,7 @@ Caption.propTypes = CAPTION_PROPS;
 export const Link = function Link(props) {
   const {key, x, y, w, h, text, image, style, url} = props;
 
-  const child = text ? Div_({key: 'button', size:{width: w, height: h}, style: calcStyle({fontSize: h, ...style})}, text)._Div :
+  const child = text ? Div_({key: 'button', size:{width: w, height: h}, style: calcStyle({'font-size': h, ...style})}, text)._Div :
       Image_({key: 'icon', source: image, width: w, height: h, cornerRadius: style && style.cornerRadius})._Image
 
   return Link_({key, spatial: {x, y, scale: 1}, url}, child)._Link

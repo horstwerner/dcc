@@ -44,6 +44,13 @@ class Card extends Component {
     const { template } = props;
     const { width, height } = template.getSize();
     this.updateSize({width, height}, tween);
+
+    if (template.background && template.background.type !== 'transparent') {
+      const { cornerRadius } = template.background;
+      this.dom.style.borderRadius = cornerRadius;
+      this.dom.style.overflow = 'hidden';
+    }
+
   }
 
   /**
@@ -85,7 +92,7 @@ class Card extends Component {
         }
         case 'box': {
           const {key, x, y, w, h, ...style} = element;
-          childDescriptor = Div_({key, size: {width: w, height: h}, spatial: {x, y, scale: 1}, style: calcStyle(style)})._Div
+          childDescriptor = Div_({key, className: css.background, size: {width: w, height: h}, spatial: {x, y, scale: 1}, style: calcStyle(style)})._Div
           break;
         }
         case 'link': {
