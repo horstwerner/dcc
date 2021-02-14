@@ -5,6 +5,7 @@
     background-color: #5e7b80;
     border-top: solid 1px #536e73;
     box-sizing: border-box;
+    user-select: none;
 }
 .lane::-webkit-scrollbar {
     height: 12px;

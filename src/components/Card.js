@@ -140,56 +140,6 @@ class Card extends Component {
 
     return children;
   };
-
-  // morph(arrangementName, tween, onClick) {
-  //   const { template, data } = this.innerProps;
-  //   const stateDescriptor = template.arrangements[arrangementName];
-  //   if (!stateDescriptor) {
-  //     throw new Error(`Template ${template.type} has no state ${arrangementName}`);
-  //   }
-  //   const { elements } = template;
-  //   const { layout } = stateDescriptor;
-  //   const color = template.colorCoder ? template.colorCoder.getColor(data): null;
-  //
-  //   // update background with new onClick method, but make sure not to change spatial position
-  //   const spatial = this.childByKey[KEY_BACKGROUND].getSpatial();
-  //   this.updateChild(KEY_BACKGROUND,
-  //       Background({...template.background, spatial}, color, onClick));
-  //   Object.keys(layout).forEach(key => {
-  //     const element = this.childByKey[key];
-  //     const elementState = layout[key];
-  //     const position = template.getChildProps(key, arrangementName);
-  //     if (element.constructor === CardSet) {
-  //       const childTemplate = TemplateRegistry.getTemplate(find(elements, {key}).template);
-  //       const childSize = childTemplate.getSize();
-  //       const setArrangement = createArrangement(elementState.arrangement, childSize);
-  //       element.updateArrangement(setArrangement, tween);
-  //     } else {
-  //       const {x, y, w, h, alpha, arrangement, clickAction} = elementState;
-  //       const native = element.getNativeSize(arrangement);
-  //       if (x!= null && y != null && w!= null && h != null) {
-  //         const spatial = fit(w, h, native.width, native.height, x, y);
-  //         tween.addTransform(element, spatial.x, spatial.y, spatial.scale);
-  //       }
-  //       if (alpha != null) {
-  //         tween.addFade(element, alpha);
-  //       }
-  //       if (element.constructor === Card) {
-  //         element.morph(elementState.arrangement, tween,
-  //             clickAction ? () => {this.handleChildClick(key, clickAction)} : null);
-  //         if (elementState.clickAction) {
-  //           this.childClickAction[element.key] = elementState.clickAction;
-  //         }
-  //       }
-  //     }
-  //   });
-  // }
-
-  // getNativeSize() {
-  //   const { template } = this.innerProps;
-  //   return template.getSize();
-  // }
-
 }
 
 ComponentFactory.registerType(Card);
