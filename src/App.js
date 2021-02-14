@@ -235,7 +235,7 @@ class App extends Component {
     const focusPlane = this.getFocusPlane();
 
     // old card will be transformed into breadcrumb card. For the time of transition, it is the hoverCard
-    const { breadCrumbCard, nextChildPos, targetScrollPos, adoptCard } = this.turnIntoBreadCrumbCard(card);
+    const { breadCrumbCard, nextChildPos, targetScrollPos, adoptCard, updateCard } = this.turnIntoBreadCrumbCard(card);
     const newHoverCard = {
       ...breadCrumbCard,
       style: {zIndex: 1},
@@ -256,6 +256,8 @@ class App extends Component {
         this.getBreadcrumbLane().adoptChild( instance );
         // instance.setSpatial(breadCrumbCard.spatial);
         newState.breadCrumbCards = [...breadCrumbCards, breadCrumbCard];
+      } else  if (updateCard) {
+        updateCard.options = card.options;
       }
       this.setState(newState);
     });
@@ -283,6 +285,7 @@ class App extends Component {
         breadCrumbCard: {...sourceCard, clickMode: CLICK_NORMAL, spatial: existing.spatial, style: {zIndex: 0}},
         nextChildPos,
         targetScrollPos:  pos > mainWidth ? pos - mainWidth : null,
+        updateCard: existing,
         adoptCard: false
       };
     }
@@ -398,7 +401,6 @@ class App extends Component {
     const { } = this.state;
     const tool = activeTools[toolId];
     const newFocusCard = this.updatedFocusCard(focusCard, focusData, newFilters);
-    // this.createFocusCard(data, focusCard.template);
     this.transitionToState({currentFilters: newFilters,
       toolControls: {...toolControls, [toolId]: updatedToolControl(tool, toolControls[toolId], value, newFocusCard.data, this.setToolFilter, this.removeToolFilter)},
       focusCard: newFocusCard});
@@ -444,9 +446,9 @@ class App extends Component {
 
     const currentViewOptions = template.getDefaultOptions();
 
-    const focusCard = this.createFocusCard(data, template, currentFilters, currentViewOptions);
+    const focusCard = this.createFocusCard(data, template, currentViewOptions);
     focusCard.spatial = this.calcFocusCardSpatial({focusCard, mainWidth, focusHeight});
-    this.setState({ focusCard, currentViewOptions: template.getDefaultOptions() });
+    this.transitionToState({ focusCard, currentViewOptions: template.getDefaultOptions() });
   }
 
 
@@ -552,10 +554,6 @@ class App extends Component {
         hoverChildren.push(hoverCardMenu(HOVER_MENU, hoverCard.spatial.y, menuRight, this.handleHoverCardClose,
             this.handleHoverCardStash));
       }
-    } else if (focusCard && focusCard.template.clickable) {
-      const menuRight = focusCard.template.getSize().width * focusCard.spatial.scale + focusCard.spatial.x;
-      hoverChildren.push(hoverCardMenu(HOVER_MENU, focusCard.spatial.y, menuRight, null,
-          this.handleFocusCardStash));
     }
 
     return [

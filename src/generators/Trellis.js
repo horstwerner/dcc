@@ -4,7 +4,8 @@ import {EMPTY, sliceBy} from "@/graph/GroupedSet";
 import {LOD_FULL} from "@/components/CardSet";
 import {ChildSet} from "@/components/Generators";
 import Filter from "@/graph/Filter";
-import {TYPE_CONTEXT} from "@/graph/Cache";
+import {resolve, TYPE_CONTEXT} from "@/graph/Cache";
+import {nodeArray} from "@symb/util";
 
 
 const Trellis = function Trellis(data, descriptor, onClick, clickMode) {
@@ -16,7 +17,15 @@ const Trellis = function Trellis(data, descriptor, onClick, clickMode) {
   const {key, source, template, inputSelector, groupAttribute, align, arrangement, x, y, w, h} = descriptor;
 
   const filter = inputSelector ? Filter.fromDescriptor(inputSelector): null;
-  const nodes = filter ? data[source].filter(filter.matches) : data[source];
+  let nodes;
+  if (!source || source === 'this') {
+    nodes = nodeArray(data);
+  } else {
+    nodes = nodeArray(resolve(data, source));
+  }
+  if (filter) {
+    nodes = nodes.filter(filter.matches);
+  }
   if (!nodes) return null;
 
   const groupedSet = sliceBy(nodes, groupAttribute);

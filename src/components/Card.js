@@ -41,9 +41,27 @@ class Card extends Component {
   }
 
   updateDom(props, tween) {
-    const { template } = props;
+    const { template, hover, clickMode, onClick } = props;
     const { width, height } = template.getSize();
     this.updateSize({width, height}, tween);
+
+    const isClickable = onClick && (clickMode === CLICK_OPAQUE || (clickMode === CLICK_NORMAL && template.clickable));
+
+    this.dom.className =  hover ? css.hovering : (isClickable && onClick ? css.clickable : css.background);
+    if (isClickable) {
+      this.dom.onclick = this.handleCardClick;
+      this.dom.oncontextmenu = this.handleCardClick;
+    } else {
+      this.dom.onclick = null;
+      this.dom.oncontextmenu = null;
+    }
+
+    if (template.background && template.background.type !== 'transparent') {
+      const { cornerRadius } = template.background;
+      this.dom.style.borderRadius = cornerRadius;
+      this.dom.style.overflow = 'hidden';
+    }
+
   }
 
   /**
@@ -52,17 +70,16 @@ class Card extends Component {
    */
   createChildDescriptors(props) {
 
-    const { data, template, onClick, hover, clickMode, options } = props;
+    const { data, template, onClick, clickMode, options } = props;
 
     const {background} = template;
     const color = template.getCardColor(data);
     const hasBackground = background.type !== 'transparent';
-    const isClickable = clickMode === CLICK_OPAQUE || (clickMode === CLICK_NORMAL && template.clickable);
     const childrenClickable = clickMode === CLICK_TRANSPARENT || (clickMode === CLICK_NORMAL && !template.clickable);
 
     const children = [];
     if (hasBackground) {
-      children.push(Background(background, color, isClickable && this.handleCardClick, hover));
+      children.push(Background(background, color));
     }
     template.getElementsForOptions(options).forEach(element => {
       const { key } = element;
@@ -85,7 +102,7 @@ class Card extends Component {
         }
         case 'box': {
           const {key, x, y, w, h, ...style} = element;
-          childDescriptor = Div_({key, size: {width: w, height: h}, spatial: {x, y, scale: 1}, style: calcStyle(style)})._Div
+          childDescriptor = Div_({key, className: css.background, size: {width: w, height: h}, spatial: {x, y, scale: 1}, style: calcStyle(style)})._Div
           break;
         }
         case 'link': {
@@ -123,56 +140,6 @@ class Card extends Component {
 
     return children;
   };
-
-  // morph(arrangementName, tween, onClick) {
-  //   const { template, data } = this.innerProps;
-  //   const stateDescriptor = template.arrangements[arrangementName];
-  //   if (!stateDescriptor) {
-  //     throw new Error(`Template ${template.type} has no state ${arrangementName}`);
-  //   }
-  //   const { elements } = template;
-  //   const { layout } = stateDescriptor;
-  //   const color = template.colorCoder ? template.colorCoder.getColor(data): null;
-  //
-  //   // update background with new onClick method, but make sure not to change spatial position
-  //   const spatial = this.childByKey[KEY_BACKGROUND].getSpatial();
-  //   this.updateChild(KEY_BACKGROUND,
-  //       Background({...template.background, spatial}, color, onClick));
-  //   Object.keys(layout).forEach(key => {
-  //     const element = this.childByKey[key];
-  //     const elementState = layout[key];
-  //     const position = template.getChildProps(key, arrangementName);
-  //     if (element.constructor === CardSet) {
-  //       const childTemplate = TemplateRegistry.getTemplate(find(elements, {key}).template);
-  //       const childSize = childTemplate.getSize();
-  //       const setArrangement = createArrangement(elementState.arrangement, childSize);
-  //       element.updateArrangement(setArrangement, tween);
-  //     } else {
-  //       const {x, y, w, h, alpha, arrangement, clickAction} = elementState;
-  //       const native = element.getNativeSize(arrangement);
-  //       if (x!= null && y != null && w!= null && h != null) {
-  //         const spatial = fit(w, h, native.width, native.height, x, y);
-  //         tween.addTransform(element, spatial.x, spatial.y, spatial.scale);
-  //       }
-  //       if (alpha != null) {
-  //         tween.addFade(element, alpha);
-  //       }
-  //       if (element.constructor === Card) {
-  //         element.morph(elementState.arrangement, tween,
-  //             clickAction ? () => {this.handleChildClick(key, clickAction)} : null);
-  //         if (elementState.clickAction) {
-  //           this.childClickAction[element.key] = elementState.clickAction;
-  //         }
-  //       }
-  //     }
-  //   });
-  // }
-
-  // getNativeSize() {
-  //   const { template } = this.innerProps;
-  //   return template.getSize();
-  // }
-
 }
 
 ComponentFactory.registerType(Card);
