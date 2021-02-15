@@ -16,14 +16,13 @@ class BreadcrumbLane extends Component {
   static className = css.lane;
 
   static propTypes = {
-    size: P.shape({width: P.number.isRequired, height: P.number.isRequired}),
+    size: P.shape({width: P.number.isRequired, height: P.number.isRequired, onScroll: P.func.isRequired}),
   }
 
-  // constructor(descriptor, domNode) {
-  //   super(descriptor, domNode);
-  //   this.childClickAction = {};
-  //   this.handleCardClick = this.handleCardClick.bind(this);
-  // }
+  constructor(props, parent, domNode) {
+    super(props, parent, domNode);
+    this.dom.onscroll = props.onScroll;
+  }
 
   getScale(width) {
     return width / CANVAS_WIDTH;
@@ -43,7 +42,7 @@ class BreadcrumbLane extends Component {
 
 
   getScrollPos() {
-    return this.dom.scrollTop;
+    return this.dom.scrollLeft;
   }
 
   scrollToPos(newScrollLeft, tween) {

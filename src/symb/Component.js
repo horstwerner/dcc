@@ -369,8 +369,9 @@ export default class Component {
 
   setState(partialState) {
     if (this.transitionTween && this.transitionTween.isRunning()) {
-      this.transitionTween.finish();
-      this.transitionTween = null;
+      setTimeout(() => this.setState(partialState) , TRANSITION_DURATION);
+      // this.transitionTween.finish();
+      // this.transitionTween = null;
     }
     this.state = {...this.state, ...partialState};
     if (!this.updateScheduled) {

@@ -10,10 +10,12 @@
   transform-origin: 0 0;
   opacity: 0.6;
   z-index: 3;
+  cursor: pointer;
 }
 .icon {
   opacity: 0.6;
   margin-right: 6px;
+  cursor: pointer;
 }
 .icon:hover,
 .iconAbsolute:hover {

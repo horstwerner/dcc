@@ -256,12 +256,12 @@ export const hoverCardMenu = function hoverCardMenu(key, top, right, onClose, on
   ].filter(Boolean);
   const totalWidth = children.length * iconSize + (children.length - 1) * iconMargin;
 
-  return Div_({key, className: hoverMenuCss.menu, children, style: {width: totalWidth, height}, spatial: {x: right - totalWidth - iconMargin, y: top + -1.2 * iconSize, scale: 1}})._Div
+  return Div_({key, className: hoverMenuCss.menu, children, style: {width: totalWidth, height}, spatial: {x: right - totalWidth - iconMargin, y: top -0.7 * iconSize, scale: 1}})._Div
 }
 
-export const breadCrumbHoverMenu = function breadCrumbHoverMenu(key, top, right, onClose) {
+export const breadCrumbHoverIcon = function breadCrumbHoverIcon(key, top, right, onClose, onMouseEnter, onMouseLeave) {
   const width = iconSize;
   const height = iconSize;
-  return Image_({key, spatial: {x: top - iconMargin, y: right - iconMargin, scale: 1},
-    className: hoverMenuCss.iconAbsolute, width, height, source: 'public/CloseButton.svg', onClick: onClose})._Image;
+  return Image_({key, spatial: {x: right - iconSize + 4, y: top - 4, scale: 1},
+    className: hoverMenuCss.iconAbsolute, width, height, source: 'public/CloseButton.svg', onClick: onClose, onMouseEnter, onMouseLeave})._Image;
 }

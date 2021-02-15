@@ -42,7 +42,7 @@ class Card extends Component {
   }
 
   updateDom(props, tween) {
-    const { template, hover, clickMode, onClick } = props;
+    const { template, hover, clickMode, onClick, onMouseEnter, onMouseLeave } = props;
     const { width, height } = template.getSize();
     this.updateSize({width, height}, tween);
 
@@ -52,10 +52,22 @@ class Card extends Component {
     if (isClickable) {
       this.dom.onclick = this.handleCardClick;
       this.dom.oncontextmenu = this.handleCardClick;
-    } else {
+    } else if (this.dom.onclick) {
       this.dom.onclick = null;
       this.dom.oncontextmenu = null;
     }
+
+    if (onMouseEnter) {
+      this.dom.onmouseenter = onMouseEnter;
+    } else if (this.dom.onmouseenter) {
+      this.dom.onmouseenter = null;
+    }
+    if (onMouseLeave) {
+      this.dom.onmouseleave = onMouseLeave;
+    } else if (this.dom.onmouseleave) {
+      this.dom.onmouseleave = null;
+    }
+
 
     if (template.background && template.background.type !== 'transparent') {
       const { cornerRadius } = template.background;

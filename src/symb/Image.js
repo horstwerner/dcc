@@ -16,7 +16,7 @@ export class Image extends Component {
     }
     this.innerProps = {...props};
 
-    const {source, width, height, cornerRadius, onClick, color} = props;
+    const {source, width, height, cornerRadius, onClick, color, onMouseEnter, onMouseLeave} = props;
     this.dom.setAttribute('src', source);
     this.dom.setAttribute('draggable', false);
     if (cornerRadius) {
@@ -25,6 +25,18 @@ export class Image extends Component {
     if (color != null) {
       this.dom.style.backgroundColor = color;
     }
+
+    if (onMouseEnter) {
+      this.dom.onmouseenter = onMouseEnter;
+    } else if (this.dom.onmouseenter) {
+      this.dom.onmouseenter = null;
+    }
+    if (onMouseLeave) {
+      this.dom.onmouseleave = onMouseLeave;
+    } else if (this.dom.onmouseleave) {
+      this.dom.onmouseleave = null;
+    }
+
     this.dom.style.width = `${width}px`;
     this.dom.style.height = `${height}px`;
     if (onClick) {
