@@ -1,13 +1,12 @@
 import P from 'prop-types';
 import {resolveAttribute, resolveProperty, TYPE_NODES} from "@/graph/Cache";
-import Filter from "@/graph/Filter";
 import {Svg_} from "@/components/Svg";
 import {Rect_} from "@/components/Rect";
 import StackedBarChart from "@/generators/StackedBarChart";
 import {GraphViz_} from "@/components/GraphViz";
 import {DEBUG_MODE} from "@/Config";
 import {PolarChart_} from "@/components/PolarChart";
-import {nodeArray} from "@symb/util";
+import {getNodes, nodeArray} from "@symb/util";
 
 const fillInNumber = function fillInNumber(data, valueString) {
   if (isNaN(valueString)) {
@@ -31,9 +30,7 @@ const Chart = function Chart({key, data, descriptor, onClick}) {
 
   const spatial = { x, y, scale: 1};
 
-  const unfilteredData = (source && source !== 'this') ? resolveProperty(data, source) : data;
-  const filter = inputSelector ? Filter.fromDescriptor(inputSelector): null;
-  let chartData = filter ? filter.process(unfilteredData) : unfilteredData;
+  let chartData = getNodes(inputSelector, source, data);
 
   if (overlay) {
     if (!Array.isArray(chartData)) {

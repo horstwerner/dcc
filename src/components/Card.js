@@ -10,6 +10,7 @@ import Trellis from "@/generators/Trellis"
 import {fillIn} from "@symb/util";
 import {CLICK_DISABLED, CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
 import {Div_} from "@symb/Div";
+import {Image_} from "@symb/Image";
 
 const CARD = 'card';
 
@@ -103,6 +104,11 @@ class Card extends Component {
         case 'box': {
           const {key, x, y, w, h, ...style} = element;
           childDescriptor = Div_({key, className: css.background, size: {width: w, height: h}, spatial: {x, y, scale: 1}, style: calcStyle(style)})._Div
+          break;
+        }
+        case 'image': {
+          const {key, x, y, w, h, source, color, ...style} = element;
+          childDescriptor = Image_({key, source, color, className: css.background, width: w, height: h, spatial: {x, y, scale: 1}, style: calcStyle(style)})._Image
           break;
         }
         case 'link': {

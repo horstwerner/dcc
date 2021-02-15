@@ -304,6 +304,14 @@ class App extends Component {
     }
   }
 
+  handleBreadcrumbEnter(key) {
+
+  }
+
+  handleBreadcrumbLeave(key) {
+
+  }
+
 
   createFocusCard(data, template, options) {
     const key = this.createChildKey();

@@ -3,7 +3,7 @@
  */
 
 import P from "prop-types";
-import {resolve, TYPE_CONTEXT, TYPE_NODE_COUNT} from '@/graph/Cache';
+import {TYPE_CONTEXT, TYPE_NODE_COUNT} from '@/graph/Cache';
 import {mapValues, omit} from 'lodash';
 import {DEBUG_MODE} from "@/Config";
 import css from "@/components/Card.css";
@@ -12,7 +12,7 @@ import {Image_} from "@symb/Image";
 import {GRID} from "@/arrangement/GridArrangement";
 import Aggregator from "@/Aggregator";
 import TemplateRegistry from "@/templates/TemplateRegistry";
-import {createCardNode, fit, flexHorizontalAlign, flexVerticalAlign, nodeArray} from "@symb/util";
+import {createCardNode, fit, flexHorizontalAlign, flexVerticalAlign, getNodes} from "@symb/util";
 import {CardSet_, LOD_FULL, LOD_RECT} from "@/components/CardSet";
 import {Card_} from "@/components/Card";
 import CompactGridArrangement from "@/arrangement/CompactGridArrangement";
@@ -82,6 +82,9 @@ export function calcStyle(styleDescriptor) {
       case 'h-align':
         result['text-align'] = value;
         break;
+      case 'v-align':
+        // ignore silently
+        break;
       default:
         console.log(`WARNING: Ignoring unsupported style attribute ${key}`);
     }
@@ -109,7 +112,7 @@ export const Caption = function Caption(props) {
   }
 
   return FlexBox_({key, className: css.caption, spatial:{ x, y, scale: 1},
-        style: { width: w, height: h, justifyContent: hAlign, alignItems: vAlign }
+        style: { width: w, height: h, justifyContent: hAlign, alignItems: vAlign, zIndex: style && style.zIndex }
         },
       Div_({key: 'innertext', style: calcStyle({'font-size': h, ...style})}, text)._Div
   )._FlexBox;
@@ -178,22 +181,19 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
     P.checkPropTypes(ChildSet.propTypes, descriptor, 'prop', 'ChildSet');
   }
 
-  const { key, name, source, lod, align, arrangement, x, y, w, h, options} = descriptor;
+  const { key, name, source, lod, align, arrangement, inputSelector, viewName, x, y, w, h, options} = descriptor;
 
   const templateName = descriptor.template;
   const template = TemplateRegistry.getTemplate(templateName);
   const nativeChildSize = template.getSize();
 
-  let nodes;
-  if (!source || source === 'this') {
-    nodes = nodeArray(data);
-  } else {
-    nodes = nodeArray(resolve(data, source));
-  }
-
+  const nodes = getNodes(inputSelector, source, data);
   if (!nodes) return null;
 
   if (aggregate) {
+    if (!template) {
+      throw new Error(`No template specified for aggregate card ${key} - ${name}`);
+    }
     const cardNode = createPreprocessedCardNode(nodes, context, template, name || key);
     return Card_({
       key,
@@ -208,13 +208,17 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
   }
 
   const arrangementDescriptor = {type: GRID, x: 0, y: 0, w, h, padding: PADDING, ...arrangement};
-  const cardNodes = nodes.map(node => createPreprocessedCardNode(node, context, template,null));
+  const cardNodes = nodes.map(node => {
+    const cardTemplate = template || TemplateRegistry.getTemplateFor(node.getTypeUri(), viewName || 'default');
+    return createPreprocessedCardNode(node, context, cardTemplate,null);
+  });
   if (align) {
-    const aggregate = mapValues(align, (calculate, key) => ({attribute: key, calculate}));
-    const aligned = omit(new Aggregator(aggregate).aggregate(cardNodes), TYPE_NODE_COUNT);
+    // write aggregated information from whole set into each (contextual) card node
+    // calculate contains the aggregation formula for each aggregated attribute
+    const aggregations = mapValues(align, (calculate, key) => ({attribute: key, calculate}));
+    const aligned = omit(new Aggregator(aggregations).aggregate(cardNodes), TYPE_NODE_COUNT);
     cardNodes.forEach(cardNode => Object.assign(cardNode, aligned));
   }
-
 
   return CardSet_({key,
     nodes: cardNodes,
@@ -239,16 +243,25 @@ ChildSet.propTypes = {key: P.string.isRequired,
   template: P.string.isRequired
 }
 
+const iconSize = 24;
+const iconMargin = 6;
+
 export const hoverCardMenu = function hoverCardMenu(key, top, right, onClose, onStash) {
-  const iconSize = 18;
-  const iconMargin = 6;
+
   const width = iconSize;
   const height = iconSize;
   const children = [
-    onStash && Image_({className: hoverMenuCss.icon, width, height, source: 'public/Dock.svg', onClick: onStash})._Image,
-    onClose && Image_({className: hoverMenuCss.icon, width, height, source: 'public/CloseButton.svg', onClick: onClose})._Image,
+    onStash && Image_({key: 'stashbutton', className: hoverMenuCss.icon, width, height, source: 'public/Dock.svg', onClick: onStash})._Image,
+    onClose && Image_({key: 'closebutton', className: hoverMenuCss.icon, width, height, source: 'public/CloseButton.svg', onClick: onClose})._Image,
   ].filter(Boolean);
   const totalWidth = children.length * iconSize + (children.length - 1) * iconMargin;
 
-  return Div_({key, className: hoverMenuCss.menu, children, style: {width: totalWidth, height}, spatial: {x: right - totalWidth - iconMargin, y: top + iconMargin, scale: 1}})._Div
+  return Div_({key, className: hoverMenuCss.menu, children, style: {width: totalWidth, height}, spatial: {x: right - totalWidth - iconMargin, y: top + -1.2 * iconSize, scale: 1}})._Div
+}
+
+export const breadCrumbHoverMenu = function breadCrumbHoverMenu(key, top, right, onClose) {
+  const width = iconSize;
+  const height = iconSize;
+  return Image_({key, spatial: {x: top - iconMargin, y: right - iconMargin, scale: 1},
+    className: hoverMenuCss.iconAbsolute, width, height, source: 'public/CloseButton.svg', onClick: onClose})._Image;
 }
