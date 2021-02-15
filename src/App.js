@@ -9,9 +9,9 @@ import {Div_} from '@symb/Div';
 import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
-import {MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
+import {HOVER_MENU_DELAY, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
 import {fit, isDataEqual, relSpatial} from "@symb/util";
-import {createPreprocessedCardNode, hoverCardMenu} from "@/components/Generators";
+import {breadCrumbHoverIcon, createPreprocessedCardNode, hoverCardMenu} from "@/components/Generators";
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 import {ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
@@ -69,7 +69,6 @@ class App extends Component {
     }, false);
 
     this.nextChildIndex = 1;
-    this.onResize(window.innerWidth, window.innerHeight);
 
     Promise.all([getClientConfig(this.onError), getDictionary(this.onError)])
         .then(() => Promise.all([...getData(this.onError),
@@ -104,9 +103,11 @@ class App extends Component {
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleSearchResultClick = this.handleSearchResultClick.bind(this);
     this.onError = this.onError.bind(this);
+    this.removeBreadCrumbHoverMenu = this.removeBreadCrumbHoverMenu.bind(this);
 
     document.body.onkeyup = this.handleKeyUp;
     document.body.onkeydown = this.handleKeyDown;
+    this.onResize(window.innerWidth, window.innerHeight);
   }
 
   onError(error) {
@@ -178,10 +179,6 @@ class App extends Component {
 
 
   handleNodeClick({event, component}) {
-    // const {id} = clickData;
-    // const node = Cache.getNodeByUniqueKey(id);
-    // const template = TemplateRegistry.getTemplate(node.type.uri);
-    // this.setState({inspectionCard: {template, data: node}});
 
     if (event.button === 0) {
       this.cloneNodeToFocus(component);
@@ -279,10 +276,18 @@ class App extends Component {
     const { nextChildPos, breadCrumbHeight, mainWidth, breadCrumbCards} = this.state;
     const existing = breadCrumbCards.find(card =>
         card.template === sourceCard.template && isDataEqual(card.data, sourceCard.data));
+
+    const breadCrumbChanges = {
+      clickMode: CLICK_OPAQUE,
+      onMouseEnter: () => this.handleBreadcrumbEnter(sourceCard.key),
+      onMouseLeave: () => this.handleBreadcrumbLeave(sourceCard.key),
+      style: {zIndex: 0}
+    }
+
     if (existing) {
       const pos = existing.spatial.x;
       return {
-        breadCrumbCard: {...sourceCard, clickMode: CLICK_NORMAL, spatial: existing.spatial, style: {zIndex: 0}},
+        breadCrumbCard: {...sourceCard, ...breadCrumbChanges, spatial: existing.spatial, },
         nextChildPos,
         targetScrollPos:  pos > mainWidth ? pos - mainWidth : null,
         updateCard: existing,
@@ -293,7 +298,7 @@ class App extends Component {
     const breadcrumbNativeSize = sourceCard.template.getSize();
     const newBreadcrumbScale =  (breadCrumbHeight - 24) / breadcrumbNativeSize.height;
     const newBreadcrumbSpatial = {x: nextChildPos, y: 7, scale: newBreadcrumbScale};
-    const newBreadCrumbCard = {...sourceCard, clickMode: CLICK_NORMAL, spatial: newBreadcrumbSpatial, style: {zIndex: 0}};
+    const newBreadCrumbCard = {...sourceCard, ...breadCrumbChanges, spatial: newBreadcrumbSpatial};
     const newNextChildPos = nextChildPos + newBreadcrumbScale * breadcrumbNativeSize.width + MARGIN;
 
     return {
@@ -304,6 +309,74 @@ class App extends Component {
     }
   }
 
+  handleBreadcrumbEnter(key) {
+    this.hoverBreadCrumbKey = key;
+    setTimeout(() => {
+      if (this.hoverBreadCrumbKey === key) {
+        this.addBreadcrumbHoverMenu(key);
+      }
+    }, HOVER_MENU_DELAY)
+  }
+
+  handleHoverEnter(key) {
+    this.hoverMenuKey = key;
+  }
+
+  handleHoverLeave(key) {
+    this.hoverMenuKey = null;
+    setTimeout(() => {
+      if (this.hoverBreadCrumbKey !== key && this.state.breadCrumbHoverIcon) {
+        this.setState({breadCrumbHoverIcon: null});
+      }
+    }, 150);
+
+  }
+
+  handleBreadcrumbLeave(key) {
+    console.log(`leaving ${key}`)
+    if (key === this.hoverBreadCrumbKey) {
+      this.hoverBreadCrumbKey = null;
+      setTimeout(() => {
+        if (this.hoverMenuKey !== key && this.state.breadCrumbHoverIcon) {
+          this.setState({breadCrumbHoverIcon: null});
+        }
+      }, 150);
+
+    }
+  }
+
+  removeBreadCrumb(key) {
+    const { breadCrumbCards } = this.state;
+    const index  = breadCrumbCards.findIndex(card =>
+        card.key === key);
+    let pos = breadCrumbCards[index].spatial.x;
+    if (index === breadCrumbCards.length - 1) {
+      this.setState({breadCrumbCards: breadCrumbCards.slice(0, index), breadCrumbHoverIcon: null, nextChildPos: pos});
+      return;
+    }
+    for (let i = index + 1; i < breadCrumbCards.length; i++) {
+      breadCrumbCards[i].spatial = {...breadCrumbCards[i].spatial, x: pos};
+      pos += breadCrumbCards[i].spatial.scale *  breadCrumbCards[i].template.getSize().width + MARGIN;
+    }
+    breadCrumbCards.splice(index, 1);
+    this.transitionToState({breadCrumbCards, breadCrumbHoverIcon: null, nextChildPos: pos})
+  }
+
+  addBreadcrumbHoverMenu(key) {
+    const { breadCrumbCards } = this.state;
+    const card = breadCrumbCards.find(card =>
+        card.key === key);
+    const { template } = card;
+    const top = card.spatial.y;
+    const scaledWidth = template.getSize().width * card.spatial.scale;
+    const right = card.spatial.x + scaledWidth;
+    const icon = breadCrumbHoverIcon('breadcrumbhover', top, right, () => this.removeBreadCrumb(key), () => this.handleHoverEnter(key), () => this.handleHoverLeave(key));
+    this.setState({breadCrumbHoverIcon: icon});
+  }
+
+  removeBreadCrumbHoverMenu() {
+    this.setState({breadCrumbHoverIcon: null})
+  }
 
   createFocusCard(data, template, options) {
     const key = this.createChildKey();
@@ -539,7 +612,8 @@ class App extends Component {
   createChildDescriptors(props) {
 
     const {focusCard, tools, activeTools, views, error, mainWidth, focusHeight, sideBarWidth, breadCrumbCards, nextChildPos,
-      hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions} = this.state;
+      hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions,
+      breadCrumbHoverIcon } = this.state;
 
     // const backgroundColor = (map && map.backColor) || '#ffffff';
     if (error) {
@@ -561,8 +635,9 @@ class App extends Component {
         key: BREADCRUMBS,
         spatial: {x: 0, y: 0, scale: 1},
         size:  {width: mainWidth, height: breadCrumbHeight},
-        children: breadCrumbCards,
-        canvasWidth: nextChildPos
+        children: [...breadCrumbCards, breadCrumbHoverIcon],
+        canvasWidth: nextChildPos,
+        onScroll: this.removeBreadCrumbHoverMenu
       })._BreadcrumbLane,
       ToolPanel_({
         key: 'tools',

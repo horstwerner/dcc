@@ -10,6 +10,7 @@ import Trellis from "@/generators/Trellis"
 import {fillIn} from "@symb/util";
 import {CLICK_DISABLED, CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
 import {Div_} from "@symb/Div";
+import {Image_} from "@symb/Image";
 
 const CARD = 'card';
 
@@ -41,7 +42,7 @@ class Card extends Component {
   }
 
   updateDom(props, tween) {
-    const { template, hover, clickMode, onClick } = props;
+    const { template, hover, clickMode, onClick, onMouseEnter, onMouseLeave } = props;
     const { width, height } = template.getSize();
     this.updateSize({width, height}, tween);
 
@@ -51,10 +52,22 @@ class Card extends Component {
     if (isClickable) {
       this.dom.onclick = this.handleCardClick;
       this.dom.oncontextmenu = this.handleCardClick;
-    } else {
+    } else if (this.dom.onclick) {
       this.dom.onclick = null;
       this.dom.oncontextmenu = null;
     }
+
+    if (onMouseEnter) {
+      this.dom.onmouseenter = onMouseEnter;
+    } else if (this.dom.onmouseenter) {
+      this.dom.onmouseenter = null;
+    }
+    if (onMouseLeave) {
+      this.dom.onmouseleave = onMouseLeave;
+    } else if (this.dom.onmouseleave) {
+      this.dom.onmouseleave = null;
+    }
+
 
     if (template.background && template.background.type !== 'transparent') {
       const { cornerRadius } = template.background;
@@ -103,6 +116,11 @@ class Card extends Component {
         case 'box': {
           const {key, x, y, w, h, ...style} = element;
           childDescriptor = Div_({key, className: css.background, size: {width: w, height: h}, spatial: {x, y, scale: 1}, style: calcStyle(style)})._Div
+          break;
+        }
+        case 'image': {
+          const {key, x, y, w, h, source, color, ...style} = element;
+          childDescriptor = Image_({key, source, color, className: css.background, width: w, height: h, spatial: {x, y, scale: 1}, style: calcStyle(style)})._Image
           break;
         }
         case 'link': {

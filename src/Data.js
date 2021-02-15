@@ -55,13 +55,18 @@ const processObject = function (constants, object) {
 
 
 const processArray = function(constants, array) {
-  array.forEach(element => {
+  for (let i = 0; i < array.length; i++) {
+    const element = array[i];
     if (Array.isArray(element)) {
       processArray(constants, element);
     } else if (typeof element === 'object') {
-      processObject(constants, element);
+      if ( element['$']) {
+        array[i] = getGlobal(constants, element);
+      } else {
+        processObject(constants, element);
+      }
     }
-  })
+  }
 };
 
 

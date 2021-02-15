@@ -5,13 +5,23 @@
   transform-origin: 0 0;
   z-index: 3;
 }
-.icon {
-  opacity: 0.3;
-  margin-right: 6px;
-}
-.icon:hover {
+.iconAbsolute {
+  position: absolute;
+  transform-origin: 0 0;
   opacity: 0.6;
+  z-index: 3;
+  cursor: pointer;
 }
-.icon:active {
+.icon {
+  opacity: 0.6;
+  margin-right: 6px;
+  cursor: pointer;
+}
+.icon:hover,
+.iconAbsolute:hover {
+  opacity: 0.8;
+}
+.icon:active,
+.iconAbsolute:active{
   opacity: 0.9;
 }

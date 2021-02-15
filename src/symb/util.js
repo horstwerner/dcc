@@ -1,7 +1,8 @@
-import { isEqual } from 'lodash';
-import Cache, {resolveAttribute, TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/Cache";
+import {isEqual} from 'lodash';
+import Cache, {resolve, resolveAttribute, TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/Cache";
 
 import GraphNode from "@/graph/GraphNode";
+import Filter from "@/graph/Filter";
 
 export function getTransformString(x, y, scale) {
   return `translate(${x}px, ${y}px) scale(${scale})`;
@@ -181,4 +182,18 @@ export const isDataEqual = function isDataEqual(nodeA, nodeB) {
   } else {
     return nodeA.getUniqueKey() === nodeB.getUniqueKey();
   }
+}
+
+export function getNodes(inputSelector, source, data) {
+  const filter = inputSelector ? Filter.fromDescriptor(inputSelector) : null;
+  let nodes;
+  if (!source || source === 'this') {
+    nodes = nodeArray(data);
+  } else {
+    nodes = nodeArray(resolve(data, source));
+  }
+  if (filter) {
+    nodes = nodes.filter(filter.matches);
+  }
+  return nodes;
 }

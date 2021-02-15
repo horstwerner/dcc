@@ -1,4 +1,5 @@
 <?xml version="1.0" standalone="no"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
-    <path d="M30 80v-30h-20l40 -40l40 40h-20v30z" fill="black" />
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140">
+    <circle cx="70" cy="70" r="68" fill="white" stroke="#808080" stroke-width="3"/>
+    <path d="M50 100v-30h-20l40 -40l40 40h-20v30z" fill="black" />
 </svg>
