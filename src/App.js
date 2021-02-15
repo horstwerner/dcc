@@ -328,7 +328,7 @@ class App extends Component {
       if (this.hoverBreadCrumbKey !== key && this.state.breadCrumbHoverIcon) {
         this.setState({breadCrumbHoverIcon: null});
       }
-    }, 20);
+    }, 150);
 
   }
 
@@ -340,7 +340,7 @@ class App extends Component {
         if (this.hoverMenuKey !== key && this.state.breadCrumbHoverIcon) {
           this.setState({breadCrumbHoverIcon: null});
         }
-      }, 20);
+      }, 150);
 
     }
   }
