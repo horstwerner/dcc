@@ -4,7 +4,7 @@ export const restAfter = function(string, prefix) {
   for (let i = 0; i < prefix.length; i++) {
     if (string.charAt(i) !== prefix.charAt(i)) return null;
   }
-  const rest = string.substr(prefix.length);
+  const rest = string.substr(prefix.length).trim();
   if (!isNaN(rest)) {
     return Number(rest)
   } else return rest;
