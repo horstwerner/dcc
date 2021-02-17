@@ -162,22 +162,70 @@ The `colorcoding` attribute of a template specifies the color of the card backgr
 * `default` the color to choose if the color attribute is missing
 * `markers` only applicable for `gradient`: An array of objects with tke keys `value` and `color`, same as in polar chart
 
+## Contextual Nodes 
+
+All the cards (both representing single nodes or node sets) actually do not bind to the data itself but to a proxy node that
+only lives in the context of the respective card. This node can be amended with additional properties without changing the
+original node - even overwriting properties is possible (more about that in **Preprocessing**)
+One property that every contextual node has is `core:context`, an object that is passed down to the contextual nodes of
+all child cards and can be used to align things across these.
+
+
 ## Aggregate Card Templates
-Before an aggregate card is created, an artificial graph node (the "aggregate node" representing the whole node set is
-created. By default, it has the properties `core:subNodes` which contains the set of individual nodes the card represents
+
+For an aggregate card, the contextual node is not a proxy for a single node but rather represents the aggregate node
+of the the whole node set. By default, it has the properties `core:subNodes` which contains the set of individual nodes the card represents
 and `core:nodeCount` which indicates the number of nodes in that set. It will also have a `core:name` attribute if `name`
 was specified in the `card` element of the parent template. The `core:name` attribute is automatically set by a `trellis`
 element for each subgroup.
 
 ## Preprocessing
-
 Both single node and aggregate templates can specify certain preprocessing steps to be applied to the node set before rendering:
-`preprocess`: An array of preprocessing directives
-Each directive is an object with the following attributes:
-`input`: the property (association type) of the card node to evaluate
-`inputSelector`: a filter as described above
-`method`: (`aggregate`, `set-context`, `path-analysis`, `derive-associations`)
-`result` name of the attribute of the card node in which the result is stored
+All results of preprocessing are written into the contextual card node, and each preprocessing step can read the attributes
+written by previous steps.
 
+`preprocess`: An array of preprocessing directives
+Each directive is an object with the following parameters:
+* `input`: the property (association type) of the card node to evaluate
+* `inputSelector`: a filter as described in the chart and cards elements
+* `method`: (`aggregate`, `set-context`, `path-analysis`, `derive-associations`)
+* `result` name of the attribute of the (contextual) card node in which the result is stored
+
+The following preprocessing methods are supported:
+* `aggregate`: runs simple aggregations over the selected sub nodes (after applying the input selector
+It has one parameter: `results` which is an array of objects of this form:
+  `{<key of result>: {attribute: <attribute name>, calculate: <aggregation>}}`
+  where `<aggregation>` is one of `min`, `max`, `sum`, `avg`, `count`
+  
+Example:
+```
+{"method":  "aggregate", "results": {"storyPointSum":  {"attribute":  "jira:storypoints", "calculate":  "sum"}} }
+```
+
+* `set-context`: copies attribute values into the `core:context` object that is passed down to child cards
+It has one parameter: `values` which is an object where the keys are the properties of `core:context` to be set and the 
+  values are attribute names (or paths) from the current [contextual] card node
+
+Example:
+```
+{"method":  "set-context", "values":  {"allNodes": "core:subNodes"}}
+```
+* `derive-associations`: creates new associations (shortcuts) between the nodes of the set
+Its parameters are: 
+  `path`: the association path to evaluate. Segments are separated by `/`
+  `derived`: the name (or rather uri) of the derived association type
+  `recursive`: true or false, determines whether the process should be repeated for all nodes reached by the path
+  
+* `path-analysis`: recursively traverses a specified association for all sets of the input set (after inputSelector applied)
+and for each touched node stores aggregated values over all predecessors (upstream) and over all successors (downstream)
+Its parameters are:
+  `associationType` - the type of the association to traverse
+  `upstreamAggregate` and `downstreamAggregate`, both conforming to the `aggregate` descriptor described above
+  
+`derive-associations` and `path-analysis` don't modify the original nodes, they create contextual nodes which only live
+in the specified `result` property of the card set's contextual node.
+The amended nodes of a result can be used in a chart instead of the original nodes of a set if the result is specified as
+the `overlay` parameter of that chart. The framework will replace each node with the contextual node with the matching URI
+before rendering the chart.
 
 
