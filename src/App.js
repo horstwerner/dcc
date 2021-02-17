@@ -333,7 +333,6 @@ class App extends Component {
   }
 
   handleBreadcrumbLeave(key) {
-    console.log(`leaving ${key}`)
     if (key === this.hoverBreadCrumbKey) {
       this.hoverBreadCrumbKey = null;
       setTimeout(() => {

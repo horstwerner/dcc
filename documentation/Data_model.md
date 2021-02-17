@@ -30,6 +30,8 @@ Where a type definition is a json object with these properties:
 
 `uri` is a globally unique identifier for each type. To make these uris shorter, the usage of a namespace prefix is
 recommended: in the example `jira:`. A mapping of prefixes to urls may be added later for interoperability purposes.
+The namespace `core:` is reserved for the DCC's built-in data types.
+
 `dataType` can be one of the following: `ENTITY`, `INTEGER`, `FLOAT`, `STRING` or `BOOLEAN`.
 `name` is the display name of the data type.
 `isAssociation` is specified if `dataType` is `Entity` to tell whether the type is only used for associations or whether

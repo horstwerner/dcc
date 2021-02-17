@@ -114,12 +114,12 @@ class Card extends Component {
           break;
         }
         case 'box': {
-          const {key, x, y, w, h, ...style} = element;
+          const {key, x, y, w, h, type, ...style} = element;
           childDescriptor = Div_({key, className: css.background, size: {width: w, height: h}, spatial: {x, y, scale: 1}, style: calcStyle(style)})._Div
           break;
         }
         case 'image': {
-          const {key, x, y, w, h, source, color, ...style} = element;
+          const {key, x, y, w, h, source, color, type, ...style} = element;
           childDescriptor = Image_({key, source, color, className: css.background, width: w, height: h, spatial: {x, y, scale: 1}, style: calcStyle(style)})._Image
           break;
         }
