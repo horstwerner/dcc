@@ -184,16 +184,17 @@ export const isDataEqual = function isDataEqual(nodeA, nodeB) {
   }
 }
 
-export function getNodes(inputSelector, source, data) {
-  const filter = inputSelector ? Filter.fromDescriptor(inputSelector) : null;
-  let nodes;
+export function getUnfilteredNodeArray(source, data) {
   if (!source || source === 'this') {
-    nodes = nodeArray(data);
+    return nodeArray(data);
   } else {
-    nodes = nodeArray(resolve(data, source));
+    return nodeArray(resolve(data, source));
   }
-  if (filter) {
-    nodes = nodes.filter(filter.matches);
-  }
-  return nodes;
+}
+
+export function getNodeArray(inputSelector, source, data) {
+  const filter = inputSelector ? Filter.fromDescriptor(inputSelector) : null;
+  const unfiltered = getUnfilteredNodeArray(source, data);
+  return filter ? unfiltered.filter(filter.matches) : unfiltered;
+
 }

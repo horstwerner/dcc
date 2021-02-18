@@ -12,7 +12,7 @@ import {Image_} from "@symb/Image";
 import {GRID} from "@/arrangement/GridArrangement";
 import Aggregator from "@/Aggregator";
 import TemplateRegistry from "@/templates/TemplateRegistry";
-import {createCardNode, fit, flexHorizontalAlign, flexVerticalAlign, getNodes} from "@symb/util";
+import {createCardNode, fit, flexHorizontalAlign, flexVerticalAlign, getNodeArray} from "@symb/util";
 import {CardSet_, LOD_FULL, LOD_RECT} from "@/components/CardSet";
 import {Card_} from "@/components/Card";
 import CompactGridArrangement from "@/arrangement/CompactGridArrangement";
@@ -187,7 +187,7 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
   const template = TemplateRegistry.getTemplate(templateName);
   const nativeChildSize = template.getSize();
 
-  const nodes = getNodes(inputSelector, source, data);
+  const nodes = getNodeArray(inputSelector, source, data);
   if (!nodes) return null;
 
   if (aggregate) {
