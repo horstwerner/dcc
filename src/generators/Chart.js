@@ -6,7 +6,7 @@ import StackedBarChart from "@/generators/StackedBarChart";
 import {GraphViz_} from "@/components/GraphViz";
 import {DEBUG_MODE} from "@/Config";
 import {PolarChart_} from "@/components/PolarChart";
-import {getNodes, nodeArray} from "@symb/util";
+import {getNodeArray, getUnfilteredNodeArray} from "@symb/util";
 
 const fillInNumber = function fillInNumber(data, valueString) {
   if (isNaN(valueString)) {
@@ -30,7 +30,7 @@ const Chart = function Chart({key, data, descriptor, onClick}) {
 
   const spatial = { x, y, scale: 1};
 
-  let chartData = getNodes(inputSelector, source, data);
+  let chartData = getNodeArray(inputSelector, source, data);
 
   if (overlay) {
     if (!Array.isArray(chartData)) {
@@ -71,8 +71,8 @@ const Chart = function Chart({key, data, descriptor, onClick}) {
       return StackedBarChart({data: chartData, spatial, totalWidthVal: fillInNumber(data, totalWidthValue), ...chartProps, onRectClick: onClick})
     case 'graph':
       const {viewName, nodeAspectRatio} = descriptor;
-      const scope = descriptor['bounded'] ? nodeArray(unfilteredData) : null;
-      return GraphViz_({spatial, startNodes: nodeArray(chartData), scope, ...chartProps, viewName, nodeAspectRatio, onNodeClick: onClick})._GraphViz;
+      const scope = descriptor['bounded'] ? getUnfilteredNodeArray(source, data) : null;
+      return GraphViz_({spatial, startNodes: chartData, scope, ...chartProps, viewName, nodeAspectRatio, onNodeClick: onClick})._GraphViz;
     case 'polar':
       return PolarChart_({data, ...chartProps, spatial:{x, y, scale:1}})._PolarChart
     default:
