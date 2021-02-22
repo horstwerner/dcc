@@ -32,16 +32,5 @@
       "align": {"storyPointSum": "max"},
       "filter": "jira:status"
     }
-  ],
-  "view-options": [
-    {
-      "id":  "ticket-view",
-      "label": "Ticket Display",
-      "default": true,
-      "display": "radio-buttons",
-      "appliesTo": "jira:ticket",
-      "context-parameter": "ticket-template",
-      "options": [{"label": "Compact", "value":  "jira:ticket"}, { "label": "Detailed", "value":  "ticketdetails"}]
-    }
   ]
 }
