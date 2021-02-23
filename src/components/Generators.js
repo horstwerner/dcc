@@ -13,7 +13,7 @@ import {GRID} from "@/arrangement/GridArrangement";
 import Aggregator from "@/Aggregator";
 import TemplateRegistry from "@/templates/TemplateRegistry";
 import {createCardNode, fit, flexHorizontalAlign, flexVerticalAlign, getNodeArray} from "@symb/util";
-import {CardSet_, LOD_FULL, LOD_RECT} from "@/components/CardSet";
+import {CardSet_} from "@/components/CardSet";
 import {Card_} from "@/components/Card";
 import CompactGridArrangement from "@/arrangement/CompactGridArrangement";
 import {preprocess} from "@/graph/Preprocessors";
@@ -112,7 +112,7 @@ export const Caption = function Caption(props) {
   }
 
   return FlexBox_({key, className: css.caption, spatial:{ x, y, scale: 1},
-        style: { width: w, height: h, justifyContent: hAlign, alignItems: vAlign, zIndex: style && style.zIndex }
+        style: { width: w, height: h, justifyContent: hAlign, alignItems: vAlign, zIndex: style && style['z-index'] }
         },
       Div_({key: 'innertext', style: calcStyle({'font-size': h, ...style})}, text)._Div
   )._FlexBox;
@@ -168,7 +168,7 @@ export const createPreprocessedCardNode = function createPreprocessedCardNode(da
   const result = createCardNode(data,null, name);
   const newContext = {...context};
   result[TYPE_CONTEXT] = newContext;
-  const { preprocessing } = template;
+  const { preprocessing } = template.descriptor;
   if (preprocessing) {
     preprocess(result, newContext, preprocessing)
   }
@@ -176,10 +176,6 @@ export const createPreprocessedCardNode = function createPreprocessedCardNode(da
 }
 
 export const ChildSet = function ChildSet(data, context, descriptor, aggregate, onClick, clickMode) {
-
-  if (DEBUG_MODE) {
-    P.checkPropTypes(ChildSet.propTypes, descriptor, 'prop', 'ChildSet');
-  }
 
   const { key, name, source, lod, align, arrangement, inputSelector, viewName, x, y, w, h, options} = descriptor;
 
@@ -231,17 +227,7 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
     options})._CardSet
 }
 
-ChildSet.propTypes = {key: P.string.isRequired,
-  source: P.string.isRequired,
-  lod: P.oneOf([LOD_FULL, LOD_RECT]),
-  aggregate: P.shape({}),
-  arrangement: P.shape({type: P.oneOf[GRID], lod: P.string, padding: P.number}),
-  x: P.number.isRequired,
-  y: P.number.isRequired,
-  w: P.number.isRequired,
-  h: P.number.isRequired,
-  template: P.string.isRequired
-}
+
 
 const iconSize = 24;
 const iconMargin = 6;

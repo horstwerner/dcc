@@ -19,7 +19,7 @@ class TemplateRegistry {
   }
 
   registerTemplate(descriptor) {
-    const {id, appliesTo} = descriptor;
+    const { id, appliesTo } = descriptor;
     console.log(`registered template '${descriptor.id}'`);
     const template = new Template(descriptor);
     if (Array.isArray(appliesTo)) {

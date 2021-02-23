@@ -656,7 +656,7 @@ class App extends Component {
         spatial: {x: mainWidth, y: 0, scale: 1},
         views: views.map(view => ({id: view.id, name: view.name || view.id, selected: view.id === focusCard.template.id})),
         tools: tools && tools.map(tool => ({id: tool.id, name: tool.name, selected: activeTools[tool.id]})),
-        options: get(focusCard, ['template','options']) || {},
+        options: get(focusCard, ['template', 'descriptor', 'options']) || {},
         currentViewOptions,
         onOptionSelect: this.handleOptionSelect,
         onToolToggle: this.handleToolToggle,

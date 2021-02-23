@@ -145,6 +145,8 @@ Displays individual cards for each associated node of the specified association 
     * `maxScale` if specified prevents children from being scaled up beyond this factor even if more space is available
     * `centerX`, `centerY` if set to `true` the cards grid is centered in the available space
   * `inputSelector` as in chart
+  * `align` Object with property names as keys and an aggregation type (min, max, avg) as values. The specified properties
+    will be uniformly set to the value (min, max, avg) of that same property aggregated over all nodes 
   * `template` (optional) id of the template to use for the card layout - if left out will be determined by node type 
   * `viewName` if `template` is not specified, specifies which of the applicable templates for the node type is chosen
   * `options` a key-value object that preselects view options of the applied template
@@ -152,7 +154,14 @@ Displays individual cards for each associated node of the specified association 
 ### card
 Similar to `cards`, but displays one card for the totality of the associated nodes. The template that is used
 must have `aggregate: true`. The `template` must be specified, `viewName` is not applicable.
-`name` can be specified 
+Also `align` is not applicable.
+`name` can be specified and will be written into the `core:name` attribute of the contextual node.
+
+### trellis
+Trellis is similar to `cards`, but these cards are created by grouping the input nodes by the specified `groupattribute`
+and creating one aggregated card for each group.
+* `source`, `template`, `arrangement`, `inputSelector`, `align` as in the "cards" element.
+* `groupAttribute` the name of the attribute to use for grouping
 
 ## Color coding
 

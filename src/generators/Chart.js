@@ -21,8 +21,8 @@ const fillInNumber = function fillInNumber(data, valueString) {
   }
 }
 
-const Chart = function Chart({key, data, descriptor, onClick}) {
-  const {chartType, x, y, source, inputSelector, overlay, ...chartProps} = descriptor;
+const Chart = function Chart({data, descriptor, onClick}) {
+  const {key, chartType, x, y, source, inputSelector, overlay, ...chartProps} = descriptor;
 
   if (DEBUG_MODE) {
     P.checkPropTypes(Chart.propTypes, descriptor, 'prop', `Chart - ${chartType}`);
@@ -47,7 +47,7 @@ const Chart = function Chart({key, data, descriptor, onClick}) {
   switch (chartType) {
     case 'rect':
       const {maxValue, maxW, h, color, attribute} = chartProps;
-      const value = resolveAttribute(chartData, attribute);
+      const value = resolveAttribute(data, attribute);
       if (value == null || isNaN(value) || maxValue == null || isNaN(maxValue)) {
         console.log(`Warning: invalid numbers (value=${value}, maxVal=${maxValue}) for rect chart`);
         return null;
