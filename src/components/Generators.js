@@ -11,7 +11,7 @@ import {Div_, FlexBox_} from "@symb/Div";
 import {Image_} from "@symb/Image";
 import {GRID} from "@/arrangement/GridArrangement";
 import Aggregator from "@/Aggregator";
-import TemplateRegistry from "@/templates/TemplateRegistry";
+import TemplateRegistry, {DEFAULT_VIEW_NAME} from "@/templates/TemplateRegistry";
 import {createCardNode, fit, flexHorizontalAlign, flexVerticalAlign, getNodeArray} from "@symb/util";
 import {CardSet_} from "@/components/CardSet";
 import {Card_} from "@/components/Card";
@@ -179,12 +179,12 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
 
   const { key, name, source, lod, align, arrangement, inputSelector, viewName, x, y, w, h, options} = descriptor;
 
-  const templateName = descriptor.template;
-  const template = TemplateRegistry.getTemplate(templateName);
-  const nativeChildSize = template.getSize();
-
   const nodes = getNodeArray(inputSelector, source, data);
   if (!nodes) return null;
+
+  const templateName = descriptor.template;
+  const template = templateName ? TemplateRegistry.getTemplate(templateName) : TemplateRegistry.getTemplateFor(nodes[0].getTypeUri(), viewName || DEFAULT_VIEW_NAME);
+  const nativeChildSize = template.getSize();
 
   if (aggregate) {
     if (!template) {

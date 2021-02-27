@@ -4,7 +4,7 @@ import Component from '@symb/Component';
 import css from './App.css';
 import ComponentFactory from "@symb/ComponentFactory";
 import Cache, {TYPE_AGGREGATOR, TYPE_CONTEXT, TYPE_NAME, TYPE_NODES} from './graph/Cache';
-import TemplateRegistry from './templates/TemplateRegistry';
+import TemplateRegistry, {DEFAULT_VIEW_NAME} from './templates/TemplateRegistry';
 import {Div_} from '@symb/Div';
 import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
@@ -556,7 +556,7 @@ class App extends Component {
       return;
     }
 
-    const template = TemplateRegistry.getTemplateFor(node.getTypeUri(), 'default');
+    const template = TemplateRegistry.getTemplateFor(node.getTypeUri(), DEFAULT_VIEW_NAME);
     const { mainWidth, focusHeight, breadCrumbHeight } = this.state;
 
     const spatial = this.calcHoverCardSpatial({template, mainWidth, focusHeight, breadCrumbHeight});
