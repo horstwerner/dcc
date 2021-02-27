@@ -37,7 +37,7 @@ export default class Template {
     id: P.string.isRequired,
     name: P.string,
     aggregate: P.bool,
-    size: sizeType,
+    size: P.shape(sizeType),
     background: P.shape({
       type: P.string.isRequired,
       source: P.string,
