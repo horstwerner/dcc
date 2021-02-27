@@ -10,7 +10,7 @@ export default class CardElement extends TemplateElement {
 
   static propTypes = {
     ...TemplateElement.propTypes,
-    source: P.string.isRequired,
+    source: P.string,
     name: P.string,
     align: P.objectOf(P.shape({calculate: P.string.isRequired})),
     inputSelector: P.objectOf(P.string),
