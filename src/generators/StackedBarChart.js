@@ -6,9 +6,9 @@ import {Rect_} from "@/components/Rect";
 import {Svg_} from "@/components/Svg";
 import GraphNode from "@/graph/GraphNode";
 
-const SORT_ASC = 'asc';
-const SORT_DESC = 'desc';
-const SORT_URI = 'byUri';
+export const SORT_ASC = 'asc';
+export const SORT_DESC = 'desc';
+export const SORT_URI = 'byUri';
 
 const strcmp = function(a, b) {
   return (a < b ? -1 : ( a > b ? 1 : 0));

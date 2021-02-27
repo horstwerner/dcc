@@ -1,16 +1,10 @@
 import P from 'prop-types';
 import Component from '@symb/Component';
 import css from './Card.css';
-import {resolveAttribute, TYPE_CONTEXT} from "@/graph/Cache";
 import ComponentFactory from "@symb/ComponentFactory";
 import Template from "@/templates/Template";
-import {Background, calcStyle, Caption, ChildSet, Link} from "@/components/Generators";
-import Chart from "@/generators/Chart";
-import Trellis from "@/generators/Trellis"
-import {fillIn} from "@symb/util";
+import {Background} from "@/components/Generators";
 import {CLICK_DISABLED, CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
-import {Div_} from "@symb/Div";
-import {Image_} from "@symb/Image";
 
 const CARD = 'card';
 
@@ -46,7 +40,7 @@ class Card extends Component {
     const { width, height } = template.getSize();
     this.updateSize({width, height}, tween);
 
-    const isClickable = onClick && (clickMode === CLICK_OPAQUE || (clickMode === CLICK_NORMAL && template.clickable));
+    const isClickable = onClick && (clickMode === CLICK_OPAQUE || (clickMode === CLICK_NORMAL && template.isClickable()));
 
     this.dom.className =  hover ? css.hovering : (isClickable && onClick ? css.clickable : css.background);
     if (isClickable) {
@@ -68,9 +62,10 @@ class Card extends Component {
       this.dom.onmouseleave = null;
     }
 
+    const { background } = template.descriptor;
 
-    if (template.background && template.background.type !== 'transparent') {
-      const { cornerRadius } = template.background;
+    if (background && background.type !== 'transparent') {
+      const { cornerRadius } = background;
       this.dom.style.borderRadius = cornerRadius;
       this.dom.style.overflow = 'hidden';
     }
@@ -85,67 +80,17 @@ class Card extends Component {
 
     const { data, template, onClick, clickMode, options } = props;
 
-    const {background} = template;
+    const { background } = template.descriptor;
     const color = template.getCardColor(data);
     const hasBackground = background.type !== 'transparent';
-    const childrenClickable = clickMode === CLICK_TRANSPARENT || (clickMode === CLICK_NORMAL && !template.clickable);
+    const childrenClickable = clickMode === CLICK_TRANSPARENT || (clickMode === CLICK_NORMAL && !template.isClickable());
 
     const children = [];
     if (hasBackground) {
       children.push(Background(background, color));
     }
     template.getElementsForOptions(options).forEach(element => {
-      const { key } = element;
-      let childDescriptor = null;
-      switch (element.type) {
-        case 'caption':
-          const {text} = element;
-          const captionText = text.includes('{{') ? fillIn(text, data) : text;
-          childDescriptor = Caption({...element, text: captionText});
-          break;
-        case 'textfield': {
-          const {attribute, ...rest} = element;
-          const value = resolveAttribute(data, attribute);
-          childDescriptor = Caption({
-            key: attribute,
-            text: value != null ? String(value) : '',
-            ...rest
-          });
-          break;
-        }
-        case 'box': {
-          const {key, x, y, w, h, type, ...style} = element;
-          childDescriptor = Div_({key, className: css.background, size: {width: w, height: h}, spatial: {x, y, scale: 1}, style: calcStyle(style)})._Div
-          break;
-        }
-        case 'image': {
-          const {key, x, y, w, h, source, color, type, ...style} = element;
-          childDescriptor = Image_({key, source, color, className: css.background, width: w, height: h, spatial: {x, y, scale: 1}, style: calcStyle(style)})._Image
-          break;
-        }
-        case 'link': {
-          const { urlAttribute } = element;
-          const url = resolveAttribute(data, urlAttribute);
-          childDescriptor = url && Link({...element, url});
-          break;
-        }
-        case 'trellis': {
-          childDescriptor = Trellis( data,  element, onClick, CLICK_NORMAL);
-          break;
-        }
-        case "chart":
-          childDescriptor = Chart({key, data, descriptor: element, onClick : childrenClickable ? onClick : null });
-          break;
-        case "card":
-          childDescriptor = ChildSet(data, data.get(TYPE_CONTEXT), element, true, childrenClickable ? onClick : null, CLICK_NORMAL);
-          break;
-        case "cards":
-          // this.childClickAction[element.key] = element.clickAction;
-          childDescriptor = ChildSet(data, data.get(TYPE_CONTEXT), element, false, childrenClickable ? onClick : null, CLICK_NORMAL);
-          break;
-        default:
-          throw new Error(`Unsupported Element type: ${element.type}`);
-      }
+      let childDescriptor = template.createElementInstance(element, data, childrenClickable ? onClick : null);
       if (childDescriptor) {
         if (!childrenClickable) {
           childDescriptor.style = {...(childDescriptor.style || {}), pointerEvents: 'none'};

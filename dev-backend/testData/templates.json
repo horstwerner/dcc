@@ -17,8 +17,7 @@
           "$": "HEADING_COLOR"
         },
         "font-weight": "600",
-        "font-size": "24px",
-        "text-transformation": "uppercase"
+        "font-size": "24px"
       }},
     {"GROUP_HEADING_STYLE": {
         "$": "CARD_HEADING_STYLE",

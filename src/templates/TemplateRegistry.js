@@ -1,6 +1,7 @@
 import Template from './Template';
 
 export const ARRANGEMENT_DEFAULT = 'default';
+export const DEFAULT_VIEW_NAME = 'default';
 
 class TemplateRegistry {
 
@@ -19,7 +20,7 @@ class TemplateRegistry {
   }
 
   registerTemplate(descriptor) {
-    const {id, appliesTo} = descriptor;
+    const { id, appliesTo } = descriptor;
     console.log(`registered template '${descriptor.id}'`);
     const template = new Template(descriptor);
     if (Array.isArray(appliesTo)) {
@@ -55,7 +56,7 @@ class TemplateRegistry {
   }
 
   getDefaultTemplateFor(typeUri) {
-    return this.getTemplateFor(typeUri, 'default');
+    return this.getTemplateFor(typeUri, DEFAULT_VIEW_NAME);
   }
 
   getTemplateFor(typeUri, viewName) {
@@ -68,8 +69,8 @@ class TemplateRegistry {
     let result = candidates.find(template => (template.name || '').toLowerCase() === searchName);
     if (result) return result;
     console.log(`Warning: Can't find view ${viewName} for ${typeUri}. Falling back to default or other`);
-    if (searchName !== 'default') {
-      result = candidates.find(template => (template.name || '').toLowerCase() === 'default');
+    if (searchName !== DEFAULT_VIEW_NAME) {
+      result = candidates.find(template => (template.name || '').toLowerCase() === DEFAULT_VIEW_NAME);
     }
     if (result) return result;
 

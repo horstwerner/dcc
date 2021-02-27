@@ -1,5 +1,3 @@
-import {DEBUG_MODE} from "@/Config";
-import P from "prop-types";
 import {EMPTY, sliceBy} from "@/graph/GroupedSet";
 import {LOD_FULL} from "@/components/CardSet";
 import {ChildSet} from "@/components/Generators";
@@ -8,10 +6,6 @@ import {getNodeArray} from "@symb/util";
 
 
 const Trellis = function Trellis(data, descriptor, onClick, clickMode) {
-
-  if (DEBUG_MODE) {
-    P.checkPropTypes(Trellis.propTypes, descriptor, 'prop', 'Trellis');
-  }
 
   const {key, source, template, inputSelector, groupAttribute, align, arrangement, x, y, w, h} = descriptor;
 
@@ -40,9 +34,5 @@ const Trellis = function Trellis(data, descriptor, onClick, clickMode) {
       clickMode);
 }
 
-Trellis.propTypes = {
-  ...ChildSet.propTypes,
-  groupAttribute: P.string
-}
 
 export default Trellis;

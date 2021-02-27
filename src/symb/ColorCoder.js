@@ -10,12 +10,14 @@ const createTest = function (condition, color) {
   return {...comparison, color};
 };
 
+export const colorCasesShape =  P.arrayOf(P.shape({condition: P.string.isRequired, color: P.string.isRequired}));
+
 export default class ColorCoder extends CheckedObject{
 
   static propertyTypes = {
     type: P.oneOf(["selection", "gradient"]).isRequired,
     attribute: P.string.isRequired,
-    cases: P.arrayOf(P.shape({condition: P.string.isRequired, color: P.string.isRequired})),
+    cases: colorCasesShape,
     default: P.string.isRequired,
     markers: P.arrayOf(P.shape({value: P.number.isRequired, color: P.string.isRequired}))
   };

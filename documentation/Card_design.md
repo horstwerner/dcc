@@ -1,5 +1,8 @@
 # Designing Card Templates
 
+The templates file (or JSON object delivered to the client in response to the "cards" request) contains a key "cards"
+that has an array of card templates as value.
+
 A card template is a JSON object with the following properties:
 
 * `id`: this is the key by which a template can be unambiguously referenced
@@ -142,6 +145,8 @@ Displays individual cards for each associated node of the specified association 
     * `maxScale` if specified prevents children from being scaled up beyond this factor even if more space is available
     * `centerX`, `centerY` if set to `true` the cards grid is centered in the available space
   * `inputSelector` as in chart
+  * `align` Object with property names as keys and an aggregation type (min, max, avg) as values. The specified properties
+    will be uniformly set to the value (min, max, avg) of that same property aggregated over all nodes 
   * `template` (optional) id of the template to use for the card layout - if left out will be determined by node type 
   * `viewName` if `template` is not specified, specifies which of the applicable templates for the node type is chosen
   * `options` a key-value object that preselects view options of the applied template
@@ -149,7 +154,14 @@ Displays individual cards for each associated node of the specified association 
 ### card
 Similar to `cards`, but displays one card for the totality of the associated nodes. The template that is used
 must have `aggregate: true`. The `template` must be specified, `viewName` is not applicable.
-`name` can be specified 
+Also `align` is not applicable.
+`name` can be specified and will be written into the `core:name` attribute of the contextual node.
+
+### trellis
+Trellis is similar to `cards`, but these cards are created by grouping the input nodes by the specified `groupattribute`
+and creating one aggregated card for each group.
+* `source`, `template`, `arrangement`, `inputSelector`, `align` as in the "cards" element.
+* `groupAttribute` the name of the attribute to use for grouping
 
 ## Color coding
 
@@ -228,4 +240,69 @@ The amended nodes of a result can be used in a chart instead of the original nod
 the `overlay` parameter of that chart. The framework will replace each node with the contextual node with the matching URI
 before rendering the chart.
 
+## View Options
+
+Card templates can have view options - user-selectable parameters influencing how they are rendered.
+The property `options` is an object in which each key is the name of such a parameter and the value describes the choices
+the user has for this parameter. For example:
+
+```      "options":  {
+        "grouping": {
+          "caption": "Group by",
+          "display": "radio-buttons",
+          "selection": [
+            {"label":  "Feature", "value": "jira:feature"}, {"label": "Team", "value": "jira:team"},
+            {"label":  "Status", "value": "jira:status"}, {"label": "Release", "value": "jira:release"}],
+          "defaultValue": "jira:team"
+        }
+      },
+```
+* `caption` is the text displayed as the caption of the selections in the lower part of the sidebar when a card with
+the parameterized template is in the focus.
+* `display` - currently only `radio-buttons` is supported
+* `selection` is the array of choices the user has. Each one of these has two properties:
+  * `label` is the text of the corresponding button
+  * `value` is the actual value that the parameter has when this choice is selected
+* `defaultValue` is the value the parameter has in the beginning
+
+The parameter can be used in place of text literals with a preceding `$` character, for example:
+```
+          "groupAttribute": "$grouping"
+```
+
+## Global Constants
+
+In addition to the "cards" key, the templates file also has a key "constants", with an array of constant declarations as
+value. Constants are reusable (partial) objects which help avoid repetitions of styles or element declarations.
+Each constant is an object with a single key (the constant name) and an arbitrary value:
+``` 
+   {"TEXT_COLOR": "rgba(0,0,0,0.7)"},
+```
+
+A preprocessor will replace all objects of the form
+
+```{"$": "<constant name>"}``` by whatever value was assigned to that constant (atomic or object).
+
+If the constant is an object, it can be modified or extended whenever it is used by specifying further keys in addition 
+to `$`.
+
+Constants can even use constants that have been defined further up in the array:
+
+```
+    {"CARD_HEADING_STYLE": {
+        "font-family": "Arial, sans serif",
+        "color": {
+          "$": "HEADING_COLOR"
+        },
+        "font-weight": "600",
+        "font-size": "24px",
+        "text-transformation": "uppercase"
+      }},
+    {"GROUP_HEADING_STYLE": {
+        "$": "CARD_HEADING_STYLE",
+        "font-size": "18px"
+      }},
+```
+
+The constant `GROUP_HEADING_STYLE` inherits all properties of `CARD_HEADING_STYLE` and only overrides `font-size`.
 
