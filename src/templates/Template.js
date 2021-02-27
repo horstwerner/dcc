@@ -57,6 +57,11 @@ export default class Template {
 
   static validateDescriptor(descriptor) {
     const id = descriptor.id;
+    Object.keys(descriptor).forEach(key => {
+      if (!Template.propertyTypes[key]) {
+        console.warn(`Warning: Template ${id} contains unsupported property ${key}`);
+      }
+    });
     P.checkPropTypes(Template.propertyTypes, descriptor, id, 'template');
     descriptor.elements.forEach(element => {
       const elementClass = elementClassByType[element.type];

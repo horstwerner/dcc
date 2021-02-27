@@ -29,7 +29,13 @@ export default class TemplateElement {
 
   static validate(templateId, descriptor) {
     let error = false;
-    P.checkPropTypes(this.constructor.propTypes, descriptor, templateId, descriptor.key || JSON.stringify(descriptor), () => {error = true; return '';})
+    const subClassPropTypes = this.prototype.constructor.propTypes;
+    Object.keys(descriptor).forEach(key => {
+      if (!subClassPropTypes[key]) {
+        console.warn(`Warning: Template ${templateId} element ${descriptor.key} contains unsupported property ${key}`);
+      }
+    });
+    P.checkPropTypes(subClassPropTypes, descriptor, templateId, descriptor.key || JSON.stringify(descriptor), () => {error = true; return '';})
     return error;
   }
 
