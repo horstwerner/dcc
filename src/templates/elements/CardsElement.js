@@ -15,7 +15,7 @@ export default class CardsElement extends TemplateElement {
     source: P.string.isRequired,
     lod: P.oneOf([LOD_FULL, LOD_RECT]),
     name: P.string,
-    align: P.objectOf(P.shape({calculate: P.string.isRequired})),
+    align: P.object,
     inputSelector: P.objectOf(P.string),
     viewName: P.string,
     arrangement: P.shape({type: P.oneOf[GRID], lod: P.string, padding: P.number}),

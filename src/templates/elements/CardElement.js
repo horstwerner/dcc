@@ -12,7 +12,7 @@ export default class CardElement extends TemplateElement {
     ...TemplateElement.propTypes,
     source: P.string,
     name: P.string,
-    align: P.objectOf(P.shape({calculate: P.string.isRequired})),
+    align: P.object,
     inputSelector: P.objectOf(P.string),
     viewName: P.string,
     template: P.string,

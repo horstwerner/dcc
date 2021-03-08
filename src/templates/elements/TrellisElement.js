@@ -14,7 +14,7 @@ export default class TrellisElement extends TemplateElement {
     template: P.string.isRequired,
     inputSelector: P.objectOf(P.string),
     groupAttribute: P.string.isRequired,
-    align: P.objectOf(P.shape({calculate: P.string.isRequired})),
+    align: P.object,
     arrangement: P.shape({type: P.oneOf[GRID], lod: P.string, padding: P.number}),
   }
 
