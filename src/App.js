@@ -75,6 +75,7 @@ class App extends Component {
           getCardDescriptors(this.onError),
           getToolDescriptors(this.onError)]))
         .then(() => {
+          Cache.validateNodes();
           if (!this.state.error) {
             const startData = new GraphNode(TYPE_AGGREGATOR, Cache.createUri());
             Object.keys(Cache.rootNode).forEach(entityType => {
