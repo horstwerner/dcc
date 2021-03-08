@@ -4,7 +4,7 @@ import Cache, {
   DATATYPE_INTEGER,
   DATATYPE_STRING,
   TYPE_CONTEXTUAL_NODE,
-  TYPE_NAME
+  TYPE_NAME, TYPE_THING
 } from './Cache';
 
 // noinspection JSUnusedGlobalSymbols
@@ -46,7 +46,7 @@ export default class GraphNode {
     }
     this.type = type;
     if (this.type === undefined) throw new Error("Can't find type " + typeUri);
-    this.uniqueKey = `${this.type.uri}/${this.uri}`;
+    this.uniqueKey = `${this.getTypeUri()}/${this.uri}`;
   }
 
   createContextual() {
@@ -54,6 +54,9 @@ export default class GraphNode {
   }
 
   getTypeUri() {
+    if (!this.type) {
+      return TYPE_THING;
+    }
     return this.originalNode ? this.originalNode.type.uri : this.type.uri;
   };
 
@@ -64,7 +67,7 @@ export default class GraphNode {
 
   // noinspection JSUnusedGlobalSymbols
   isOfType (typeUri) {
-    let curParent = this.type;
+    let curParent = this.type || Cache.getType(TYPE_THING);
     while (curParent) {
       if (typeUri === curParent.uri) return true;
       curParent = curParent.subClassOf ? Cache.getType(curParent.subClassOf) : null;
@@ -236,7 +239,7 @@ export default class GraphNode {
 
     const nodeType = targetTypeUri || (!associationtype.isAssociation && associationtype.uri);
 
-    const inverseTypeUri = associationtype.getInverseType(this.type.uri);
+    const inverseTypeUri = associationtype.getInverseType(this.getTypeUri());
 
     if (typeof target === 'string') {
       const targetNode = Cache.getNode(nodeType, target);

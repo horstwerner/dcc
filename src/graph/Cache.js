@@ -9,6 +9,7 @@ export const DATATYPE_FLOAT = 'FLOAT';
 export const DATATYPE_ENTITY = 'ENTITY';
 
 export const TYPE_NAME = 'core:name';
+export const TYPE_THING = 'core:thing'; // fallback type
 export const TYPE_AGGREGATOR = 'core:aggregator';
 export const TYPE_CONTEXTUAL_NODE = 'core:contextual';
 export const TYPE_PREDECESSOR_COUNT = 'core:predecessorCount';
@@ -35,6 +36,7 @@ class Cache {
     this.createType({uri: TYPE_CONTEXTUAL_NODE, name: 'contextual', dataType: DATATYPE_ENTITY, isAssociation: false});
     this.createType({uri: TYPE_AGGREGATOR, name: 'aggregated', dataType: DATATYPE_ENTITY, isAssociation: false});
     this.createType({uri: TYPE_NODES, name: 'nodes', dataType: DATATYPE_ENTITY, isAssociation: true});
+    this.createType({uri: TYPE_THING, name: 'thing', dataType: DATATYPE_ENTITY, isAssociation: false});
     this.createType({uri: TYPE_NODE_COUNT, name: 'node count', dataType: DATATYPE_INTEGER, isAssociation: false});
   };
 
@@ -188,46 +190,13 @@ class Cache {
     }
   }
 
-  // importNodesJson(array) {
-  //   for (let i = 0; i < array.length; i++) {
-  //     const rawNode = array[i];
-  //     const nodeType = rawNode["core:type"];
-  //     if (nodeType === undefined) {
-  //       throw new Error("Can't import node with missing type: " + rawNode.toString());
-  //     }
-  //     const nodeUri = rawNode["core:uri"];
-  //     if (nodeUri === undefined) {
-  //       throw new Error("Can't import node with missing uri: " + rawNode.toString());
-  //     }
-  //     let newNode = this.getNode(nodeType, nodeUri);
-  //     for (let prop in rawNode) {
-  //       if (!rawNode.hasOwnProperty(prop) || prop === 'core:type') continue;
-  //       const proptype = this.getType(prop);
-  //       if (proptype && proptype.isAssociation) {
-  //         newNode.addAssociation(proptype, rawNode[prop]);
-  //       }
-  //       else {
-  //         newNode[prop] = rawNode[prop];
-  //       }
-  //     }
-  //   }
-  // };
-
-  // loadTypeDic(wsname, callback) {
-  //   const request = new XMLHttpRequest();
-  //   request.onreadystatechange =  () => {
-  //     if (request.readyState === 4 && (request.status === 200 || request.status === 0)) {
-  //       const response = JSON.parse(request.responseText);
-  //       const dicArray = response['TypeDictionary'];
-  //       this.importTypes(dicArray);
-  //       callback();
-  //     }
-  //   };
-  //   const url = 'data/dictionary.json'; //"http://localhost:8080/ws/dictionary/" + wsname
-  //   request.open("GET", url, true);
-  //   request.send(null);
-  // };
-
+  validateNodes() {
+    Object.values(this.lookUpGlobal).forEach(node => {
+      if (!node.type) {
+        console.error(`node ${node.uri} has no type`);
+      }
+    });
+  }
 }
 
 const cacheInstance = new Cache();
