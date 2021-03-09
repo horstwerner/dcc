@@ -361,8 +361,7 @@ export default class Component {
       };
     } else {
       this.transitionTween = transitionTween;
-      this.setS
-      tate(partialState);
+      this.setState(partialState);
       transitionTween.start();
     }
     return transitionTween;
