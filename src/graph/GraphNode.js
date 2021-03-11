@@ -64,15 +64,9 @@ export default class GraphNode {
     return this[Cache.getConfig().displayNameAttribute] || this.uri;
   }
 
-
   // noinspection JSUnusedGlobalSymbols
   isOfType (typeUri) {
-    let curParent = this.type || Cache.getType(TYPE_THING);
-    while (curParent) {
-      if (typeUri === curParent.uri) return true;
-      curParent = curParent.subClassOf ? Cache.getType(curParent.subClassOf) : null;
-    }
-    return  false;
+    return (this.type || Cache.getType(TYPE_THING)).isOfType(typeUri);
   }
 
   getUniqueKey () {

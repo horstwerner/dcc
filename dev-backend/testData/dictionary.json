@@ -43,6 +43,20 @@
       "isAssociation": false
     },
     {
+      "uri": "jira:bug",
+      "dataType": "ENTITY",
+      "name": "Bug",
+      "subClassOf": "jira:ticket",
+      "isAssociation": false
+    },
+    {
+      "uri": "jira:story",
+      "dataType": "ENTITY",
+      "name": "Story",
+      "subClassOf": "jira:ticket",
+      "isAssociation": false
+    },
+    {
       "uri": "dcc:test",
       "dataType": "ENTITY",
       "name": "Test",

@@ -1,4 +1,6 @@
 import GraphNode from "@/graph/GraphNode";
+import {TYPE_TYPE} from "@/graph/Cache";
+import Type from "@/graph/Type";
 
 export const restAfter = function(string, prefix) {
   for (let i = 0; i < prefix.length; i++) {
@@ -10,6 +12,7 @@ export const restAfter = function(string, prefix) {
   } else return rest;
 };
 
+export const COMPARISON_OF_TYPE = (testValue, value) => value.constructor === Type && value.isOfType(testValue);
 export const COMPARISON_EQUAL =  (testValue, value) => testValue === value;
 export const COMPARISON_CONTAINS = (testValue, value) => value.toLowerCase().includes(testValue.toLowerCase());
 export const COMPARISON_NOT_EQUAL = (testValue, value) => testValue !== value;
@@ -40,7 +43,8 @@ const comparisons = [
   {symbol: ">", matches: COMPARISON_GREATER},
   {symbol: "exists", matches: COMPARISON_EXISTS},
   {symbol: "empty", matches: COMPARISON_EMPTY},
-  {symbol: "->", matches: COMPARISON_HAS_ASSOCIATED}
+  {symbol: "->", matches: COMPARISON_HAS_ASSOCIATED},
+  {symbol: "is", matches: COMPARISON_OF_TYPE}
 ];
 
 export const parseComparison = function parseComparison(condition) {
@@ -70,13 +74,13 @@ export default class Filter {
   constructor(attribute, matchFunction, comparand) {
     this.attribute = attribute;
     this.matchFunction = matchFunction;
-    this.isNumeric = !isNaN(comparand);
+    this.isNumeric = !isNaN(comparand) && attribute !== TYPE_TYPE;
     this.comparand = this.isNumeric ? Number(comparand): comparand;
     this.matches = this.matches.bind(this);
   }
 
   matches(graphNode) {
-    const rawValue = graphNode.get(this.attribute);
+    const rawValue = (this.attribute !== TYPE_TYPE) ?  graphNode.get(this.attribute) : graphNode.type;
     const value = this.isNumeric ? Number(rawValue) : rawValue;
     return this.matchFunction(this.comparand, value);
   }
