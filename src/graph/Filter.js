@@ -67,6 +67,12 @@ export default class Filter {
     const attribute = Object.keys(descriptor)[0];
     const rest = descriptor[attribute];
     const comparison = parseComparison(rest);
+    if (attribute === 'core:type' && comparison.matches !== COMPARISON_OF_TYPE) {
+      throw new Error(`Error in filter ${JSON.stringify(descriptor)}: use 'is' as comparator for core:type`);
+    }
+    if (comparison.matches === COMPARISON_OF_TYPE && attribute === 'core:type') {
+      throw new Error(`Error in filter ${JSON.stringify(descriptor)}: 'is' can only be used for 'core:type'`);
+    }
 
     return new Filter(attribute, comparison.matches, comparison.testValue);
   }

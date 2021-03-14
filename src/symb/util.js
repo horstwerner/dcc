@@ -1,4 +1,4 @@
-import {isEqual} from 'lodash';
+import {isEqual, mapValues} from 'lodash';
 import Cache, {resolve, resolveAttribute, TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/Cache";
 
 import GraphNode from "@/graph/GraphNode";
@@ -163,11 +163,7 @@ const cloneX = function (element) {
 }
 
 export const cloneObject = function cloneObject(object) {
-  const result = {};
-  Object.keys(object).forEach(key => {
-    result[key] = cloneX(object[key]);
-  });
-  return result;
+  return mapValues(object, value => cloneX(value));
 }
 
 export const nodeArray = function NodeArray(source) {
