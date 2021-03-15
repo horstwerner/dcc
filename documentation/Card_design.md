@@ -12,6 +12,8 @@ A card template is a JSON object with the following properties:
 * `size`: an object containing the properties `w` and `h` to describe the native (unscaled) size of the card in pixels
 * `clickable` boolean. It defines whether this card can be clicked and thus become the focus card or whether it is only 
 used as a layout element in other cards.
+* `detailTemplate` is the id of another (more detailed) template that can be used as focus (or hover) card when the user
+  clicks on the card. This allows the realization of semantic zoom.
 * `background` The background can have two values for `type`:  `rect` or `image`
 * `colorcoding` optional. Describes how the background color is derived from attribute values of the data node
 * `elements` An array of JSON objects defining the inner layout. Each element must have a `key` and `type` attribute, as well as `x`, `y`, `w` and `h` to define position and size. Other attributes depend on the element type.
@@ -102,7 +104,8 @@ The box is the same as a text field without any text. It's appearance is control
   * `inputSelector` `{"<attribute>": "<comparator><comparand>"}`
     where `<comparator>` is one of `=`, `!=`, `<`, `<=`, `>`,`>=`, `empty`, `exists`, `contains`, `!contains`, `->`
     The input selector filters the data from `source` before it is fed into the chart
-  * `overlay` a set of contextual nodes that amend the nodes fed into the chart by calculated attributes - arcane
+  * `overlay` a set of contextual nodes (calculated in preprocess methods) that amend the nodes fed into the chart by
+    calculated attributes or associations - arcane
 
 For chart type `rect`, a single bar proportional to an attribute value is rendered:
   * `maxValue` specifies the largest possible attribute value 
@@ -227,6 +230,10 @@ Its parameters are:
   `path`: the association path to evaluate. Segments are separated by `/`
   `derived`: the name (or rather uri) of the derived association type
   `recursive`: true or false, determines whether the process should be repeated for all nodes reached by the path
+  
+Keep in mind that only nodes for which the (full) specified path has been found (and a shortcut added) are stored in the
+property specified in `result`. Therefore the use of `derive-association` should in most cases be combined with using
+the `result` as `overlay` to amend a set of nodes and not as self-contained input into a visualization.
   
 * `path-analysis`: recursively traverses a specified association for all sets of the input set (after inputSelector applied)
 and for each touched node stores aggregated values over all predecessors (upstream) and over all successors (downstream)

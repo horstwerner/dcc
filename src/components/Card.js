@@ -66,7 +66,7 @@ class Card extends Component {
 
     if (background && background.type !== 'transparent') {
       const { cornerRadius } = background;
-      this.dom.style.borderRadius = cornerRadius;
+      this.dom.style.borderRadius = `${cornerRadius}px`;
       this.dom.style.overflow = 'hidden';
     }
 
