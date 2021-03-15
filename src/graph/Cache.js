@@ -15,6 +15,7 @@ export const TYPE_CONTEXTUAL_NODE = 'core:contextual';
 export const TYPE_PREDECESSOR_COUNT = 'core:predecessorCount';
 export const TYPE_SUCCESSOR_COUNT = 'core:successorCount';
 export const TYPE_NODES = 'core:subNodes';
+export const TYPE_TYPE = 'core:type';
 export const TYPE_CONTEXT = 'core:context';
 export const TYPE_NODE_COUNT = 'core:nodeCount';
 export const TYPE_DEPTH = 'core:depth';
@@ -125,6 +126,15 @@ class Cache {
       let typeDescriptor = typeArray[i];
       this.createType(typeDescriptor);
     }
+    Object.values(this.typeDic).forEach(type => {
+      if (type.subclassOf) {
+        const superType = this.typeDic[type.subclassOf];
+        if (!superType) {
+          throw new Error(`Type ${type.uri} declares nonexistent super type ${type.subclassOf}`);
+        }
+        type.superType = superType;
+      }
+    })
   };
 
   importNodes(nodeArray) {

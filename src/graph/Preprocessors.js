@@ -19,7 +19,7 @@
 // "result": "dependencies"
 
 import Aggregator from "@/Aggregator";
-import {resolveAttribute, TYPE_NODES} from "@/graph/Cache";
+import {resolve, TYPE_NODES} from "@/graph/Cache";
 import Filter from "@/graph/Filter";
 import {deriveAssociations, pathAnalysis} from "@/graph/Analysis";
 
@@ -41,7 +41,7 @@ export const preprocess = function preprocess(data, context, preprocessors) {
 
     const filter = inputSelector ? Filter.fromDescriptor(inputSelector) : null;
 
-    const source = filter ? resolveAttribute(data, input || TYPE_NODES).filter(filter.matches) : resolveAttribute(data, input || TYPE_NODES);
+    const source = filter ? resolve(data, input || TYPE_NODES).filter(filter.matches) : resolve(data, input || TYPE_NODES);
     if (source == null) {
       debugger
       if (!input) {
@@ -65,11 +65,11 @@ export const preprocess = function preprocess(data, context, preprocessors) {
       }
       case SET_CONTEXT: { // add key-value pairs to context object in order to be passed down
         const {values} = descriptor;
-        Object.keys(values).forEach(targetField => context[targetField] = resolveAttribute(data, values[targetField]));
+        Object.keys(values).forEach(targetField => context[targetField] = resolve(data, values[targetField]));
         break;
       }
       case DERIVE_ASSOCIATIONS: {
-        const {path, derived, recursive} = descriptor;
+        const { path, derived, recursive } = descriptor;
         data[result] = deriveAssociations(data[TYPE_NODES], path, derived, recursive);
         break;
       }

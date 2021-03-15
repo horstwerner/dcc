@@ -46,6 +46,7 @@ export default class Template {
     }),
     appliesTo: P.oneOfType([P.string,P.array]),
     clickable: P.bool,
+    detailTemplate: P.string,
     preprocessing: P.arrayOf(P.shape({method: P.string.isRequired, result: P.string, inputSelector: P.object})),
     colorcoding: P.shape(ColorCoder.propertyTypes),
     options: P.objectOf(P.shape({options: P.arrayOf(P.shape({label: P.string, value: P.any})), default: P.any})),
@@ -85,6 +86,10 @@ export default class Template {
 
   isClickable() {
     return this.descriptor.clickable;
+  }
+
+  getDetailTemplateId() {
+    return this.descriptor.detailTemplate || this.id;
   }
 
   getDefaultOptions() {

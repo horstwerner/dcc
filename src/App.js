@@ -191,9 +191,15 @@ class App extends Component {
 
   cloneNodeToFocus(component) {
     const { data, template, options } = component.innerProps;
-    const spatial = component.getRelativeSpatial(this.getFocusPlane());
+    let spatial = component.getRelativeSpatial(this.getFocusPlane());
+    const cloneTemplate = TemplateRegistry.getTemplate(template.getDetailTemplateId());
+    if (cloneTemplate !== template) {
+      const {width, height} = template.getSize();
+      const cloneSize = cloneTemplate.getSize();
+      spatial = fit(width * spatial.scale, height * spatial.scale, cloneSize.width, cloneSize.height, spatial.x, spatial.y);
+    }
 
-    const newFocusCard = Card_({ key: this.createChildKey(), data, hover: false, template, options, spatial,
+    const newFocusCard = Card_({ key: this.createChildKey(), data, hover: false, template: cloneTemplate, options, spatial,
       onClick: this.handleNodeClick, clickMode: CLICK_TRANSPARENT, style: { zIndex: 2 } })._Card
     this.setState({hoverCard: newFocusCard, allowInteractions: false});
     this.moveCardToFocus(newFocusCard, data);
@@ -204,14 +210,20 @@ class App extends Component {
     const { data, template, options } = component.innerProps;
     const { mainWidth, focusHeight, breadCrumbHeight } = this.state;
 
-    const spatial = component.getRelativeSpatial(this.getFocusPlane());
+    let spatial = component.getRelativeSpatial(this.getFocusPlane());
+    const cloneTemplate = TemplateRegistry.getTemplate(template.getDetailTemplateId());
+    if (cloneTemplate !== template) {
+      const {width, height} = template.getSize();
+      const cloneSize = cloneTemplate.getSize();
+      spatial = fit(width * spatial.scale, height * spatial.scale, cloneSize.width, cloneSize.height, spatial.x, spatial.y);
+    }
 
-    const clone = Card_({key: this.createChildKey(), data, hover: true, template, options, spatial, clickMode: CLICK_OPAQUE,
+    const clone = Card_({key: this.createChildKey(), data, hover: true, template: cloneTemplate, options, spatial, clickMode: CLICK_OPAQUE,
       onClick: this.handleHoverCardPin,
       style: {zIndex: 2}})._Card
     this.setState({hoverCard: clone, allowInteractions: false});
 
-    const newSpatial = this.calcHoverCardSpatial({template, mainWidth, focusHeight, breadCrumbHeight});
+    const newSpatial = this.calcHoverCardSpatial({template: cloneTemplate, mainWidth, focusHeight, breadCrumbHeight});
     this.transitionToState({hoverCard:{...clone, spatial: newSpatial}}).onEndCall(() => {
           this.setState({allowInteractions: true});
         }
@@ -226,6 +238,7 @@ class App extends Component {
     this.removeModals();
     this.moveCardToBreadcrumbs(focusCard, targetState, endState);
   }
+
 
 
   moveCardToBreadcrumbs(card, targetState, endState) {

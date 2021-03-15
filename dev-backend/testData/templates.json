@@ -117,10 +117,6 @@
       "name": "Default",
       "appliesTo": "jira:ticket",
       "aggregate": false,
-      "size": {
-        "w": 220,
-        "h": 120
-      },
       "background": {
         "type": "image",
         "source": "images/SimpleCard.svg",
@@ -234,6 +230,7 @@
       "id": "ticket-compact",
       "name": "Compact",
       "appliesTo": "jira:ticket",
+      "detailTemplate": "jira:ticket",
       "aggregate": false,
       "size": { "w": 220, "h": 120},
       "background": { "type": "rect", "w": 220, "h": 120, "cornerRadius": "6px"},

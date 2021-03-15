@@ -38,7 +38,7 @@ const bumpSuccessorDepth = function bumpSuccessorDepth(edgeList, depth, vizNodes
 const traverseGraph = function traverseGraph(startNodes, scopeKeys, path) {
   const vizNodesByKey = {};
 
-  startNodes.forEach(node => {vizNodesByKey[node.getUniqueKey()] = {graphNode: node, depth: 0, inEdges: []}});
+  startNodes.forEach(node => {vizNodesByKey[node.getUniqueKey()] = {graphNode: node, depth: 0, inEdges: [], outEdges: []}});
 
   let curSegmentIdx = 0;
   let depth = 0;
@@ -52,7 +52,6 @@ const traverseGraph = function traverseGraph(startNodes, scopeKeys, path) {
     nextNodeList.forEach(node => {
       const sourceKey = node.getUniqueKey();
       const sourceVizNode = vizNodesByKey[sourceKey];
-      sourceVizNode.outEdges = [];
       const associated = getAssociated(node, edgeType);
       associated.forEach(targetNode => {
         const targetKey = targetNode.getUniqueKey();
@@ -62,7 +61,7 @@ const traverseGraph = function traverseGraph(startNodes, scopeKeys, path) {
         if (!targetVizNode) {
           // new node added to analysis
           sourceVizNode.outEdges.push({targetKey});
-          vizNodesByKey[targetKey] = {graphNode: targetNode, depth: sourceVizNode.depth + 1, inEdges: [{sourceKey}]};
+          vizNodesByKey[targetKey] = {graphNode: targetNode, depth: sourceVizNode.depth + 1, inEdges: [{sourceKey}], outEdges: []};
           nextNodeMap[targetKey] = targetNode;
           if (recursive) {
             accumulatedNextNodeMap[targetKey] = targetNode;

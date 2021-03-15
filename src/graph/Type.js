@@ -19,6 +19,12 @@ export default class Type extends CheckedObject{
     return this.inverseType || fallbackTargettype;
   }
 
+  isOfType(superTypeUri) {
+    if (this.uri === superTypeUri) return true;
+    if (this.superType) return this.superType.isOfType(superTypeUri);
+    return false;
+  }
+
   getName() {
     return this.name;
   }
