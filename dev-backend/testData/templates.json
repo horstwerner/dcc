@@ -195,20 +195,21 @@
           }
         },
         {
+          "key": "teamname",
+          "type": "caption",
+          "x": 50, "y": 67, "w": 80, "h": 18,
+          "text": "Team: {{jira:team}}",
+          "style": {"$": "LABEL_SMALL_STYLE"}
+        },
+        {
           "key": "status",
-          "type": "textfield",
+          "type": "caption",
           "x": 130,
           "y": 67,
           "w": 90,
           "h": 20,
-          "attribute": "jira:status",
-          "style": {
-            "font-size": "12px",
-            "font-weight": "normal",
-            "color": {
-              "$": "TEXT_COLOR"
-            }
-          }
+          "text": "Status: {{jira:status}}",
+          "style": {"$": "LABEL_SMALL_STYLE"}
         },
         {
           "key": "link",
@@ -219,7 +220,7 @@
           "h": 12,
           "urlAttribute": "core:url",
           "style": {
-            "font-size": "12px",
+            "font-size": "8px",
             "font-weight": "normal"
           },
           "text": "Jira Link"
@@ -273,7 +274,7 @@
         "cornerRadius": "6px"
       },
       "clickable": true,
-      "preprocessing": [{"method":  "aggregate", "input": "jira:ticket", "results": {"storyPointSum":  {"attribute":  "jira:storypoints", "calculate": "sum"}}}],
+      "preprocessing": [{"method":  "aggregate", "input": "jira:ticket", "results": {"storyPointSum":  {"attribute":  "jira:storypoints", "calculate": "sum"}, "storyPoints": {"attribute":  "jira:storypoints", "calculate": "sum"}}}],
       "elements": [
         {
           "key": "heading",
@@ -283,10 +284,17 @@
           "style": {"$": "LABEL_STYLE"}
         },
         {
+          "key": "warning",
+          "type": "image",
+          "condition": {"storyPoints": ">120"},
+          "x": 160, "y": 10, "w": 30, "h": 30,
+          "source": "images/Warning.svg"
+        },
+        {
           "key": "storycaption",
           "type": "caption",
-          "x": 12, "y": 48, "w": 80, "h": 18,
-          "text": "Stories",
+          "x": 12, "y": 48, "w": 140, "h": 18,
+          "text": "Stories ({{storyPoints}} story points)",
           "style": {"$": "LABEL_SMALL_STYLE"}
         },
         {
@@ -315,8 +323,8 @@
           "x": 250,
           "y": 30,
           "diameter": 130,
-          "dimensions": ["dcc:bugs", "dcc:speed", "dcc:downstream"],
-          "maxValues": {"dcc:bugs": 140, "dcc:speed": 38, "dcc:downstream": 100},
+          "dimensions": ["dcc:bugs", "storyPoints", "dcc:downstream"],
+          "maxValues": {"dcc:bugs": 140, "storyPoints": 180, "dcc:downstream": 100},
           "colorStops": [{"percent": "0", "color":  "#548546"}, {"percent": "25", "color":  "#7ea550"}, {"percent":  "35", "color":  "#a3b630"}, {"percent":  "50", "color":  "#cfc726"},{"percent":  "60", "color":  "#cfc726"}, {
             "percent": "90", "color": "#b65b56"} ],
           "labels": ["Bugs", "Load", "Downstream"],

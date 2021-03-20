@@ -4,8 +4,9 @@ import Cache, {
   DATATYPE_INTEGER,
   DATATYPE_STRING,
   TYPE_CONTEXTUAL_NODE,
-  TYPE_NAME, TYPE_THING
+  TYPE_THING
 } from './Cache';
+import {getConfig} from "@/Config";
 
 // noinspection JSUnusedGlobalSymbols
 export default class GraphNode {
@@ -61,7 +62,7 @@ export default class GraphNode {
   };
 
   getDisplayName() {
-    return this[Cache.getConfig().displayNameAttribute] || this.uri;
+    return this[getConfig('displayNameAttribute')] || this.uri;
   }
 
   // noinspection JSUnusedGlobalSymbols
@@ -117,11 +118,6 @@ export default class GraphNode {
     }
     return result;
   }
-
-  displayName() {
-    const name = this.get(TYPE_NAME);
-    return name === undefined ? this.uri : name;
-  };
 
   setAttribute(propType, value) {
 
@@ -194,10 +190,6 @@ export default class GraphNode {
    * @param graphNode
    */
   addAssociatedNode(associationTypeUri, graphNode) {
-
-    if (typeof associationTypeUri !== 'string') {
-      debugger
-    }
 
     const property = this[associationTypeUri];
     if (property === undefined) {

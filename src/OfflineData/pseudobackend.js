@@ -3,6 +3,7 @@ import {data, graph} from '@/OfflineData/data';
 import Cache from "@/graph/Cache";
 import TemplateRegistry from "@/templates/TemplateRegistry";
 import {preprocess} from "@/Data";
+import {getConfigs, setConfig} from "@/Config";
 
 export const OFFLINE_DATA = { config, dictionary, templates, tools, data, graph };
 
@@ -19,7 +20,7 @@ export const getDictionaryOffline = function (onError) {
 export const getClientConfigOffline = function () {
   return pseudoFetch(OFFLINE_DATA.config)
       .then(data => {
-        Cache.setConfig(data)});
+        setConfig(data)});
 }
 
 export const getCardDescriptorsOffline = function (onError) {
@@ -54,13 +55,12 @@ export const getToolDescriptorsOffline = function (onError) {
 
 
 export const getDataOffline = function(onError) {
-  const config = Cache.getConfig();
 
   /**
    * @type {Promise[]}
    */
   const result = [];
-  const { getTables, getGraph } = config;
+  const { getTables, getGraph } = getConfigs('getTables', 'getGraph');
   if (getGraph) {
     result.push(
        pseudoFetch(OFFLINE_DATA.graph)

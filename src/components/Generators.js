@@ -20,6 +20,19 @@ import {preprocess} from "@/graph/Preprocessors";
 import hoverMenuCss from './HoverCardMenu.css';
 import {Link_} from "@/components/Link";
 
+export const STYLE_ATTRIBUTES = [
+ 'color',
+ 'background-color',
+ 'border-radius',
+ 'font-weight',
+ 'font-size',
+ 'padding',
+ 'z-index',
+ 'font-family',
+ 'h-align',
+ 'v-align'
+]
+
 const PADDING = 0.2;
 const KEY_BACKGROUND = 'background';
 
