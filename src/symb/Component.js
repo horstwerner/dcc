@@ -139,6 +139,7 @@ export default class Component {
       return this.addChild(newChild);
     } else {
       existing.update(netProps, tween);
+      this.dom.appendChild(existing.dom);
     }
     return existing;
   }
@@ -175,12 +176,16 @@ export default class Component {
       result = descriptor
           .filter(Boolean)
           .map(childDescriptor => {
-        const childComponent = this.createChild(`surrogate_key${count++}`, childDescriptor, tween);
-        updatedChildren[childComponent.key] = childComponent;
-      })
+            const childComponent = this.createChild(`surrogate_key${count++}`, childDescriptor, tween);
+            if (childComponent.key) {
+              updatedChildren[childComponent.key] = childComponent;
+            }
+          })
     } else {
       result = this.createChild(`surrogate_key${count}`, descriptor, tween);
-      updatedChildren[result.key] = result;
+      if (result.key) {
+        updatedChildren[result.key] = result;
+      }
     }
     // remove old children that aren't part of children list
     Object.keys(this.childByKey).forEach(key => {

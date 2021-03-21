@@ -43,6 +43,7 @@ export default class Template {
       type: P.string.isRequired,
       source: P.string,
       color: P.string,
+      cornerRadius: P.number,
       ...sizeType
     }),
     appliesTo: P.oneOfType([P.string,P.array]),

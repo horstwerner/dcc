@@ -8,7 +8,7 @@ export const restAfter = function(string, prefix) {
     if (string.charAt(i) !== prefix.charAt(i)) return null;
   }
   const rest = string.substr(prefix.length).trim();
-  if (!isNaN(rest)) {
+  if (rest!=='' && !isNaN(rest)) {
     return Number(rest)
   } else return rest;
 };
@@ -27,12 +27,12 @@ export const COMPARISON_GREATER = (testValue, value) => value > testValue;
 export const COMPARISON_EXISTS = (testValue, value) => value != null;
 export const COMPARISON_EMPTY = (testValue, value) => value == null;
 export const COMPARISON_HAS_ASSOCIATED =  (testValue, value) => {
-    if (typeof testValue === 'string') {
-      if (!value) return false;
-      return Array.isArray(value) ? value.find(node => node.uri === testValue) : (value.constructor === GraphNode && value.uri === testValue);
-    } else if (typeof testValue === 'object' && testValue.constructor === GraphNode) {
-      return Array.isArray(value) ? value.includes(testValue) : (value === testValue);
-    }
+  if (typeof testValue === 'string') {
+    if (!value) return false;
+    return Array.isArray(value) ? value.find(node => node.uri === testValue) : (value.constructor === GraphNode && value.uri === testValue);
+  } else if (typeof testValue === 'object' && testValue.constructor === GraphNode) {
+    return Array.isArray(value) ? value.includes(testValue) : (value === testValue);
+  }
 }
 
 const comparisons = [
@@ -83,7 +83,7 @@ export default class Filter {
   constructor(attribute, matchFunction, comparand) {
     this.attribute = attribute;
     this.matchFunction = matchFunction;
-    this.isNumeric = !isNaN(comparand) && attribute !== TYPE_TYPE;
+    this.isNumeric = comparand !== '' && !isNaN(comparand) && attribute !== TYPE_TYPE;
     this.comparand = this.isNumeric ? Number(comparand): comparand;
     this.dynamicComparand = (typeof comparand === 'string' && comparand.includes('{{'));
     this.matches = this.matches.bind(this);

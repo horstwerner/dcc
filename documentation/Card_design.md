@@ -36,7 +36,7 @@ Here is an example from the development server:
       "appliesTo": "jira:ticket",
       "aggregate": false,
       "size": { "w": 220, "h": 120},
-      "background": { "type": "rect", "w": 220, "h": 120, "cornerRadius": "6px"},
+      "background": { "type": "rect", "w": 220, "h": 120, "cornerRadius": 6},
       "clickable": true,
       "colorcoding": {
         "type": "selection",
@@ -65,9 +65,16 @@ Here is an example from the development server:
 ### All elements:
 * `key` an identifier that must be unique in the scope of the parent element
 * `x`, `y`, `w`, `h` x and y position, width and height of the element (in the parent element's coordinate system)
+* `condition`: An optional condition that prevents the element from being rendered if the condition fails. 
+The form of the condition is `{"<attribute>": "<comparator><comparand>"}`. For available comparators see inputSelector
+  in [chart](#chart)
 
 ### textfield
-* `attribute` the attribute of the card node to be displayed
+* `attribute` the attribute of the card node to be displayed. The attribute can be a direct attribute of the current
+  node of a path expression using `/` as separators to traverse to an attribute of an associated element. For example,
+  you could use an expression `jira:team/dcc:speed` to include the speed (story points per sprint) of the associated team
+  in a ticket. If the evaluation of the path results in a graph node instead of a primitive (e.g. `jira:team`), the 
+  node's display name will be used as attribute value. If no name attribute is present, the uri of the node is used.
 * `style` an object that corresponds to a css style, supporting these attributes
   * `color`
   * `background-color`
@@ -83,7 +90,8 @@ Here is an example from the development server:
 
 ### caption
 Caption is the same as a text field, but instead of `attribute`, it has a `text` attribute, which is a text literal
-which can embed node attribute values with handlebar syntax, e.g. `Node {{core:name}}`
+which can embed node attribute values with handlebar syntax, e.g. `Node {{core:name}}`. As in [textfield](#textfield), 
+a path expression can be used inside the handlebars.
 
 ### box
 The box is the same as a text field without any text. It's appearance is controlled by the style attributes
@@ -104,6 +112,7 @@ The box is the same as a text field without any text. It's appearance is control
   * `inputSelector` `{"<attribute>": "<comparator><comparand>"}`
     where `<comparator>` is one of `=`, `!=`, `<`, `<=`, `>`,`>=`, `empty`, `exists`, `contains`, `!contains`, `->`
     The input selector filters the data from `source` before it is fed into the chart
+    Comparands can use the same handlebar notation as [caption](#caption) to use attributes associated to the current node.
   * `overlay` a set of contextual nodes (calculated in preprocess methods) that amend the nodes fed into the chart by
     calculated attributes or associations - arcane
 

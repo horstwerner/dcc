@@ -9,7 +9,7 @@ const fallbackTemplate = {
       "appliesTo": "core:thing",
       "aggregate": false,
       "size": { "w": 220, "h": 120},
-      "background": { "type": "rect", "w": 220, "h": 120, "cornerRadius": "6px", color: '#D0D0D0'},
+      "background": { "type": "rect", "w": 220, "h": 120, "cornerRadius": 6, color: '#D0D0D0'},
       "clickable": true,
       "elements": [
         {

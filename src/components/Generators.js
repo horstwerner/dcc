@@ -60,7 +60,7 @@ export const Background = function Background(props, color) {
   switch (type) {
     case BACKGROUND_RECT:
       return Div_({key: KEY_BACKGROUND, className, spatial,
-        style:{backgroundColor: color, width: w, height: h, borderRadius: cornerRadius, border: borderColor && `solid 1px ${borderColor}`}})._Div;
+        style:{backgroundColor: color, width: w, height: h, borderRadius: `${cornerRadius}px`, border: borderColor && `solid 1px ${borderColor}`}})._Div;
     case BACKGROUND_IMAGE:
       return Image_({key: KEY_BACKGROUND, className, spatial, source, width: w, height: h, color, cornerRadius})._Image;
     default:

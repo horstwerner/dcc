@@ -89,7 +89,7 @@ class App extends Component {
               dataLoaded: true
             });
             const startTemplate = getConfig('startTemplate');
-            this.setFocusCard(this.createFocusCard(startData, TemplateRegistry.getTemplate(startTemplate), {}));
+            this.setFocusCard(this.createFocusCard(startData, TemplateRegistry.getTemplate(startTemplate), null), startData);
           }
         });
     this.handleNodeClick = this.handleNodeClick.bind(this);
@@ -449,8 +449,8 @@ class App extends Component {
   }
 
 
-  setFocusCard(focusCard) {
-    this.transitionToState(this.createStateForFocus(focusCard, null));
+  setFocusCard(focusCard, data) {
+    this.transitionToState(this.createStateForFocus(focusCard, data));
   }
 
 
@@ -529,6 +529,10 @@ class App extends Component {
   handleViewSelect(viewId) {
     const {focusData, currentFilters, mainWidth, focusHeight} = this.state;
     const template = TemplateRegistry.getTemplate(viewId);
+
+    if (template.aggregate && !focusData[TYPE_NODES]) {
+      throw new Error(`Template ${template.id} is marked as aggregate, but applied to non-aggregate data ${focusData.getUniqueKey()}`);
+    }
 
     const data = template.aggregate ?  createPreprocessedCardNode(applyFilters(Object.values(currentFilters),
         focusData[TYPE_NODES].map(node => (node.originalNode || node))), {}, template, focusData[TYPE_NAME]): this.state.focusCard.data;
