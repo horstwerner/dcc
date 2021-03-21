@@ -1,7 +1,26 @@
 import Template from './Template';
+import {TYPE_THING} from "@/graph/Cache";
 
-export const ARRANGEMENT_DEFAULT = 'default';
 export const DEFAULT_VIEW_NAME = 'default';
+
+const fallbackTemplate = {
+      "id": "core:thing",
+      "name": "Compact",
+      "appliesTo": "core:thing",
+      "aggregate": false,
+      "size": { "w": 220, "h": 120},
+      "background": { "type": "rect", "w": 220, "h": 120, "cornerRadius": "6px", color: '#D0D0D0'},
+      "clickable": true,
+      "elements": [
+        {
+          "key": "heading-large",
+          "type": "textfield",
+          "x": 15, "y": 35, "w": 190, "h": 50,
+          "attribute": "uri",
+          "style": {"font-weight": "normal", "color": "#202020", "font-size": "18px", "h-align": "center", "v-align": "center"}
+        }
+      ]
+    };
 
 class TemplateRegistry {
 
@@ -10,6 +29,7 @@ class TemplateRegistry {
     this.templatesByContentType = {};
     this.toolsById = {};
     this.toolsByContentType = {};
+    this.registerTemplate(fallbackTemplate);
   }
 
   registerTemplateForType(type, template) {
@@ -63,8 +83,8 @@ class TemplateRegistry {
     const searchName = viewName.toLowerCase();
     const candidates = this.getViewsFor(typeUri, false);
     if (candidates.length === 0)  {
-      console.log(`Error: No template registered for type ${typeUri}`);
-      return null;
+      console.log(`No template registered for type ${typeUri} - falling back to generic`);
+       return this.getTemplate(TYPE_THING);
     }
     let result = candidates.find(template => (template.name || '').toLowerCase() === searchName);
     if (result) return result;
