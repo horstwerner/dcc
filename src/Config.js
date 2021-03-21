@@ -1,3 +1,6 @@
+import { pick } from 'lodash';
+import {TYPE_NAME} from "@/graph/Cache";
+
 export const DEBUG_MODE = true;
 export const OFFLINE_MODE = false;
 
@@ -28,9 +31,6 @@ export const SIDEBAR_BACK_COLOR = '#EEEEEA';
 
 export const SIDEBAR_BACK_COLOR2 = '#bcbdb7';
 
-
-
-
 export const QCC_BLUE_1 = 'rgb(93,113,123)';
 export const QCC_BLUE_2 = 'rgb(60,78,86)';
 export const QCC_BLUE_3 = 'rgb(52,67,74)';
@@ -43,4 +43,18 @@ export const QCC_GRAY_5 = '#696966';
 
 export const QCC_GRAY_SIDEBAR = `rgb(233,234,228)`;
 
+const configuration = {
+  displayNameAttribute : TYPE_NAME
+};
 
+export const setConfig = function setConfig(config) {
+  Object.assign(configuration, config);
+}
+
+export const getConfigs = function getConfigs(parameterList) {
+  return pick(configuration, parameterList);
+}
+
+export const getConfig = function (parameterName) {
+  return configuration[parameterName];
+}

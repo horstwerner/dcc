@@ -6,15 +6,17 @@
     border-top: solid 1px #536e73;
     box-sizing: border-box;
     user-select: none;
+    /*noinspection CssUnknownProperty*/
+    scrollbar-color: #69878c #5e7b80;
 }
 .lane::-webkit-scrollbar {
-    height: 12px;
+    height: 14px;
 }
 .lane::-webkit-scrollbar-thumb {
     background-color: #69878c;
     border-top: solid 1px #5c7980;
     height: 100%;
-    border-radius: 6px;
+    border-radius: 7px;
     cursor: grab;
     transition: background-color 0.4s;
     border-bottom: solid 1px #536d73;

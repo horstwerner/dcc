@@ -24,7 +24,8 @@ export default class TemplateElement {
     x: P.number.isRequired,
     y: P.number.isRequired,
     w: P.number,
-    h: P.number
+    h: P.number,
+    condition: P.objectOf(P.string)
   }
 
   static validate(templateId, descriptor) {

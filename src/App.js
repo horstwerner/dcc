@@ -9,7 +9,7 @@ import {Div_} from '@symb/Div';
 import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
-import {HOVER_MENU_DELAY, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
+import {getConfig, HOVER_MENU_DELAY, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
 import {fit, isDataEqual, relSpatial} from "@symb/util";
 import {breadCrumbHoverIcon, createPreprocessedCardNode, hoverCardMenu} from "@/components/Generators";
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
@@ -26,6 +26,8 @@ const SIDEBAR = 'sidebar';
 const FOCUS = 'focus';
 const HOVER_MENU = 'hover-menu';
 const TOOL_HEIGHT = 10;
+const BREADCRUMB_LANE_HEIGHT = 120;
+const SCROLLBAR_HEIGHT = 30;
 
 class App extends Component {
 
@@ -86,8 +88,8 @@ class App extends Component {
               focusData: startData,
               dataLoaded: true
             });
-            const { startTemplate } = Cache.getConfig();
-                this.setFocusCard(this.createFocusCard(startData, TemplateRegistry.getTemplate(startTemplate), {}));
+            const startTemplate = getConfig('startTemplate');
+            this.setFocusCard(this.createFocusCard(startData, TemplateRegistry.getTemplate(startTemplate), null), startData);
           }
         });
     this.handleNodeClick = this.handleNodeClick.bind(this);
@@ -310,7 +312,7 @@ class App extends Component {
     }
 
     const breadcrumbNativeSize = sourceCard.template.getSize();
-    const newBreadcrumbScale =  (breadCrumbHeight - 24) / breadcrumbNativeSize.height;
+    const newBreadcrumbScale =  (breadCrumbHeight - SCROLLBAR_HEIGHT) / breadcrumbNativeSize.height;
     const newBreadcrumbSpatial = {x: nextChildPos, y: 7, scale: newBreadcrumbScale};
     const newBreadCrumbCard = {...sourceCard, ...breadCrumbChanges, spatial: newBreadcrumbSpatial};
     const newNextChildPos = nextChildPos + newBreadcrumbScale * breadcrumbNativeSize.width + MARGIN;
@@ -379,6 +381,7 @@ class App extends Component {
     const { breadCrumbCards } = this.state;
     const card = breadCrumbCards.find(card =>
         card.key === key);
+    if (!card) return;
     const { template } = card;
     const top = card.spatial.y;
     const scaledWidth = template.getSize().width * card.spatial.scale;
@@ -446,8 +449,8 @@ class App extends Component {
   }
 
 
-  setFocusCard(focusCard) {
-    this.transitionToState(this.createStateForFocus(focusCard, null));
+  setFocusCard(focusCard, data) {
+    this.transitionToState(this.createStateForFocus(focusCard, data));
   }
 
 
@@ -473,7 +476,7 @@ class App extends Component {
 
 
   updatedFocusCard(focusCard, focusData, filters) {
-    if (!focusData.getTypeUri() === TYPE_AGGREGATOR) {
+    if (focusData.getTypeUri() !== TYPE_AGGREGATOR) {
       throw new Error('UpdateFocusCard called for non-aggregate card');
     }
     const data = createPreprocessedCardNode(applyFilters(Object.values(filters), focusData[TYPE_NODES]),
@@ -526,6 +529,10 @@ class App extends Component {
   handleViewSelect(viewId) {
     const {focusData, currentFilters, mainWidth, focusHeight} = this.state;
     const template = TemplateRegistry.getTemplate(viewId);
+
+    if (template.aggregate && !focusData[TYPE_NODES]) {
+      throw new Error(`Template ${template.id} is marked as aggregate, but applied to non-aggregate data ${focusData.getUniqueKey()}`);
+    }
 
     const data = template.aggregate ?  createPreprocessedCardNode(applyFilters(Object.values(currentFilters),
         focusData[TYPE_NODES].map(node => (node.originalNode || node))), {}, template, focusData[TYPE_NAME]): this.state.focusCard.data;
@@ -585,7 +592,7 @@ class App extends Component {
   recalcLayout({toolControls, windowWidth, windowHeight, focusCard, hoverCard}) {
     const sideBarWidth = Math.min(Math.min(SIDEBAR_PERCENT * windowWidth, SIDEBAR_MAX), 4 * windowHeight);
 
-    const breadCrumbHeight = 120;
+    const breadCrumbHeight = BREADCRUMB_LANE_HEIGHT;
     const toolControlList = Object.values(toolControls);
     // noinspection JSCheckFunctionSignatures
     const toolbarHeight = toolControlList.reduce((result, control) => Math.max(result, (control.size.height || 0)), 0) + 2 * MARGIN;

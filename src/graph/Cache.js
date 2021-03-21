@@ -41,17 +41,6 @@ class Cache {
     this.createType({uri: TYPE_NODE_COUNT, name: 'node count', dataType: DATATYPE_INTEGER, isAssociation: false});
   };
 
-  setConfig(config) {
-    this.config = config;
-    if (!this.config.displayNameAttribute){
-      this.config.displayNameAttribute = 'core:name';
-    }
-  }
-
-  getConfig() {
-    return this.config;
-  }
-
   createUri() {
     return `core:surrogate${this.idCount++}`;
   }
@@ -203,7 +192,7 @@ class Cache {
   validateNodes() {
     Object.values(this.lookUpGlobal).forEach(node => {
       if (!node.type) {
-        console.error(`node ${node.uri} has no type`);
+        console.warn(`node ${node.uri} has no type`);
       }
     });
   }
@@ -260,25 +249,10 @@ export const resolve = function (node, path) {
  * @return {String | Number} resolved attribute or display name of resolved node
  */
 export const resolveAttribute = function (node, path) {
-  let result;
-
-  if (Array.isArray(path) || path.includes('/')) {
-    const segments = Array.isArray(path) ? path : path.split('/');
-    let current = node;
-    for (let segIdx = 0; segIdx < segments.length; segIdx++) {
-      current = current.constructor === GraphNode ? current.get(segments[segIdx]) : current[segments[segIdx]];
-      // simplistic disambiguation - if multiple, select first
-      if (segIdx < segments.length - 1 && Array.isArray(current)) {
-        current = current[0];
-      }
-    }
-    result = current;
-  } else {
-    result = node.constructor === GraphNode ? node.get(path) : node[path];
-  }
+  const result = resolveProperty(node, path);
 
   return (result && result.constructor === GraphNode) ?
-      result.displayName() :
+      result.getDisplayName() :
       result;
 };
 
@@ -286,7 +260,7 @@ export const resolveAttribute = function (node, path) {
  *
  * @param {GraphNode} node
  * @param {String[] | String} path
- * @return {String | Number} resolved attribute or resolved node
+ * @return {String | Number | Object} resolved attribute or resolved node
  */
 export const resolveProperty = function (node, path) {
   let result;
@@ -295,6 +269,7 @@ export const resolveProperty = function (node, path) {
     const segments = Array.isArray(path) ? path : path.split('/');
     let current = node;
     for (let segIdx = 0; segIdx < segments.length; segIdx++) {
+      if (!current) break;
       current = current.constructor === GraphNode ? current.get(segments[segIdx]) : current[segments[segIdx]];
       // simplistic disambiguation - if multiple, select first
       if (segIdx < segments.length - 1 && Array.isArray(current)) {

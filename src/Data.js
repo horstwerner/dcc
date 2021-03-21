@@ -1,10 +1,11 @@
 import {omit} from "lodash";
 import Cache from "@/graph/Cache";
 import TemplateRegistry from "@/templates/TemplateRegistry";
-import {OFFLINE_MODE} from "@/Config";
+import {getConfigs, OFFLINE_MODE, setConfig} from "@/Config";
 import {
   getCardDescriptorsOffline,
-  getClientConfigOffline, getDataOffline,
+  getClientConfigOffline,
+  getDataOffline,
   getDictionaryOffline,
   getToolDescriptorsOffline
 } from "@/OfflineData/pseudobackend";
@@ -106,7 +107,7 @@ export const getClientConfigFromDB = function (onError) {
   return fetch('/api/config')
       .then(handleResponse)
       .then(result => {
-        Cache.setConfig(result.data)})
+        setConfig(result.data)})
       .catch(error => {
         console.log(error.stack);
         onError(error);
@@ -157,13 +158,13 @@ export const getData = function (onError) {
 }
 
 export const getDataFromDB = function(onError) {
-  const config = Cache.getConfig();
+
+  const {getTables, getGraph} = getConfigs(['getTables', 'getGraph']);
 
   /**
    * @type {Promise[]}
    */
   const result = [];
-  const {getTables, getGraph} = config;
   if (getGraph) {
     result.push(
         fetch(`/api/graph`, {})

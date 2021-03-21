@@ -11,6 +11,7 @@ import CardElement from "@/templates/elements/CardElement";
 import CardsElement from "@/templates/elements/CardsElement";
 import TrellisElement from "@/templates/elements/TrellisElement";
 import ChartElement from "@/templates/elements/ChartElement";
+import Filter from "@/graph/Filter";
 
 
 const fillPlaceholders = function fillPlaceholders(element, options, defaultValues) {
@@ -42,6 +43,7 @@ export default class Template {
       type: P.string.isRequired,
       source: P.string,
       color: P.string,
+      cornerRadius: P.number,
       ...sizeType
     }),
     appliesTo: P.oneOfType([P.string,P.array]),
@@ -114,6 +116,9 @@ export default class Template {
     const elementClass = elementClassByType[descriptor.type];
     if (!elementClass) {
       console.log(`Unsupported element type ${descriptor.type} ignored`);
+    }
+    if (descriptor.condition && !Filter.fromDescriptor(descriptor.condition).matches(data) ) {
+      return null;
     }
     return elementClass.create({descriptor, data, onClick});
   }
