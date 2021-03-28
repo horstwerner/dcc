@@ -8,7 +8,6 @@ const RADIO = 'radio';
 export const VERTICAL = 'vertical';
 export const HORIZONTAL = 'horizontal';
 
-
 class RadioButtons extends Component {
 
   static type = RADIO;
@@ -31,17 +30,19 @@ class RadioButtons extends Component {
 
   createChildDescriptors(props) {
 
-    const { label, options, selectedId } = props;
-    const children = [Div_({key: 'label', className: css.label, children: label})._Div];
+    const { label, options, selectedId, orientation } = props;
+    const children = [Div_({key: 'label', className: orientation === VERTICAL ? css. panelLabel : css.label, children: label})._Div];
+
+    const inactiveStyle = orientation === VERTICAL ? css.panelButtonInactive : css.buttonInactive;
 
     options.forEach(option => children.push(Div_({
       key: option.id,
-      className: option.id === selectedId ? css.buttonActive : css.buttonInactive,
+      className: option.id === selectedId ? css.buttonActive : inactiveStyle,
       children: option.name,
       onClick: option.id === selectedId ? null : option.onSelect
     })._Div));
 
-    this.createChildren(children);
+    return children;
   }
 
 }

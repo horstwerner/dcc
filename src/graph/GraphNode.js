@@ -39,6 +39,12 @@ export default class GraphNode {
     }
   }
 
+  equals(otherNode) {
+    if (!otherNode.constructor === GraphNode) return false;
+    if (this === otherNode) return true;
+    return this.uri === otherNode.uri;
+  }
+
   setType(typeUri) {
     const type = Cache.getType(typeUri);
     if (!type) throw new Error(`Type ${typeUri} not declared in type dictionary`);

@@ -13,7 +13,7 @@ export class Div extends Component {
   };
 
   updateDom(props) {
-    const { onClick, contentEditable, onFocus, onBlur, onKeyDown, onKeyUp, tabIndex } = props;
+    const { onClick, contentEditable, onFocus, onBlur, onKeyDown, onKeyUp, tabIndex, onMouseEnter, onMouseLeave } = props;
     if (onClick) {
       this.dom.onclick = onClick;
       this.dom.oncontextmenu = onClick;
@@ -35,6 +35,12 @@ export class Div extends Component {
     }
     if (tabIndex) {
       this.dom.tabIndex = tabIndex;
+    }
+    if (onMouseEnter) {
+      this.dom.onmouseenter = onMouseEnter;
+    }
+    if (onMouseLeave) {
+      this.dom.onmouseleave = onMouseLeave;
     }
   }
 }

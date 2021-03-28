@@ -1,0 +1,63 @@
+.dropDownBar {
+  position: absolute;
+  transform-origin: 0 0;
+}
+.listContainer {
+  position: absolute;
+  overflow: hidden;
+}
+.triangle {
+  position: absolute;
+  opacity: 0.7;
+  cursor: pointer;
+}
+.triangle:hover {
+  opacity: 1;
+}
+.listBody {
+  position: absolute;
+  border-radius: 4px;
+  background-color: #e0e0dc;
+}
+.entryActive,
+.entryInactive {
+  position: absolute;
+  border-radius: 4px;
+  min-width: 60px;
+  height: 20px;
+  box-sizing: border-box;
+  padding: 2px;
+  font-size: 12px;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+
+.label {
+  position: absolute;
+  padding-right: 8px;
+  box-sizing: border-box;
+  height: 20px;
+  padding-top: 2px;
+  padding-left: 2px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  text-align: right;
+  color: #696966;
+}
+
+.entryInactive {
+  color: #696966;
+
+  cursor: pointer;
+}
+
+.entryActive {
+  background-color: #73736f;
+  color: #EEEEEA;
+  box-shadow: 1px 1px 2px 0 rgba(0,0,0,0.15);
+}

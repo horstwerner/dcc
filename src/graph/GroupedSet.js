@@ -1,6 +1,7 @@
 import {mapValues} from 'lodash';
-import {resolveAttribute} from "@/graph/Cache";
+import {resolveAttribute, resolveProperty} from "@/graph/Cache";
 import {createCardNode} from "@symb/util";
+import GraphNode from "@/graph/GraphNode";
 
 
 export const EMPTY = '__empty__';
@@ -36,6 +37,20 @@ export const sliceBy = function sliceBy(nodes, dimension) {
         cardNode[dimension] = key;
         return cardNode;})
   );
+};
+
+export const getValueMap = function getValueMap(nodes, dimension) {
+
+  const range = {};
+
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+    const value = resolveProperty(node, dimension) || null;
+    const key = value.constructor === GraphNode ? value.uri : String(value);
+    range[key] = value;
+  }
+
+  return range;
 };
 
 

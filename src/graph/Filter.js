@@ -1,5 +1,5 @@
 import GraphNode from "@/graph/GraphNode";
-import {resolveAttribute, TYPE_TYPE} from "@/graph/Cache";
+import {resolveProperty, TYPE_TYPE} from "@/graph/Cache";
 import Type from "@/graph/Type";
 import {fillIn} from "@symb/util";
 
@@ -31,7 +31,7 @@ export const COMPARISON_HAS_ASSOCIATED =  (testValue, value) => {
     if (!value) return false;
     return Array.isArray(value) ? value.find(node => node.uri === testValue) : (value.constructor === GraphNode && value.uri === testValue);
   } else if (typeof testValue === 'object' && testValue.constructor === GraphNode) {
-    return Array.isArray(value) ? value.includes(testValue) : (value === testValue);
+    return Array.isArray(value) ? value.includes(testValue) : testValue.equals(value);
   }
 }
 
@@ -90,7 +90,7 @@ export default class Filter {
   }
 
   matches(graphNode) {
-    const rawValue = (this.attribute !== TYPE_TYPE) ?  resolveAttribute(graphNode, this.attribute) : graphNode.type;
+    const rawValue = (this.attribute !== TYPE_TYPE) ?  resolveProperty(graphNode, this.attribute) : graphNode.type;
     const value = this.isNumeric ? Number(rawValue) : rawValue;
     const comparand = this.dynamicComparand ? fillIn(this.comparand, graphNode): this.comparand;
     return this.matchFunction(comparand, value);

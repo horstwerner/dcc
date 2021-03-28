@@ -107,8 +107,8 @@ export default class Component {
   }
 
   createChild(fallbackKey, childDescriptor, tween) {
-    if (typeof(childDescriptor) === 'string') {
-      this.dom.innerText = childDescriptor;
+    if (typeof childDescriptor === 'string' || typeof childDescriptor === 'number' || typeof childDescriptor === 'boolean') {
+      this.dom.innerText = String(childDescriptor);
       return childDescriptor;
     }
     if (childDescriptor === undefined) {

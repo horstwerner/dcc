@@ -68,7 +68,6 @@ class CardSet extends Component {
   //             Card_({key: node.getUniqueKey(), spatial: rasterPos, data: node, parentSet: this, onClick, template, clickMode})._Card
   //         );
   //       });
-  //       this.createChildren(childDescriptors);
   //   }
   // };
 
