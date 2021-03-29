@@ -488,7 +488,7 @@
           "bounded": false,
           "chartType": "graph",
           "x": 20, "y": 20, "w": 680, "h": 480,
-          "path": "jira:is-prerequisite-for*",
+          "path": "jira:is-prerequisite-for[jira:ticket]*",
           "viewName": "$view"
         }
       ]
