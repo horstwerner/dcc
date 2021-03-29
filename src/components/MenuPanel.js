@@ -24,7 +24,7 @@ class MenuPanel extends Component {
 
     return [
       Menu_({key: "views", title: 'Views',  entries: views, onEntryClick: onViewClick})._Menu,
-      Menu_({key: "tools", title: 'Filters',  entries: tools, onEntryClick: onToolToggle})._Menu
+      (tools.length > 0 && Menu_({key: "tools", title: 'Filters',  entries: tools, onEntryClick: onToolToggle})._Menu)
     ];
   }
 }

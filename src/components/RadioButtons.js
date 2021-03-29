@@ -34,10 +34,11 @@ class RadioButtons extends Component {
     const children = [Div_({key: 'label', className: orientation === VERTICAL ? css. panelLabel : css.label, children: label})._Div];
 
     const inactiveStyle = orientation === VERTICAL ? css.panelButtonInactive : css.buttonInactive;
+    const activeStyle = orientation === VERTICAL ? css.panelButtonActive : css.buttonActive;
 
     options.forEach(option => children.push(Div_({
       key: option.id,
-      className: option.id === selectedId ? css.buttonActive : inactiveStyle,
+      className: option.id === selectedId ? activeStyle : inactiveStyle,
       children: option.name,
       onClick: option.id === selectedId ? null : option.onSelect
     })._Div));

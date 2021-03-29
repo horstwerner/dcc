@@ -595,7 +595,7 @@ class App extends Component {
     const breadCrumbHeight = BREADCRUMB_LANE_HEIGHT;
     const toolControlList = Object.values(toolControls);
     // noinspection JSCheckFunctionSignatures
-    const toolbarHeight = toolControlList.reduce((result, control) => Math.max(result, (control.size.height || 0)), 0) + 2 * MARGIN;
+    const toolbarHeight = toolControlList.reduce((result, control) => Math.max(result, (control.size.height || 0)), 0) + (toolControlList.length === 0 ? 10 : 2 * MARGIN);
     const focusHeight = windowHeight - breadCrumbHeight - toolbarHeight;
     const mainHeight = windowHeight;
     const mainWidth = windowWidth - sideBarWidth;

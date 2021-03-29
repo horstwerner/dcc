@@ -13,7 +13,7 @@ if (DEBUG_MODE) {
 }
 
 export const MENU_WIDTH = 224;
-export const MARGIN = 24;
+export const MARGIN = 16;
 export const TRANSITION_DURATION = 320;
 export const HOVER_MENU_DELAY = 700;
 
