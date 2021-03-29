@@ -218,7 +218,7 @@
           "y": 82,
           "w": 50,
           "h": 12,
-          "urlAttribute": "core:url",
+          "url": "http://test.com/ticket/{{uri}}",
           "style": {
             "font-size": "8px",
             "font-weight": "normal"
