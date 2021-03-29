@@ -102,7 +102,7 @@ The box is the same as a text field without any text. It's appearance is control
   * `style` as in textfield
 
 ### link
-  * `urlAttribute` node attribute containing the link target
+  * `url` a string that can include attributes in handlebars like `caption`
   * `text` Link text
   * `style` as in textfield
 
