@@ -2,54 +2,81 @@
   display: flex;
   position: absolute;
   transform-origin: 0 0;
-  background-color: #e0e0dc;
-  border-radius: 6px;
-  padding: 4px;
   box-sizing: border-box;
-  box-shadow: inset 1px 1px 2px 0 rgba(0,0,0,0.15);
 }
 
 .radioPanel {
+  background-color: #e0e0dc;
+  border-radius: 6px;
+  padding-top: 4px;
+  padding-bottom: 4px;
   padding-left: 8px;
   padding-right: 8px;
+  box-shadow: inset 1px 1px 2px 0 rgba(0,0,0,0.15);
 }
 
 .buttonActive,
-.buttonInactive {
+.buttonInactive,
+.panelButtonActive,
+.panelButtonInactive {
   border-radius: 3px;
-  margin: 1px;
-  min-width: 60px;
-  height: 23px;
+  min-width: 20px;
   box-sizing: border-box;
-  padding: 5px 2px 4px 2px;
   font-size: 12px;
   text-align: center;
   user-select: none;
 }
 
-.label {
-  margin-right: 10px;
-  min-width: 60px;
-  height: 20px;
-  padding-top: 5px;
-  padding-left: 2px;
-  margin-bottom: 2px;
-  font-size: 14px;
-  color: #8c8c81;
+.panelButtonActive,
+.panelButtonInactive {
+  padding: 5px 8px 4px 8px;
+  height: 23px;
+  margin: 2px;
 }
 
+.buttonActive,
 .buttonInactive {
-  color: #696966;
+  position: relative;
+  height: 20px;
+  padding: 3px 8px 2px 8px;
+  margin-left: 2px;
+  margin-right: 2px;
+  box-sizing: border-box;
+}
 
+.buttonInactive,
+.panelButtonInactive {
+  color: #696966;
   cursor: pointer;
 }
 
-.buttonInactive:hover {
+.buttonInactive:hover,
+.panelButtonInactive:hover {
   background-color: #d1d1d1
 }
 
-.buttonActive {
-  background-color: #696966;
+.buttonInactive {
+  box-shadow: inset 1px 1px 2px 0 rgba(0,0,0,0.15);
+  background-color: #e0e0dc;
+}
+
+.buttonActive,
+.panelButtonActive {
+  background-color: #73736f;
   color: #EEEEEA;
   box-shadow: 1px 1px 2px 0 rgba(0,0,0,0.15);
+}
+
+.label, .panelLabel {
+  height: 20px;
+  margin-bottom: 2px;
+  font-size: 14px;
+  color: #73736f;
+}
+.label {
+  text-align: right;
+  padding: 2px 8px 0 2px;
+}
+.panelLabel {
+  padding: 5px 8px 0 8px;
 }

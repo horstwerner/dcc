@@ -39,6 +39,12 @@ export default class GraphNode {
     }
   }
 
+  equals(otherNode) {
+    if (otherNode.constructor !== GraphNode) return false;
+    if (this === otherNode) return true;
+    return this.uri === otherNode.uri;
+  }
+
   setType(typeUri) {
     const type = Cache.getType(typeUri);
     if (!type) throw new Error(`Type ${typeUri} not declared in type dictionary`);
@@ -112,9 +118,24 @@ export default class GraphNode {
   // };
 
   get(propertyUri) {
-    let result = this[propertyUri];
+    let propName = propertyUri;
+    let filter = null;
+    if (propertyUri.charAt(propertyUri.length - 1) === ']') {
+      const propLen = propertyUri.indexOf('[');
+      if (propLen > -1) {
+        propName = propertyUri.substr(0, propLen);
+        const typeUri = propertyUri.substring(propLen + 1, propertyUri.length - 1);
+        filter = (node => node.isOfType(typeUri));
+      }
+    }
+    let result = this[propName];
     if (result === undefined && this.originalNode) {
-      return this.originalNode.get(propertyUri);
+      result = this.originalNode.get(propName);
+    }
+    if (filter !== null && result) {
+      if (Array.isArray(result)) return result.filter(filter);
+      if (result.constructor === GraphNode && filter(result)) return result;
+      return null;
     }
     return result;
   }

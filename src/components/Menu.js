@@ -6,6 +6,10 @@ import {Div_} from "@symb/Div";
 
 const MENU = 'menu';
 
+export const calcMenuHeight = function calcMenuHeight(entries) {
+  return 22 * (entries.length + 1) + 12;
+}
+
 class MenuPanel extends Component {
   static type = MENU;
   static className = css.menu;
@@ -19,7 +23,7 @@ class MenuPanel extends Component {
 
   updateDom(props, tween) {
     const { entries } = props;
-    const height = 22 * (entries.length + 1) + 12;
+    const height = calcMenuHeight(entries);
     this.updateSize({ height }, tween);
   }
 

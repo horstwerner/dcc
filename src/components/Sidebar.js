@@ -9,6 +9,7 @@ import {Div_} from "@symb/Div";
 import {Image_} from "@symb/Image";
 import {createOptionControls} from "@/Tools";
 import {SuggestList_} from "@/components/SuggestList";
+import {calcMenuHeight} from "@/components/Menu";
 
 const SIDEBAR = 'sidebar';
 const SEARCH_FIELD = 'searchField';
@@ -81,7 +82,10 @@ class Sidebar extends Component {
     const { currentSearchResults } = this.state;
     const optionsWidth = MENU_WIDTH - 16;
 
-    const optionControls = createOptionControls(options, onOptionSelect, currentViewOptions, optionsWidth, 9, menuTop + PANEL_HEIGHT + 16);
+    const viewHeight = calcMenuHeight(views) + 25 + 2 * 8;
+    const toolHeight = tools.length > 0 ? calcMenuHeight(tools) + 25 + 2 * 8 : 0;
+
+    const optionControls = createOptionControls(options, onOptionSelect, currentViewOptions, optionsWidth, 9, menuTop + Math.max(PANEL_HEIGHT, viewHeight + toolHeight));
 
     return[
       Div_({key: SEARCH_FIELD, className: css.searchField, spatial: {x: 20, y: MARGIN, scale: 1},
@@ -89,7 +93,7 @@ class Sidebar extends Component {
             Div_({key: SEARCH_INPUT, className: css.searchInput, tabIndex : 1, contentEditable: true, onKeyUp: this.handleSearchKeyUp, onKeyDown: this.handleSearchKeyDown})._Div,
             Image_({key: 'searchButton', className:css.searchButton, source:`public/SearchButton.svg`, onClick: this.handleSearch})._Image]})._Div,
       MenuPanel_({
-        size: { width:  MENU_WIDTH, height: PANEL_HEIGHT },
+        size: { width:  MENU_WIDTH },
         views,
         tools,
         onViewClick,

@@ -218,7 +218,7 @@
           "y": 82,
           "w": 50,
           "h": 12,
-          "urlAttribute": "core:url",
+          "url": "http://test.com/ticket/{{uri}}",
           "style": {
             "font-size": "8px",
             "font-weight": "normal"
@@ -250,7 +250,7 @@
         {
           "key": "heading-large",
           "type": "textfield",
-          "x": 10, "y": 35, "w": 200, "h": 50,
+          "x": 10, "y": 44, "w": 200, "h": 50,
           "attribute": "uri",
           "style": {"font-weight": "bold", "color": "white", "font-size": "30px", "h-align": "center"}
         }
@@ -334,7 +334,7 @@
     },
     {
       "id": "stories-by-feature",
-      "name": "by Feature",
+      "name": "Story Points by...",
       "appliesTo": "jira:ticket",
       "aggregate": true,
       "background": {
@@ -360,8 +360,8 @@
           "key": "label_features",
           "type": "caption",
           "style": {"$": "GROUP_HEADING_STYLE"},
-          "x": {"$": "MARGIN"}, "y": {"$": "MARGIN"}, "w": 100, "h": 32,
-          "text": "Features"
+          "x": {"$": "MARGIN"}, "y": {"$": "MARGIN"}, "w": 200, "h": 32,
+          "text": "Storypoints, grouped"
         },
         {
           "key": "features",
@@ -488,14 +488,14 @@
           "bounded": false,
           "chartType": "graph",
           "x": 20, "y": 20, "w": 680, "h": 480,
-          "path": "jira:is-prerequisite-for*",
+          "path": "jira:is-prerequisite-for[jira:ticket]*",
           "viewName": "$view"
         }
       ]
     },
     {
       "id": "storiesByStatus",
-      "name": "by Status",
+      "name": "Cards",
       "appliesTo": "jira:ticket",
       "aggregate": true,
       "background": {
