@@ -3,6 +3,7 @@ import CheckedObject from "@/CheckedObject";
 import {Gradient} from "@symb/ColorUtil";
 import {parseComparison} from "@/graph/Filter";
 import GraphNode from "@/graph/GraphNode";
+import {resolveProperty} from "@/graph/Cache";
 
 
 const createTest = function (condition, color) {
@@ -50,7 +51,7 @@ export default class ColorCoder extends CheckedObject{
   }
 
   getColor(object) {
-    const attributeValue = object.constructor === GraphNode ? object.get(this.attribute) : object [this.attribute];
+    const attributeValue = object.constructor === GraphNode ? resolveProperty(object, this.attribute) : object [this.attribute];
     if (attributeValue == null) return this.default;
     return this.selectColor(attributeValue);
   }
