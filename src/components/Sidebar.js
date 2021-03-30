@@ -83,9 +83,9 @@ class Sidebar extends Component {
     const optionsWidth = MENU_WIDTH - 16;
 
     const viewHeight = calcMenuHeight(views) + 25 + 2 * 8;
-    const toolHeight = tools.length > 0 ? calcMenuHeight(tools) + 25 + 2 * 8 : 0;
+    const toolHeight = tools.length > 0 ? calcMenuHeight(tools) + 25 + 8 : 0;
 
-    const optionControls = createOptionControls(options, onOptionSelect, currentViewOptions, optionsWidth, 9, menuTop + Math.max(PANEL_HEIGHT, viewHeight + toolHeight));
+    const optionControls = createOptionControls(options, onOptionSelect, currentViewOptions, optionsWidth, 9, menuTop + Math.max(PANEL_HEIGHT + MARGIN, viewHeight + toolHeight));
 
     return[
       Div_({key: SEARCH_FIELD, className: css.searchField, spatial: {x: 20, y: MARGIN, scale: 1},
