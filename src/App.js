@@ -300,18 +300,20 @@ class App extends Component {
       style: {zIndex: 0}
     }
 
+    const breadcrumbNativeSize = sourceCard.template.getSize();
+
     if (existing) {
       const pos = existing.spatial.x;
+      const rightBorder = pos + existing.spatial.scale * breadcrumbNativeSize.width;
       return {
         breadCrumbCard: {...sourceCard, ...breadCrumbChanges, spatial: existing.spatial, },
         nextChildPos,
-        targetScrollPos:  pos > mainWidth ? pos - mainWidth : null,
+        targetScrollPos:  rightBorder > mainWidth ? rightBorder - mainWidth : null,
         updateCard: existing,
         adoptCard: false
       };
     }
 
-    const breadcrumbNativeSize = sourceCard.template.getSize();
     const newBreadcrumbScale =  (breadCrumbHeight - SCROLLBAR_HEIGHT) / breadcrumbNativeSize.height;
     const newBreadcrumbSpatial = {x: nextChildPos, y: 7, scale: newBreadcrumbScale};
     const newBreadCrumbCard = {...sourceCard, ...breadCrumbChanges, spatial: newBreadcrumbSpatial};
