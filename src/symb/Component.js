@@ -139,7 +139,11 @@ export default class Component {
       return this.addChild(newChild);
     } else {
       existing.update(netProps, tween);
-      this.dom.appendChild(existing.dom);
+      const scrollLeft = existing.dom.scrollLeft;
+      const scrollTop = existing.dom.scrollTop;
+      if (!scrollLeft && !scrollTop) {
+        this.dom.appendChild(existing.dom);
+      }
     }
     return existing;
   }
