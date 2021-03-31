@@ -425,7 +425,7 @@ class App extends Component {
     } else if (data){
       nodeTypeUri = data.getTypeUri();
     }
-    const views = TemplateRegistry.getViewsFor(nodeTypeUri, aggregate);
+    const views = TemplateRegistry.getViewsFor(nodeTypeUri, aggregate).filter(view => view.selectable);
     const tools = aggregate ? TemplateRegistry.getToolsFor(nodeTypeUri) : [];
     const activeTools = {};
     const toolControls = {};

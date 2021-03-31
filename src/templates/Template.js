@@ -80,6 +80,7 @@ export default class Template {
       this.colorCoder = new ColorCoder(descriptor.colorcoding);
     }
     this.id = descriptor.id;
+    this.selectable = !descriptor.detailTemplate;
     this.aggregate = descriptor.aggregate;
     this.appliesTo = descriptor.appliesTo;
     this.name = descriptor.name;
