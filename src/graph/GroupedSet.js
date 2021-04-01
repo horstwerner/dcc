@@ -46,8 +46,12 @@ export const getValueMap = function getValueMap(nodes, dimension) {
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
     const value = resolveProperty(node, dimension) || null;
-    const key = value.constructor === GraphNode ? value.uri : String(value);
-    range[key] = value;
+    if (value) {
+      const key = value.constructor === GraphNode ? value.uri : String(value);
+      range[key] = value;
+    } else {
+      range['undefined'] = null;
+    }
   }
 
   return range;
