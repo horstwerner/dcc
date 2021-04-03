@@ -11,7 +11,6 @@ export const calcMaxChildren = function (width, children) {
   let remainingW = width - 2 * MARGIN;
 
   const result = [];
-  debugger
   for (let i = children.length - 1; i >= 0; i--) {
     const childW = children[i].size.width;
     if (childW > remainingW) break;

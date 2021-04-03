@@ -456,7 +456,7 @@ class App extends Component {
   }
 
 
-  setToolFilter(tool, value) {
+  setToolFilter(tool, selectedId, value) {
 
     const {currentFilters} = this.state;
 
@@ -467,13 +467,13 @@ class App extends Component {
     const newFilter = new Filter(tool.filter, comparison, value);
 
     const newFilters = {...currentFilters, [tool.id]: newFilter};
-    this.updateFilteredState(newFilters, tool.id, value);
+    this.updateFilteredState(newFilters, tool.id, selectedId, value);
   }
 
 
-  removeToolFilter(toolId) {
+  removeToolFilter(toolId, selectedId) {
     const { currentFilters } = this.state;
-    this.updateFilteredState(omit(currentFilters, toolId), toolId, null);
+    this.updateFilteredState(omit(currentFilters, toolId), toolId, selectedId);
   }
 
 
@@ -487,13 +487,13 @@ class App extends Component {
   }
 
 
-  updateFilteredState(newFilters, toolId, value) {
+  updateFilteredState(newFilters, toolId, selectedId) {
     const { focusData, focusCard, activeTools, toolControls } = this.state;
     const { } = this.state;
     const tool = activeTools[toolId];
     const newFocusCard = this.updatedFocusCard(focusCard, focusData, newFilters);
     this.transitionToState({currentFilters: newFilters,
-      toolControls: toolControls.map(control => (control.key !== toolId ? control : updatedToolControl(tool, control, value, newFocusCard.data, this.setToolFilter, this.removeToolFilter))),
+      toolControls: toolControls.map(control => (control.key !== toolId ? control : updatedToolControl(tool, control, selectedId, newFocusCard.data, this.setToolFilter, this.removeToolFilter))),
       focusCard: newFocusCard});
   }
 

@@ -1,5 +1,4 @@
 import P from 'prop-types';
-import {sortBy} from 'lodash';
 import Component from "@symb/Component";
 import ComponentFactory from "@symb/ComponentFactory";
 import css from './DropdownList.css';
@@ -58,9 +57,8 @@ class DropdownList extends Component {
     let yCursor = 0;
     let selectedY = 0;
     const listEntries = [];
-    const sorted = sortBy(options, 'name');
 
-    sorted.forEach(option => {
+    options.forEach(option => {
       if (option.id === selectedId) {
         selectedY = yCursor;
       }

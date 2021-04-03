@@ -15,7 +15,7 @@ export const restAfter = function(string, prefix) {
 
 export const COMPARISON_OF_TYPE = (testValue, value) => value.constructor === Type && value.isOfType(testValue);
 // noinspection EqualityComparisonWithCoercionJS
-export const COMPARISON_EQUAL =  (testValue, value) => testValue == value;
+export const COMPARISON_EQUAL =  (testValue, value) => (testValue == value);
 export const COMPARISON_CONTAINS = (testValue, value) => value.toLowerCase().includes(testValue.toLowerCase());
 // noinspection EqualityComparisonWithCoercionJS
 export const COMPARISON_NOT_EQUAL = (testValue, value) => testValue != value;
@@ -83,7 +83,7 @@ export default class Filter {
   constructor(attribute, matchFunction, comparand) {
     this.attribute = attribute;
     this.matchFunction = matchFunction;
-    this.isNumeric = comparand !== '' && !isNaN(comparand) && attribute !== TYPE_TYPE;
+    this.isNumeric = comparand != null && comparand !== '' && !isNaN(comparand) && attribute !== TYPE_TYPE;
     this.comparand = this.isNumeric ? Number(comparand): comparand;
     this.dynamicComparand = (typeof comparand === 'string' && comparand.includes('{{'));
     this.matches = this.matches.bind(this);

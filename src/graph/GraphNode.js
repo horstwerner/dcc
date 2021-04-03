@@ -44,7 +44,7 @@ export default class GraphNode {
   }
 
   equals(otherNode) {
-    if (otherNode.constructor !== GraphNode) return false;
+    if (!GraphNode.isGraphNode(otherNode)) return false;
     if (this === otherNode) return true;
     return this.uri === otherNode.uri;
   }
