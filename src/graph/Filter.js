@@ -29,8 +29,8 @@ export const COMPARISON_EMPTY = (testValue, value) => value == null;
 export const COMPARISON_HAS_ASSOCIATED =  (testValue, value) => {
   if (typeof testValue === 'string') {
     if (!value) return false;
-    return Array.isArray(value) ? value.find(node => node.uri === testValue) : (value.constructor === GraphNode && value.uri === testValue);
-  } else if (typeof testValue === 'object' && testValue.constructor === GraphNode) {
+    return Array.isArray(value) ? value.find(node => node.uri === testValue) : (GraphNode.isGraphNode(value) && value.uri === testValue);
+  } else if (typeof testValue === 'object' && GraphNode.isGraphNode(testValue)) {
     return Array.isArray(value) ? value.includes(testValue) : testValue.equals(value);
   }
 }
@@ -97,7 +97,7 @@ export default class Filter {
   }
 
   process(source) {
-    if (source.constructor === GraphNode) {
+    if (GraphNode.isGraphNode(source) === GraphNode) {
       return this.matches(source) ? [source] : [];
     } else if (Array.isArray(source)) {
       return source.filter(this.matches);

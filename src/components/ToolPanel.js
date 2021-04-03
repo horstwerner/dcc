@@ -6,6 +6,21 @@ import {MARGIN} from "@/Config";
 
 const TOOL_PANEL = 'tool-panel';
 
+export const calcMaxChildren = function (width, children) {
+
+  let remainingW = width - 2 * MARGIN;
+
+  const result = [];
+  debugger
+  for (let i = children.length - 1; i >= 0; i--) {
+    const childW = children[i].size.width;
+    if (childW > remainingW) break;
+    result.unshift(children[i]);
+    remainingW -= (childW + MARGIN);
+  }
+  return result;
+}
+
 class ToolPanel extends Component {
   static type = TOOL_PANEL;
   static className = css.panel;

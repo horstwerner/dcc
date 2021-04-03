@@ -51,7 +51,7 @@ export default class ColorCoder extends CheckedObject{
   }
 
   getColor(object) {
-    const attributeValue = object.constructor === GraphNode ? resolveProperty(object, this.attribute) : object [this.attribute];
+    const attributeValue = GraphNode.isGraphNode(object) ? resolveProperty(object, this.attribute) : object [this.attribute];
     if (attributeValue == null) return this.default;
     return this.selectColor(attributeValue);
   }

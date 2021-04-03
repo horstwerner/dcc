@@ -47,7 +47,7 @@ export const getValueMap = function getValueMap(nodes, dimension) {
     const node = nodes[i];
     const value = resolveProperty(node, dimension) || null;
     if (value) {
-      const key = value.constructor === GraphNode ? value.uri : String(value);
+      const key = GraphNode.isGraphNode(value) ? value.uri : String(value);
       range[key] = value;
     } else {
       range['undefined'] = null;

@@ -1,5 +1,5 @@
 import P from 'prop-types';
-import {get, omit} from 'lodash';
+import {get, omit, pick} from 'lodash';
 import Component from '@symb/Component';
 import css from './App.css';
 import ComponentFactory from "@symb/ComponentFactory";
@@ -13,7 +13,7 @@ import {getConfig, HOVER_MENU_DELAY, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from 
 import {fit, isDataEqual, relSpatial} from "@symb/util";
 import {breadCrumbHoverIcon, createPreprocessedCardNode, hoverCardMenu} from "@/components/Generators";
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
-import {ToolPanel_} from "@/components/ToolPanel";
+import {calcMaxChildren, ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 
 import {CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
@@ -49,7 +49,7 @@ class App extends Component {
       views: [],
       tools: [],
       activeTools: {},
-      toolControls: {},
+      toolControls: [],
       currentFilters: [],
       currentViewOptions: {},
       optionControls: [],
@@ -411,7 +411,7 @@ class App extends Component {
 
 
   createStateForFocus(focusCard, data) {
-    if (data && data.constructor === GraphNode) {
+    if (GraphNode.isGraphNode(data)) {
       console.log(`----------------------------------------------------------`);
       console.log(`focus data is ${data.getSummary()}`);
     }
@@ -430,11 +430,11 @@ class App extends Component {
     const views = TemplateRegistry.getViewsFor(nodeTypeUri, aggregate).filter(view => view.selectable);
     const tools = aggregate ? TemplateRegistry.getToolsFor(nodeTypeUri) : [];
     const activeTools = {};
-    const toolControls = {};
+    const toolControls = [];
     tools.forEach(tool => {
       activeTools[tool.id] = tool.default ? tool : null;
       if (tool.default) {
-        toolControls[tool.id] = createFilterControl(tool, data, this.setToolFilter, this.removeToolFilter);
+        toolControls.push(createFilterControl(tool, data, this.setToolFilter, this.removeToolFilter));
       }
     });
     let currentViewOptions;
@@ -463,7 +463,7 @@ class App extends Component {
     if (tool.type !== 'filter') {
       throw new Error(`Can't use filter for tool ${tool.id} of type ${tool.type}. Use tool of type filter instead.`);
     }
-    const comparison = (typeof value === 'object' && value.constructor === GraphNode) ? COMPARISON_HAS_ASSOCIATED : COMPARISON_EQUAL;
+    const comparison = (GraphNode.isGraphNode(value)) ? COMPARISON_HAS_ASSOCIATED : COMPARISON_EQUAL;
     const newFilter = new Filter(tool.filter, comparison, value);
 
     const newFilters = {...currentFilters, [tool.id]: newFilter};
@@ -493,13 +493,13 @@ class App extends Component {
     const tool = activeTools[toolId];
     const newFocusCard = this.updatedFocusCard(focusCard, focusData, newFilters);
     this.transitionToState({currentFilters: newFilters,
-      toolControls: {...toolControls, [toolId]: updatedToolControl(tool, toolControls[toolId], value, newFocusCard.data, this.setToolFilter, this.removeToolFilter)},
+      toolControls: toolControls.map(control => (control.key !== toolId ? control : updatedToolControl(tool, control, value, newFocusCard.data, this.setToolFilter, this.removeToolFilter))),
       focusCard: newFocusCard});
   }
 
 
   handleToolToggle(toolId) {
-    const {tools, hoverCard, focusData} = this.state;
+    const {tools, hoverCard, focusData, mainWidth} = this.state;
     let activeTools;
     let toolControls;
     let focusCard;
@@ -507,16 +507,16 @@ class App extends Component {
 
     if (this.state.activeTools[toolId]) {
       activeTools = omit(this.state.activeTools, toolId);
-      toolControls = omit(this.state.toolControls, toolId);
+      toolControls = this.state.toolControls.filter(control => control.key !== toolId);
       currentFilters = omit(this.state.currentFilters, toolId);
       focusCard = this.updatedFocusCard(this.state.focusCard, focusData, currentFilters);
     } else {
       focusCard = this.state.focusCard;
       currentFilters = this.state.currentFilters;
       const tool = tools.find(tool => tool.id === toolId);
-      activeTools = {...this.state.activeTools, [toolId]: tool};
-      toolControls = {...this.state.toolControls, [toolId]:
-            createFilterControl(tool, focusData, this.setToolFilter, this.removeToolFilter) };
+      const allToolControls = [...this.state.toolControls, createFilterControl(tool, focusData, this.setToolFilter, this.removeToolFilter) ];
+      toolControls = calcMaxChildren(mainWidth, allToolControls);
+      activeTools = pick({...this.state.activeTools, [toolId]: tool}, toolControls.map(control => control.key));
     }
     const {windowWidth, windowHeight} = this.state;
     this.transitionToState({
@@ -592,15 +592,14 @@ class App extends Component {
 
 
   recalcLayout({toolControls, windowWidth, windowHeight, focusCard, hoverCard}) {
-    const sideBarWidth = Math.min(Math.min(SIDEBAR_PERCENT * windowWidth, SIDEBAR_MAX), 4 * windowHeight);
 
     const breadCrumbHeight = BREADCRUMB_LANE_HEIGHT;
-    const toolControlList = Object.values(toolControls);
+
     // noinspection JSCheckFunctionSignatures
-    const toolbarHeight = toolControlList.reduce((result, control) => Math.max(result, (control.size.height || 0)), 0) + (toolControlList.length === 0 ? 10 : 2 * MARGIN);
+    const toolbarHeight = toolControls.reduce((result, control) => Math.max(result, (control.size.height || 0)), 0) + (toolControls.length === 0 ? 10 : 2 * MARGIN);
     const focusHeight = windowHeight - breadCrumbHeight - toolbarHeight;
     const mainHeight = windowHeight;
-    const mainWidth = windowWidth - sideBarWidth;
+    const {mainWidth, sideBarWidth} = this.calcMainLayout(windowWidth, windowHeight);
 
     const layoutState = { breadCrumbHeight, toolbarHeight, focusHeight, mainWidth, mainHeight, sideBarWidth };
 
@@ -618,15 +617,26 @@ class App extends Component {
     return layoutState;
   }
 
+  calcMainLayout(windowWidth, windowHeight) {
+    const sideBarWidth = Math.min(Math.min(SIDEBAR_PERCENT * windowWidth, SIDEBAR_MAX), 4 * windowHeight);
+    return {mainWidth: windowWidth - sideBarWidth, sideBarWidth};
+  }
+
 
   onResize(width, height) {
     this.dom.style.width = `${width}px`;
     this.dom.style.height = `${height}px`;
-    const {toolControls, hoverCard, focusCard} = this.state;
+    const { hoverCard, focusCard} = this.state;
     const windowWidth = width;
     const windowHeight = height;
-    this.setState({windowWidth, windowHeight, ...this.recalcLayout(
-          {toolControls: toolControls || {}, windowWidth, windowHeight, hoverCard, focusCard})});
+    const {mainWidth} = this.calcMainLayout(width, height);
+    const toolControls = calcMaxChildren(mainWidth, this.state.toolControls);
+    const activeTools = pick(this.state.activeTools, toolControls.map(control => control.key));
+
+    const newLayoutState = this.recalcLayout(
+        {toolControls, windowWidth, windowHeight, hoverCard, focusCard});
+
+    this.setState({windowWidth, windowHeight, toolControls, activeTools, ...newLayoutState});
     this.renderStateChange();
   }
 
@@ -665,7 +675,7 @@ class App extends Component {
         key: 'tools',
         size: { width: mainWidth, height: toolbarHeight},
         spatial: {x: 0, y: focusHeight + breadCrumbHeight, scale: 1},
-        children: Object.values(toolControls)
+        children: toolControls
       })._ToolPanel,
       Div_({
         key: FOCUS,

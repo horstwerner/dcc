@@ -16,6 +16,10 @@ export default class GraphNode {
   uniqueKey;
   originalNode;
 
+  static isGraphNode(o) {
+    return o && typeof o === 'object' && o.constructor === GraphNode;
+  }
+
   /**
    *
    * @param {String} typeUri
@@ -134,7 +138,7 @@ export default class GraphNode {
     }
     if (filter !== null && result) {
       if (Array.isArray(result)) return result.filter(filter);
-      if (result.constructor === GraphNode && filter(result)) return result;
+      if (GraphNode.isGraphNode(result) && filter(result)) return result;
       return null;
     }
     return result;
@@ -194,7 +198,7 @@ export default class GraphNode {
       }
       else if (Array.isArray(value)) {
         valueStr = value.map(node => node.uri).join(', ');
-      } else if (value.constructor === GraphNode) {
+      } else if (GraphNode.isGraphNode(value)) {
         valueStr = value.uri;
       } else {
         valueStr = String(value);
@@ -223,7 +227,7 @@ export default class GraphNode {
       }
       return;
     }
-    if (property.constructor === GraphNode) {
+    if (GraphNode.isGraphNode(property)) {
       if (property === graphNode) return; //already exists
       let newArray = [];
       newArray.push(property);
@@ -254,7 +258,7 @@ export default class GraphNode {
       targetNode.addAssociatedNode(inverseTypeUri, this);
       return this;
     }
-    else if (typeof target === 'object' && target.constructor === GraphNode) {
+    else if (typeof target === 'object' && GraphNode.isGraphNode(target)) {
       this.addAssociatedNode(associationtype.uri, target);
       target.addAssociatedNode(inverseTypeUri, this);
       return this;
@@ -268,7 +272,7 @@ export default class GraphNode {
           this.addAssociatedNode(associationtype.uri, targetNode);
           targetNode.addAssociatedNode(inverseTypeUri, this);
         }
-        else if (typeof element === 'object' && element.constructor === GraphNode) {
+        else if (GraphNode.isGraphNode(element)) {
           this.addAssociatedNode(associationtype.uri, element);
           element.addAssociatedNode(inverseTypeUri, this);
         }
@@ -302,7 +306,7 @@ export default class GraphNode {
         }
         return false
       }
-      else if (typeof direct === 'object' && direct.constructor === GraphNode) {
+      else if (GraphNode.isGraphNode(direct)) {
         return direct.hasAssociationPathTo(parts[1], targetnode);
       }
     }

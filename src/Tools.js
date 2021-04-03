@@ -8,7 +8,7 @@ import GraphNode from "@/graph/GraphNode";
 const FILTER_RESET = 'core:filterReset';
 export const FILTER_HEIGHT = 20;
 
-const valueName = (value) => value.constructor === GraphNode ? value.getDisplayName() : String(value);
+const valueName = (value) => GraphNode.isGraphNode(value) ? value.getDisplayName() : String(value);
 
 export const createFilterControl = function createFilterControl (tool, data, onFilterSet, onFilterRemove) {
 
@@ -45,7 +45,7 @@ export const updatedToolControl = function updatedToolControl(tool, control, sel
 
   let selectedId;
   if (selectedValue) {
-    selectedId = selectedValue.constructor === GraphNode ? selectedValue.id : selectedValue;
+    selectedId = GraphNode.isGraphNode(selectedValue) ? selectedValue.uri : selectedValue;
   } else {
     selectedId = FILTER_RESET;
   }
