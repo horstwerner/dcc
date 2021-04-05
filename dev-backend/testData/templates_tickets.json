@@ -143,7 +143,7 @@
           "y": 10,
           "w": 200,
           "h": 18,
-          "attribute": "uri",
+          "attribute": "core:uri",
           "style": {
             "font-weight": "bold",
             "color": "white",
@@ -218,7 +218,7 @@
           "y": 82,
           "w": 50,
           "h": 12,
-          "url": "http://test.com/ticket/{{uri}}",
+          "url": "http://test.com/ticket/{{core:uri}}",
           "style": {
             "font-size": "8px",
             "font-weight": "normal"
@@ -251,7 +251,7 @@
           "key": "heading-large",
           "type": "textfield",
           "x": 10, "y": 44, "w": 200, "h": 50,
-          "attribute": "uri",
+          "attribute": "core:uri",
           "style": {"font-weight": "bold", "color": "white", "font-size": "30px", "h-align": "center"}
         }
       ]

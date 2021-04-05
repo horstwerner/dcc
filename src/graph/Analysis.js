@@ -1,13 +1,15 @@
 import {get} from 'lodash';
 import GraphNode from "@/graph/GraphNode";
 import Cache, {
-  traverse,
+  traverse
+} from "@/graph/Cache";
+import {
   TYPE_AGGREGATOR,
   TYPE_DEPTH,
   TYPE_NODES,
   TYPE_PREDECESSOR_COUNT,
   TYPE_SUCCESSOR_COUNT
-} from "@/graph/Cache";
+} from "@/graph/TypeDictionary";
 
 export const getAssociated = function getAssociated(node, association) {
 
@@ -85,7 +87,7 @@ export const pathAnalysis = function pathAnalysis(sourceNodes, associationType, 
         allPredecessorsOfTarget[sourceKey] = sourceContextNode;
 
         // can be overwritten - always tells the maximal depth of a node
-        targetContextNode[TYPE_DEPTH] = depth;
+        targetContextNode.set(TYPE_DEPTH, depth);
 
       });
     });
@@ -100,13 +102,13 @@ export const pathAnalysis = function pathAnalysis(sourceNodes, associationType, 
     if (upstreamAggregator) {
       const predecessors = Object.values(predecessorSetByUri[key]);
       const aggregated = upstreamAggregator.aggregate(predecessors, TYPE_PREDECESSOR_COUNT);
-      upstreamAggregator.fieldAggregations.forEach(({targetField}) => node[targetField] = aggregated[targetField]);
+      upstreamAggregator.fieldAggregations.forEach(({targetField}) => node.set(targetField, aggregated[targetField]));
     }
 
     if (downstreamAggregator) {
       const successors = Object.values(successorSetByUri[key]);
       const aggregated = downstreamAggregator.aggregate(successors, TYPE_SUCCESSOR_COUNT);
-      downstreamAggregator.fieldAggregations.forEach(({targetField}) => node[targetField] = aggregated[targetField]);
+      downstreamAggregator.fieldAggregations.forEach(({targetField}) => node.set(targetField, aggregated[targetField]));
     }
   });
 

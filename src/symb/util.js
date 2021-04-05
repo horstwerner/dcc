@@ -1,8 +1,9 @@
 import {isEqual, mapValues} from 'lodash';
-import Cache, {resolve, resolveAttribute, TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/Cache";
+import Cache, {resolve, resolveAttribute} from "@/graph/Cache";
 
 import GraphNode from "@/graph/GraphNode";
 import Filter from "@/graph/Filter";
+import {TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/TypeDictionary";
 
 export function getTransformString(x, y, scale) {
   return `translate(${x}px, ${y}px) scale(${scale})`;
@@ -138,9 +139,9 @@ export const roundCorners = function roundCorners(polygon, dist, closed) {
 export const createCardNode = function createCardNode(contents, key, name) {
   if (Array.isArray(contents)) {
     const result = new GraphNode(TYPE_AGGREGATOR, key || Cache.createUri());
-    result[TYPE_NODE_COUNT] = contents.length;
+    result.set(TYPE_NODE_COUNT, contents.length);
     if (name) {
-      result[TYPE_NAME] = name;
+      result.set(TYPE_NAME, name);
     }
     result.setBulkAssociation(TYPE_NODES, contents);
     return result;
@@ -174,7 +175,7 @@ export const nodeArray = function NodeArray(source) {
 export const isDataEqual = function isDataEqual(nodeA, nodeB) {
   if (nodeA === nodeB) return true;
   if (nodeA.getTypeUri() === TYPE_AGGREGATOR && nodeB.getTypeUri() === TYPE_AGGREGATOR) {
-    return isEqual(nodeA[TYPE_NODES], nodeB[TYPE_NODES]);
+    return isEqual(nodeA.get(TYPE_NODES), nodeB.get(TYPE_NODES));
   } else {
     return nodeA.getUniqueKey() === nodeB.getUniqueKey();
   }

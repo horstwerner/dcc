@@ -1,8 +1,8 @@
 import {RadioButtons_, VERTICAL} from "@/components/RadioButtons";
-import {TYPE_NODES} from "@/graph/Cache";
 import {MARGIN} from "@/Config";
 import {getValueRange} from "@/graph/GroupedSet";
 import {DropdownList_} from "@/components/DropdownList";
+import {TYPE_NODES} from "@/graph/TypeDictionary";
 
 const FILTER_RESET = 'core:filterReset';
 export const FILTER_HEIGHT = 20;
@@ -22,7 +22,7 @@ export const createFilterControl = function createFilterControl (tool, data, onF
       case 'dropdown': {
         const {id, width, labelWidth, filter, label} = tool;
 
-        const nodes = data[TYPE_NODES];
+        const nodes = data.get(TYPE_NODES);
         const valueMap = getValueRange(nodes, filter);
 
         const reset = {id: FILTER_RESET, name: 'All', onSelect: () => onFilterRemove(tool.id, FILTER_RESET)};

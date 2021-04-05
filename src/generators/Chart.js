@@ -1,5 +1,5 @@
 import P from 'prop-types';
-import {resolveAttribute, resolveProperty, TYPE_NODES} from "@/graph/Cache";
+import {resolveAttribute, resolveProperty} from "@/graph/Cache";
 import {Svg_} from "@/components/Svg";
 import {Rect_} from "@/components/Rect";
 import StackedBarChart from "@/generators/StackedBarChart";
@@ -7,6 +7,7 @@ import {GraphViz_} from "@/components/GraphViz";
 import {DEBUG_MODE} from "@/Config";
 import {PolarChart_} from "@/components/PolarChart";
 import {getNodeArray, getUnfilteredNodeArray} from "@symb/util";
+import {TYPE_NODES} from "@/graph/TypeDictionary";
 
 const fillInNumber = function fillInNumber(data, valueString) {
   if (isNaN(valueString)) {

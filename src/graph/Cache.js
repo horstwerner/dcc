@@ -1,77 +1,59 @@
 import {mapValues} from 'lodash';
-import Type from './Type';
+import TypeDictionary, {
+  DATATYPE_BOOLEAN,
+  DATATYPE_ENTITY,
+  DATATYPE_FLOAT,
+  DATATYPE_INTEGER,
+  TYPE_THING
+} from './TypeDictionary';
 import GraphNode from './GraphNode';
-
-export const DATATYPE_INTEGER = 'INTEGER';
-export const DATATYPE_STRING = 'STRING';
-export const DATATYPE_BOOLEAN = 'BOOLEAN';
-export const DATATYPE_FLOAT = 'FLOAT';
-export const DATATYPE_ENTITY = 'ENTITY';
-
-export const TYPE_NAME = 'core:name';
-export const TYPE_THING = 'core:thing'; // fallback type
-export const TYPE_AGGREGATOR = 'core:aggregator';
-export const TYPE_CONTEXTUAL_NODE = 'core:contextual';
-export const TYPE_PREDECESSOR_COUNT = 'core:predecessorCount';
-export const TYPE_SUCCESSOR_COUNT = 'core:successorCount';
-export const TYPE_NODES = 'core:subNodes';
-export const TYPE_TYPE = 'core:type';
-export const TYPE_CONTEXT = 'core:context';
-export const TYPE_NODE_COUNT = 'core:nodeCount';
-export const TYPE_DEPTH = 'core:depth';
 
 class Cache {
 
   idCount = 0;
 
   config;
-  typeDic;
   lookUpGlobal;
   rootNode = {};
+  entityTypes = [];
 
   constructor () {
-    this.typeDic = {};
     this.lookUpGlobal = {};
-    this.rootNode = {};
+    this.rootNode = new GraphNode(TYPE_THING, 'core:root');
     this.config = null;
-    this.createType({uri: TYPE_CONTEXTUAL_NODE, name: 'contextual', dataType: DATATYPE_ENTITY, isAssociation: false});
-    this.createType({uri: TYPE_AGGREGATOR, name: 'aggregated', dataType: DATATYPE_ENTITY, isAssociation: false});
-    this.createType({uri: TYPE_NODES, name: 'nodes', dataType: DATATYPE_ENTITY, isAssociation: true});
-    this.createType({uri: TYPE_THING, name: 'thing', dataType: DATATYPE_ENTITY, isAssociation: false});
-    this.createType({uri: TYPE_NODE_COUNT, name: 'node count', dataType: DATATYPE_INTEGER, isAssociation: false});
   };
 
   createUri() {
     return `core:surrogate${this.idCount++}`;
   }
 
-  createType (descriptor) {
-    let type = new Type(descriptor);
-    this.typeDic[descriptor.uri] = type;
+  createType(descriptor) {
+    const type = TypeDictionary.createType(descriptor);
     if (type.dataType === DATATYPE_ENTITY && !type.isAssociation) {
-      this.rootNode[descriptor.uri] = [];
+      this.rootNode.set(descriptor.uri, []);
+      this.entityTypes.push(descriptor.uri);
     }
     return type;
-  };
+  }
 
-  getType (typeuri) {
-    return this.typeDic[typeuri];
-  };
+  getEntityTypes() {
+    return this.entityTypes;
+  }
 
   getNode (typeUri, uri) {
-    if (typeUri && !this.rootNode[typeUri]) {
-      this.rootNode[typeUri] = [];
+    if (typeUri && !this.rootNode.get(typeUri)) {
+      this.rootNode.set(typeUri, []);
     }
     let node = this.lookUpGlobal[uri];
     if (!node) {
       node = new GraphNode(typeUri, uri);
       this.lookUpGlobal[uri] = node;
       if (typeUri) {
-        this.rootNode[typeUri].push(node);
+        this.rootNode.get(typeUri).push(node);
       }
     } else if (!node.type && typeUri) { // node definition after importing reference
       node.setType(typeUri);
-      this.rootNode[typeUri].push(node);
+      this.rootNode.get(typeUri).push(node);
     }
     return node;
   };
@@ -83,16 +65,12 @@ class Cache {
     return this.getNode(parts[0], parts[1]);
   }
 
-  getEntityTypes() {
-    return Object.keys(this.rootNode);
-  }
-
   getAllNodesOf (nodeType) {
-    return this.rootNode[nodeType] || [];
+    return this.rootNode.get(nodeType) || [];
   };
 
   mapAllNodesOf (nodeType, callback) {
-    return (this.rootNode[nodeType] || []).map(callback);
+    return (this.rootNode.get(nodeType) || []).map(callback);
   };
 
   search(searchTerm) {
@@ -105,7 +83,7 @@ class Cache {
          ));
 
     return Object.keys(typeHits).filter(typeUri => typeHits[typeUri].length > 0).map(typeUri => ({
-      nodeType: this.getType(typeUri),
+      nodeType: TypeDictionary.getType(typeUri),
       results: typeHits[typeUri]
     }));
   }
@@ -115,15 +93,7 @@ class Cache {
       let typeDescriptor = typeArray[i];
       this.createType(typeDescriptor);
     }
-    Object.values(this.typeDic).forEach(type => {
-      if (type.subclassOf) {
-        const superType = this.typeDic[type.subclassOf];
-        if (!superType) {
-          throw new Error(`Type ${type.uri} declares nonexistent super type ${type.subclassOf}`);
-        }
-        type.superType = superType;
-      }
-    })
+    TypeDictionary.resolveSuperTypes();
   };
 
   importNodes(nodeArray) {
@@ -136,7 +106,7 @@ class Cache {
       const node = this.getNode(type, id);
       Object.keys(rawNode).forEach(propUri => {
         if (propUri === 'id' || propUri === 'type') return;
-        const propType = this.getType(propUri);
+        const propType = TypeDictionary.getType(propUri);
         if (!propType) {
           throw new Error(`Property type ${propUri} not declared in data dictionary`);
         }
@@ -173,7 +143,7 @@ class Cache {
           prop = parts[0];
           targetType = parts[1];
         }
-        const propType = this.getType(prop);
+        const propType = TypeDictionary.getType(prop);
         if (propType && propType.dataType === DATATYPE_ENTITY) {
           const target = row[colIdx].includes('+') ? row[colIdx].split('+') : row[colIdx];
           newNode.addAssociation(propType, target, targetType);

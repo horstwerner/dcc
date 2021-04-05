@@ -12,6 +12,15 @@ import CardsElement from "@/templates/elements/CardsElement";
 import TrellisElement from "@/templates/elements/TrellisElement";
 import ChartElement from "@/templates/elements/ChartElement";
 import Filter from "@/graph/Filter";
+import {
+  AGGREGATE,
+  DERIVE_ASSOCIATIONS, FILTER,
+  INTERSECT,
+  PATH_ANALYSIS,
+  SET_CONTEXT,
+  SUBTRACT,
+  UNIFY
+} from "@/graph/Preprocessors";
 
 
 const fillPlaceholders = function fillPlaceholders(element, options, defaultValues) {
@@ -49,7 +58,9 @@ export default class Template {
     appliesTo: P.oneOfType([P.string,P.array]),
     clickable: P.bool,
     detailTemplate: P.string,
-    preprocessing: P.arrayOf(P.shape({method: P.string.isRequired, result: P.string, inputSelector: P.object})),
+    preprocessing: P.arrayOf(P.shape({method: P.oneOf([PATH_ANALYSIS, AGGREGATE, SET_CONTEXT,
+        DERIVE_ASSOCIATIONS, INTERSECT, UNIFY, SUBTRACT, FILTER]),
+      result: P.string.isRequired, inputSelector: P.object, input: P.string})),
     colorcoding: P.shape(ColorCoder.propertyTypes),
     options: P.objectOf(P.shape({options: P.arrayOf(P.shape({label: P.string, value: P.any})), default: P.any})),
     elements: P.arrayOf(P.shape(

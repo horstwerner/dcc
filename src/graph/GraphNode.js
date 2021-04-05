@@ -1,11 +1,11 @@
-import Cache, {
+import Cache from './Cache';
+import TypeDictionary, {
   DATATYPE_BOOLEAN,
-  DATATYPE_FLOAT,
-  DATATYPE_INTEGER,
+  DATATYPE_FLOAT, DATATYPE_INTEGER,
   DATATYPE_STRING,
   TYPE_CONTEXTUAL_NODE,
-  TYPE_THING
-} from './Cache';
+  TYPE_THING, TYPE_URI
+} from './TypeDictionary';
 import {getConfig} from "@/Config";
 
 // noinspection JSUnusedGlobalSymbols
@@ -31,13 +31,14 @@ export default class GraphNode {
       throw new Error('Undefined uri in node constructor');
     }
     this.uri = uri;
+    this.properties = {};
     if (originalNode) {
       if (typeUri !== TYPE_CONTEXTUAL_NODE) {
         throw new Error(`reference to original Node ${originalNode.uri} only allowed for ${TYPE_CONTEXTUAL_NODE}`);
       }
       this.originalNode = originalNode;
       this.uniqueKey = originalNode.getUniqueKey();
-      this.type = Cache.getType(TYPE_CONTEXTUAL_NODE);
+      this.type = TypeDictionary.getType(TYPE_CONTEXTUAL_NODE);
     } else if (typeUri) {
       this.setType(typeUri);
     }
@@ -49,8 +50,12 @@ export default class GraphNode {
     return this.uri === otherNode.uri;
   }
 
+  set(propKey, property) {
+    this.properties[propKey] = property;
+  }
+
   setType(typeUri) {
-    const type = Cache.getType(typeUri);
+    const type = TypeDictionary.getType(typeUri);
     if (!type) throw new Error(`Type ${typeUri} not declared in type dictionary`);
     if (type.isAssociation) {
       throw new Error(`Can't use association type ${typeUri} as node type`);
@@ -61,7 +66,25 @@ export default class GraphNode {
   }
 
   createContextual() {
+    if (this.originalNode) {
+      const result = new GraphNode(TYPE_CONTEXTUAL_NODE, this.uri, this.originalNode);
+      Object.assign(result.properties, this.properties);
+      return result;
+    }
     return new GraphNode(TYPE_CONTEXTUAL_NODE, this.uri, this);
+  }
+
+  mergeContextual(other) {
+    if (other.getUniqueKey() !== this.getUniqueKey()) {
+      throw new Error(`Can't merge different nodes ${other.getUniqueKey()} and ${this.getUniqueKey()}`);
+    }
+    if (!this.originalNode) return other;
+    if (!other.originalNode) return this;
+    const result = new GraphNode(TYPE_CONTEXTUAL_NODE, this.uri, this.originalNode);
+    //TODO: unify associations
+    Object.assign(result.properties, this.properties);
+    Object.assign(result.properties, other.properties);
+    return result;
   }
 
   getTypeUri() {
@@ -72,56 +95,22 @@ export default class GraphNode {
   };
 
   getDisplayName() {
-    return this[getConfig('displayNameAttribute')] || this.uri;
+    return this.properties[getConfig('displayNameAttribute')] || this.uri;
   }
 
   // noinspection JSUnusedGlobalSymbols
   isOfType (typeUri) {
-    return (this.type || Cache.getType(TYPE_THING)).isOfType(typeUri);
+    return (this.type || TypeDictionary.getType(TYPE_THING)).isOfType(typeUri);
   }
 
   getUniqueKey () {
     return this.uniqueKey;
   };
 
-  // getPropertyText(propertyname, separator) {
-  //   let property;
-  //   separator = separator || ', ';
-  //   if (propertyname.includes('/')) {
-  //     property = Cache.traverse(this, propertyname)
-  //   } else {
-  //     property = this[propertyname];
-  //   }
-  //   if (!property) return '';
-  //
-  //   if (property.constructor === GraphNode) {
-  //     return property.displayname();
-  //   }
-  //   if (property.constructor === Array || property.constructor === Set) {
-  //     let nameArray = [];
-  //     property.forEach(function (el) {
-  //       nameArray.push(el.displayname());
-  //     });
-  //     return nameArray.join(separator);
-  //   }
-  //   return property;
-  // };
-
-  // /**
-  //  *
-  //  * @param {string} path traversal path in xpath syntax
-  //  * @param {function} callback
-  //  * @param {function} filter optional, receives a node and returns true if that node is to be processed
-  //  */
-  // forEachRelatedNode(path, callback, filter) {
-  //   const related = traverse(this, path);
-  //   related.forEach(function (relnode) {
-  //     if (filter && !filter(relnode)) return;
-  //     callback(relnode);
-  //   });
-  // };
-
   get(propertyUri) {
+    if (propertyUri === TYPE_URI) {
+      return this.uri;
+    }
     let propName = propertyUri;
     let filter = null;
     if (propertyUri.charAt(propertyUri.length - 1) === ']') {
@@ -132,7 +121,7 @@ export default class GraphNode {
         filter = (node => node.isOfType(typeUri));
       }
     }
-    let result = this[propName];
+    let result = this.properties[propName];
     if (result === undefined && this.originalNode) {
       result = this.originalNode.get(propName);
     }
@@ -149,13 +138,13 @@ export default class GraphNode {
     switch (propType.dataType) {
       case DATATYPE_INTEGER:
       case DATATYPE_FLOAT:
-        this[propType.uri] = Number(value);
+        this.properties[propType.uri] = Number(value);
         break;
       case DATATYPE_STRING:
-        this[propType.uri] = String(value);
+        this.properties[propType.uri] = String(value);
         break;
       case DATATYPE_BOOLEAN:
-        this[propType.uri] = Boolean(value);
+        this.properties[propType.uri] = Boolean(value);
         break;
       default:
         throw new Error(`Data type ${propType.dataType} of ${propType.name} is not an attribute`);
@@ -164,7 +153,7 @@ export default class GraphNode {
 
   setAttributes(object) {
     Object.keys(object).forEach(prop => {
-      const propType = Cache.getType(prop);
+      const propType = TypeDictionary.getType(prop);
       if (!propType) {
         console.warn(`Ignoring property of unknown type ${prop} at import`);
         return;
@@ -176,27 +165,23 @@ export default class GraphNode {
 
   setBulkAssociation(associationTypeUri, nodes) {
     if (nodes.constructor === Set) {
-      this[associationTypeUri] = [...nodes]
+      this.properties[associationTypeUri] = [...nodes]
     } else {
-      this[associationTypeUri] = nodes;
+      this.properties[associationTypeUri] = nodes;
     }
     return this;
   }
 
   removeBulkAssociation(associationTypeUri) {
-    delete this[associationTypeUri];
+    delete this.properties[associationTypeUri];
   }
 
   getSummary() {
-    let result = [];
-    Object.keys(this).forEach(key => {
+    let result = ['${Type}: ${this.type.uri}','${uri}: ${this.uri}'];
+    Object.keys(this.properties).forEach(key => {
       let valueStr;
-      const value = this[key];
-      if (value == null || key === 'originalNode') return;
-      if (key === 'type') {
-        valueStr = value.uri;
-      }
-      else if (Array.isArray(value)) {
+      const value = this.properties[key];
+      if (Array.isArray(value)) {
         valueStr = value.map(node => node.uri).join(', ');
       } else if (GraphNode.isGraphNode(value)) {
         valueStr = value.uri;
@@ -216,9 +201,9 @@ export default class GraphNode {
    */
   addAssociatedNode(associationTypeUri, graphNode) {
 
-    const property = this[associationTypeUri];
+    const property = this.properties[associationTypeUri];
     if (property === undefined) {
-      this[associationTypeUri] = graphNode;
+      this.properties[associationTypeUri] = graphNode;
       return;
     }
     if (Array.isArray(property)) {
@@ -232,7 +217,7 @@ export default class GraphNode {
       let newArray = [];
       newArray.push(property);
       newArray.push(graphNode);
-      this[associationTypeUri] = newArray;
+      this.properties[associationTypeUri] = newArray;
       return;
     }
     throw new Error("Unexpected type of associated object (" + this.uri + "->" + associationTypeUri + ")");
@@ -284,8 +269,8 @@ export default class GraphNode {
   };
 
   hasDirectAssociation(association, targetnode) {
-    if (!this[association]) return false;
-    const asso = this[association];
+    if (!this.properties[association]) return false;
+    const asso = this.properties[association];
     if (typeof asso === 'object' && asso.constructor === Array) {
       return asso.includes(targetnode);
     } else {
@@ -297,7 +282,7 @@ export default class GraphNode {
     if (path.includes('/')) {
       //separate first segment of path from rest
       const parts = path.split(/\/(.+)/);
-      const direct = this[parts[0]];
+      const direct = this.properties[parts[0]];
       if (!direct) return false;
       if (typeof direct === 'object' && direct.constructor === Array) {
         for (let i = 0; i < direct.length; i++) {
@@ -318,7 +303,7 @@ export default class GraphNode {
   hasAnyDirectAssociationTo(targetnode) {
     for (let key in this) {
       if (!this.hasOwnProperty(key)) continue;
-      const propType = Cache.getType(key);
+      const propType = TypeDictionary.getType(key);
       if (propType && propType.isAssociation) {
         if (this.hasDirectAssociation(propType, targetnode)) return true;
       }

@@ -1,8 +1,8 @@
 import P from 'prop-types';
-import {resolveAttribute, TYPE_NODE_COUNT} from './graph/Cache';
-import GraphNode from "@/graph/GraphNode";
+import {resolveAttribute} from './graph/Cache';
 import clone from "lodash/clone";
 import {DEBUG_MODE} from "@/Config";
+import {TYPE_NODE_COUNT} from "@/graph/TypeDictionary";
 
 export const AGG_COUNT = 'count';
 export const AGG_SUM = 'sum';
