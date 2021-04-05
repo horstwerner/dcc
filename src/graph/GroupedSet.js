@@ -1,10 +1,10 @@
-import {mapValues} from 'lodash';
+import {mapValues, sortBy} from 'lodash';
 import {resolveAttribute, resolveProperty} from "@/graph/Cache";
 import {createCardNode} from "@symb/util";
 import GraphNode from "@/graph/GraphNode";
 
 
-export const EMPTY = '__empty__';
+export const EMPTY = 'core:__empty__';
 
 
 /**
@@ -39,45 +39,34 @@ export const sliceBy = function sliceBy(nodes, dimension) {
   );
 };
 
-export const getValueMap = function getValueMap(nodes, dimension) {
+export const getValueRange = function getValueRange(nodes, dimension) {
 
   const range = {};
+  let hasUndefined = false;
 
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
     const value = resolveProperty(node, dimension) || null;
-    const key = value.constructor === GraphNode ? value.uri : String(value);
-    range[key] = value;
-  }
-
-  return range;
-};
-
-
-/**
- * recursively subdivides an array of data points and aggregates a specified value on each level
- * @param {GraphNode} aggNode
- * @param {Array<String>} dimensions
- * @param {Aggregator} aggregator
- * @return {GroupedSet} GroupedSet tree with Aggregation instances as leaves
- */
-const diceBy = function diceBy(aggNode, dimensions, aggregator) {
-  // subdivide by first dimension
-  // node instances will be removed from aggregated node to avoid multiplication of nodes by levels of tree
-  const result = sliceBy(aggNode, dimensions[0], aggregator);
-  if (dimensions.length === 1) return result;
-
-  // recursively subdivide each slice by the remaining dimensions
-  {
-    const restDimensions = dimensions.slice(1);
-    const keys = result.getKeys();
-    for (let i = 0; i < keys.length; i++) {
-      const key = keys[i];
-      result.replaceGroup(key, diceBy(result.getGroup(key), restDimensions, aggregator));
+    if (value) {
+      if (GraphNode.isGraphNode(value)) {
+        range[value.getUniqueKey()] = {id: value.getUniqueKey(), name: value.getDisplayName(), value};
+      } else {
+        range[String(value)] = {id: value, name: value, value};
+      }
+    } else {
+      hasUndefined = true;
     }
   }
-  return result;
+
+  const result = [];
+  if (hasUndefined) {
+    result.push ({id: EMPTY, name: '- undefined -', value: null})
+  }
+
+  return [...result, ...sortBy(Object.values(range), 'name')];
+
 };
+
 
 
 // const groupingMethods = [AGG_SUM, AGG_MIN, AGG_MAX, AGG_AVG];
@@ -92,18 +81,9 @@ export class GroupedSet {
    * @constructor
    */
   constructor ( dimension, keys, groupNodeByKey) {
-    this.dimension = dimension;
     this.keys = keys;
     this.groupNodeByKey = groupNodeByKey;
   }
-
-  getDimension() {
-    return this.dimension;
-  }
-
-  getNumOfGroups() {
-    return this.keys.length;
-  };
 
   getKeys() {
     return this.keys;
@@ -118,16 +98,6 @@ export class GroupedSet {
     return this.groupNodeByKey[key];
   };
 
-  // for dicing purposes only
-  replaceGroup(key, groupedSet) {
-    this.groupNodeByKey[key] = groupedSet;
-  }
-
-  forEachKey(callback) {
-    for (let i = 0; i < this.keys.length; i++) {
-      callback(this.keys[i], this.groupNodeByKey[this.keys[i]]);
-    }
-  };
 }
 
 

@@ -213,12 +213,12 @@ export const traverse = function(source, path) {
     curSet.forEach(node => {
           const related = node.get(step);
           if (related != null) {
-            if (related.constructor === Array) {
+            if (Array.isArray(related)) {
               for (let j = 0; j < related.length; j++) {
                 nextSet.add( related[j]);
               }
             }
-            else if (related.constructor === GraphNode) {
+            else if (GraphNode.isGraphNode(related)) {
               nextSet.add(related);
             }
           }
@@ -251,7 +251,7 @@ export const resolve = function (node, path) {
 export const resolveAttribute = function (node, path) {
   const result = resolveProperty(node, path);
 
-  return (result && result.constructor === GraphNode) ?
+  return (GraphNode.isGraphNode(result)) ?
       result.getDisplayName() :
       result;
 };
@@ -270,7 +270,7 @@ export const resolveProperty = function (node, path) {
     let current = node;
     for (let segIdx = 0; segIdx < segments.length; segIdx++) {
       if (!current) break;
-      current = current.constructor === GraphNode ? current.get(segments[segIdx]) : current[segments[segIdx]];
+      current = GraphNode.isGraphNode(current) ? current.get(segments[segIdx]) : current[segments[segIdx]];
       // simplistic disambiguation - if multiple, select first
       if (segIdx < segments.length - 1 && Array.isArray(current)) {
         current = current[0];
@@ -278,7 +278,7 @@ export const resolveProperty = function (node, path) {
     }
     result = current;
   } else {
-    result = node.constructor === GraphNode ? node.get(path) : node[path];
+    result = GraphNode.isGraphNode(node) ? node.get(path) : node[path];
   }
 
   return result;

@@ -1,14 +1,11 @@
 import {RadioButtons_, VERTICAL} from "@/components/RadioButtons";
 import {TYPE_NODES} from "@/graph/Cache";
 import {MARGIN} from "@/Config";
-import {getValueMap} from "@/graph/GroupedSet";
+import {getValueRange} from "@/graph/GroupedSet";
 import {DropdownList_} from "@/components/DropdownList";
-import GraphNode from "@/graph/GraphNode";
 
 const FILTER_RESET = 'core:filterReset';
 export const FILTER_HEIGHT = 20;
-
-const valueName = (value) => value.constructor === GraphNode ? value.getDisplayName() : String(value);
 
 export const createFilterControl = function createFilterControl (tool, data, onFilterSet, onFilterRemove) {
 
@@ -17,7 +14,7 @@ export const createFilterControl = function createFilterControl (tool, data, onF
       case 'radio-buttons': {
         const {id, values, width, label} = tool;
         const reset = {id: FILTER_RESET, name: 'All', onSelect: () => onFilterRemove(tool.id)};
-        const options = values.map(value => ({id: value, name: value, onSelect: () => onFilterSet(tool, value)}));
+        const options = values.map(value => ({id: value, name: value, onSelect: () => onFilterSet(tool, value, value)}));
         options.push(reset);
         toolControl = RadioButtons_({key: id, size: {width, height: FILTER_HEIGHT}, label, options, selectedId: FILTER_RESET })._RadioButtons;
         break;
@@ -26,11 +23,11 @@ export const createFilterControl = function createFilterControl (tool, data, onF
         const {id, width, labelWidth, filter, label} = tool;
 
         const nodes = data[TYPE_NODES];
-        const valueMap = getValueMap(nodes, filter);
+        const valueMap = getValueRange(nodes, filter);
 
-        const reset = {id: FILTER_RESET, name: 'All', onSelect: () => onFilterRemove(tool.id)};
+        const reset = {id: FILTER_RESET, name: 'All', onSelect: () => onFilterRemove(tool.id, FILTER_RESET)};
 
-        const options = [reset, ...Object.keys(valueMap).map(key => ({id: key, name: valueName(valueMap[key]), onSelect: () => onFilterSet(tool, valueMap[key]) }))];
+        const options = [reset, ...valueMap.map(entry => ({id: entry.id, name: entry.name, onSelect: () => onFilterSet(tool, entry.id, entry.value) }))];
 
         toolControl = DropdownList_({key: id, width, labelWidth, height: 200, label, options, size: {width, height: FILTER_HEIGHT}, selectedId: FILTER_RESET })._DropdownList;
         break;
@@ -41,14 +38,7 @@ export const createFilterControl = function createFilterControl (tool, data, onF
     return toolControl;
 };
 
-export const updatedToolControl = function updatedToolControl(tool, control, selectedValue, data, onFilterSet, onFilterRemove) {
-
-  let selectedId;
-  if (selectedValue) {
-    selectedId = selectedValue.constructor === GraphNode ? selectedValue.id : selectedValue;
-  } else {
-    selectedId = FILTER_RESET;
-  }
+export const updatedToolControl = function updatedToolControl(tool, control, selectedId, data, onFilterSet, onFilterRemove) {
 
   let updatedControl;
   switch (tool.display) {
