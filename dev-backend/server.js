@@ -48,7 +48,7 @@ try {
   }
 }
 
-const {dictionaryFile, templateFile, toolFile, dataFiles, clientConfig} = config;
+const {dictionaryFile, templateFiles, toolFile, dataFiles, clientConfig} = config;
 
 const dicPath = path.join(__dirname, dictionaryFile);
 try {
@@ -113,15 +113,24 @@ router.get("/config", (req, res) => {
 });
 
 router.get("/templates", (req, res) => {
-  let templates;
+  const constants =  [];
+  const cards = [];
   try {
-    const data = fs.readFileSync(path.join(__dirname, templateFile), 'utf-8');
-    templates = JSON.parse(data.toString());
+    templateFiles.forEach(fileName => {
+      const data = fs.readFileSync(path.join(__dirname, fileName), 'utf-8');
+      const templates = JSON.parse(data.toString());
+      if (templates.constants) {
+        constants.push(...templates.constants);
+      }
+      if (templates.cards) {
+        cards.push(...templates.cards);
+      }
+    });
   } catch (err) {
     throw new Error(`Couldn't load data: ${err}`);
   }
   console.log(`serving cards`);
-  return res.json({success: true, data: templates});
+  return res.json({success: true, data: {constants, cards}});
 });
 
 router.get("/tools", (req, res) => {
