@@ -58,6 +58,7 @@ export default class GraphNode {
 
   set(propKey, property) {
     this.properties[propKey] = property;
+    return this;
   }
 
   setType(typeUri) {
