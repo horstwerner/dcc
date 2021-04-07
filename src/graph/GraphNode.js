@@ -44,6 +44,12 @@ export default class GraphNode {
     }
   }
 
+  clone(uri) {
+    const result = new GraphNode(this.getTypeUri(), uri);
+    result.properties = {...this.properties};
+    return result;
+  }
+
   equals(otherNode) {
     if (!GraphNode.isGraphNode(otherNode)) return false;
     if (this === otherNode) return true;

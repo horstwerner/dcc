@@ -16,7 +16,7 @@ import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 import {calcMaxChildren, ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 
-import {CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
+import {CARD_CONTEXT_URI, CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
 import {getCardDescriptors, getClientConfig, getData, getDictionary, getToolDescriptors} from "@/Data";
 import {createFilterControl, updatedToolControl} from "@/Tools";
 import {TYPE_AGGREGATOR, TYPE_CONTEXT, TYPE_NAME, TYPE_NODES} from "@/graph/TypeDictionary";
@@ -29,6 +29,8 @@ const HOVER_MENU = 'hover-menu';
 const TOOL_HEIGHT = 10;
 const BREADCRUMB_LANE_HEIGHT = 120;
 const SCROLLBAR_HEIGHT = 30;
+
+const createContext = () => new GraphNode(TYPE_CONTEXT, CARD_CONTEXT_URI);
 
 class App extends Component {
 
@@ -84,7 +86,7 @@ class App extends Component {
             Cache.getEntityTypes().forEach(entityType => {
               startData.setBulkAssociation(entityType, Cache.rootNode.get(entityType));
             })
-            startData.set(TYPE_CONTEXT, {});
+            startData.set(TYPE_CONTEXT, createContext());
             this.setState({
               focusData: startData,
               dataLoaded: true
@@ -483,7 +485,7 @@ class App extends Component {
       throw new Error('UpdateFocusCard called for non-aggregate card');
     }
     const data = createPreprocessedCardNode(applyFilters(Object.values(filters), focusData.get(TYPE_NODES)),
-        {}, focusCard.template, focusData.get(TYPE_NAME));
+        createContext(), focusCard.template, focusData.get(TYPE_NAME));
     return  {...focusCard, data};
   }
 
@@ -538,7 +540,7 @@ class App extends Component {
     }
 
     const data = template.aggregate ?  createPreprocessedCardNode(applyFilters(Object.values(currentFilters),
-        focusData.get(TYPE_NODES).map(node => (node.originalNode || node))), {}, template, focusData.get(TYPE_NAME)): this.state.focusCard.data;
+        focusData.get(TYPE_NODES).map(node => (node.originalNode || node))), createContext(), template, focusData.get(TYPE_NAME)): this.state.focusCard.data;
 
     const currentViewOptions = template.getDefaultOptions();
 

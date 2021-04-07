@@ -28,6 +28,7 @@ class TypeDictionary {
     this.createType({uri: TYPE_NODES, name: 'nodes', dataType: DATATYPE_ENTITY, isAssociation: true});
     this.createType({uri: TYPE_THING, name: 'thing', dataType: DATATYPE_ENTITY, isAssociation: false});
     this.createType({uri: TYPE_NODE_COUNT, name: 'node count', dataType: DATATYPE_INTEGER, isAssociation: false});
+    this.createType({uri: TYPE_CONTEXT, name: 'DCC card context', dataType: DATATYPE_ENTITY, isAssociation: false});
   }
 
   createType (descriptor) {
