@@ -115,13 +115,13 @@ class Cache {
             break;
           case DATATYPE_INTEGER:
           case DATATYPE_FLOAT:
-            node[propUri] = Number(rawNode[propUri]);
+            node.set(propUri, Number(rawNode[propUri]));
             break;
           case DATATYPE_BOOLEAN:
-            node[propUri] = Boolean(rawNode[propUri]);
+            node.set(propUri, Boolean(rawNode[propUri]));
             break;
           default:
-            node[propUri] = String(rawNode[propUri]);
+            node.set(propUri, String(rawNode[propUri]));
         }
       })
     });
