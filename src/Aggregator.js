@@ -125,10 +125,6 @@ export default class Aggregator {
    */
   aggregate(nodes, nodeCountName) {
     return aggregateNodes(nodes, this.fieldAggregations, nodeCountName);
-
-    // return new GraphNode(TYPE_AGGREGATOR, Cache.createUri())
-    //     .setAttributes(aggregated)
-    //     .setBulkAssociation(TYPE_NODES, nodes);
   }
 
 }

@@ -113,7 +113,7 @@ export const pathAnalysis = function pathAnalysis(sourceNodes, associationType, 
   });
 
   return new GraphNode(TYPE_AGGREGATOR, Cache.createUri())
-      .setAttributes({maxDepth: depth - 1})
+      .set('maxDepth', depth - 1)
       .setBulkAssociation(TYPE_NODES, Object.values(allTouchedNodes));
 }
 

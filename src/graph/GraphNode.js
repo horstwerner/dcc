@@ -183,7 +183,7 @@ export default class GraphNode {
   }
 
   getSummary() {
-    let result = ['${Type}: ${this.type.uri}','${uri}: ${this.uri}'];
+    let result = [`Type: ${this.type.uri}, uri: ${this.uri}`];
     Object.keys(this.properties).forEach(key => {
       let valueStr;
       const value = this.properties[key];

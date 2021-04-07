@@ -3,4 +3,4 @@ export const CLICK_OPAQUE = 'opaque';
 export const CLICK_TRANSPARENT = 'transparent';
 export const CLICK_DISABLED = 'disabled';
 
-export const CARD_CONTEXT_URI = 'dcc:context/card';
+export const BLANK_NODE_URI = 'core:blank-node';
