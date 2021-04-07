@@ -46,7 +46,7 @@ export const subtractLists = function subtractLists(lists) {
     throw new Error('Need at least two lists as arguments for SUBTRACT');
   }
   const map = {};
-  lists[i].forEach(node => {
+  lists[0].forEach(node => {
     map[node.getUniqueKey()] = node;
   });
   for (let i = 1; i < lists.length; i++) {

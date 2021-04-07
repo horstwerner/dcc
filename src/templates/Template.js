@@ -60,7 +60,7 @@ export default class Template {
     detailTemplate: P.string,
     preprocessing: P.arrayOf(P.shape({method: P.oneOf([PATH_ANALYSIS, AGGREGATE, SET_CONTEXT,
         DERIVE_ASSOCIATIONS, INTERSECT, UNIFY, SUBTRACT, FILTER]),
-      result: P.string.isRequired, inputSelector: P.object, input: P.string})),
+      result: P.string, inputSelector: P.object, input: P.string})),
     colorcoding: P.shape(ColorCoder.propertyTypes),
     options: P.objectOf(P.shape({options: P.arrayOf(P.shape({label: P.string, value: P.any})), default: P.any})),
     elements: P.arrayOf(P.shape(
