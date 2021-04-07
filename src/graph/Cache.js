@@ -67,7 +67,7 @@ class Cache {
 
   getAllNodesOf (nodeType) {
     let type = TypeDictionary.getType(nodeType);
-    let result = this.rootNode.get(nodeType) || [];
+    let result = [...this.rootNode.get(nodeType)] || [];
     type.subTypes.forEach(subType => result.push(...this.getAllNodesOf(subType.uri)));
     return result;
   };
