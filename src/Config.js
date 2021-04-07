@@ -1,5 +1,5 @@
 import { pick } from 'lodash';
-import {TYPE_NAME} from "@/graph/Cache";
+import {TYPE_NAME} from "@/graph/TypeDictionary";
 
 export const DEBUG_MODE = true;
 export const OFFLINE_MODE = false;

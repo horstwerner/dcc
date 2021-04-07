@@ -3,7 +3,6 @@
  */
 
 import P from "prop-types";
-import {TYPE_CONTEXT, TYPE_NODE_COUNT} from '@/graph/Cache';
 import {mapValues, omit} from 'lodash';
 import {DEBUG_MODE} from "@/Config";
 import css from "@/components/Card.css";
@@ -19,6 +18,8 @@ import CompactGridArrangement from "@/arrangement/CompactGridArrangement";
 import {preprocess} from "@/graph/Preprocessors";
 import hoverMenuCss from './HoverCardMenu.css';
 import {Link_} from "@/components/Link";
+import {TYPE_CONTEXT, TYPE_NODE_COUNT} from "@/graph/TypeDictionary";
+import {BLANK_NODE_URI} from "@/components/Constants";
 
 export const STYLE_ATTRIBUTES = [
  'color',
@@ -179,8 +180,8 @@ createArrangement.propTypes = {
  */
 export const createPreprocessedCardNode = function createPreprocessedCardNode(data, context, template, name) {
   const result = createCardNode(data,null, name);
-  const newContext = {...context};
-  result[TYPE_CONTEXT] = newContext;
+  const newContext = context.clone(BLANK_NODE_URI);
+  result.set(TYPE_CONTEXT, newContext);
   const { preprocessing } = template.descriptor;
   if (preprocessing) {
     preprocess(result, newContext, preprocessing)

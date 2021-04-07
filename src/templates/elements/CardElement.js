@@ -1,8 +1,8 @@
 import P from 'prop-types';
 import TemplateElement from "@/templates/elements/TemplateElement";
 import {ChildSet} from "@/components/Generators";
-import {TYPE_CONTEXT} from "@/graph/Cache";
 import {CLICK_NORMAL} from "@/components/Constants";
+import {TYPE_CONTEXT} from "@/graph/TypeDictionary";
 
 export default class CardElement extends TemplateElement {
 

@@ -1,5 +1,5 @@
 import Template from './Template';
-import {TYPE_THING} from "@/graph/Cache";
+import {TYPE_THING} from "@/graph/TypeDictionary";
 
 export const DEFAULT_VIEW_NAME = 'default';
 

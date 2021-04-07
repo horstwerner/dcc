@@ -19,14 +19,20 @@
 // "result": "dependencies"
 
 import Aggregator from "@/Aggregator";
-import {resolve, TYPE_NODES} from "@/graph/Cache";
+import {resolve} from "@/graph/Cache";
 import Filter from "@/graph/Filter";
 import {deriveAssociations, pathAnalysis} from "@/graph/Analysis";
+import {intersectLists, subtractLists, unifyLists} from "@/graph/SetOperations";
+import {TYPE_NODES} from "@/graph/TypeDictionary";
 
 export const PATH_ANALYSIS = "path-analysis";
 export const AGGREGATE = "aggregate";
 export const SET_CONTEXT = "set-context";
 export const DERIVE_ASSOCIATIONS = "derive-associations";
+export const INTERSECT = "intersect";
+export const UNIFY = "unify";
+export const SUBTRACT = "subtract";
+export const FILTER = "filter";
 
 /**
  *
@@ -54,23 +60,46 @@ export const preprocess = function preprocess(data, context, preprocessors) {
     switch (method) {
       case PATH_ANALYSIS: {
         const {associationType, upstreamAggregate, downstreamAggregate} = descriptor;
-        data[result] = pathAnalysis(source, associationType, new Aggregator(upstreamAggregate), new Aggregator(downstreamAggregate));
+        data.set(result, pathAnalysis(source, associationType, new Aggregator(upstreamAggregate), new Aggregator(downstreamAggregate)));
         break;
       }
       case AGGREGATE: {
         const {results} = descriptor;
         const aggregator = new Aggregator(results);
-        Object.assign(data, aggregator.aggregate(source));
+        const aggregated = aggregator.aggregate(source);
+        Object.keys(aggregated).forEach(key => data.set(key, aggregated[key]));
         break;
       }
       case SET_CONTEXT: { // add key-value pairs to context object in order to be passed down
         const {values} = descriptor;
-        Object.keys(values).forEach(targetField => context[targetField] = resolve(data, values[targetField]));
+        Object.keys(values).forEach(targetField => context.set(targetField, resolve(data, values[targetField])));
         break;
       }
       case DERIVE_ASSOCIATIONS: {
         const { path, derived, recursive } = descriptor;
-        data[result] = deriveAssociations(data[TYPE_NODES], path, derived, recursive);
+        data.set(result, deriveAssociations(data.get(TYPE_NODES), path, derived, recursive));
+        break;
+      }
+      case UNIFY: {
+        const { sets } = descriptor;
+        data.set(result, unifyLists(sets.map(setName => data.get(setName))));
+        break;
+      }
+      case INTERSECT: {
+        const { sets } = descriptor;
+        data.set(result, intersectLists(sets.map(setName => data.get(setName))));
+        break;
+      }
+      case SUBTRACT: {
+        const { sets } = descriptor;
+        data.set(result, subtractLists(sets.map(setName => data.get(setName))));
+        break;
+      }
+      case FILTER: {
+        if (!inputSelector) {
+          throw new Error(`For preprocessing of type "filter" parameter "inputSelector" must be defined`);
+        }
+        data.set(result, source);
         break;
       }
       default:

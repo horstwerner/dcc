@@ -34,7 +34,7 @@ export const sliceBy = function sliceBy(nodes, dimension) {
   return new GroupedSet(dimension, keyArray,
       mapValues(subsets,(nodes, key) => {
         const cardNode = createCardNode(nodes, `group-${key}`, (key === EMPTY ? 'unspecified' : key));
-        cardNode[dimension] = key;
+        cardNode.set(dimension, key);
         return cardNode;})
   );
 };

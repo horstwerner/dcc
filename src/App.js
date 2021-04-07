@@ -3,7 +3,7 @@ import {get, omit, pick} from 'lodash';
 import Component from '@symb/Component';
 import css from './App.css';
 import ComponentFactory from "@symb/ComponentFactory";
-import Cache, {TYPE_AGGREGATOR, TYPE_CONTEXT, TYPE_NAME, TYPE_NODES} from './graph/Cache';
+import Cache from './graph/Cache';
 import TemplateRegistry, {DEFAULT_VIEW_NAME} from './templates/TemplateRegistry';
 import {Div_} from '@symb/Div';
 import {Card_} from "@/components/Card";
@@ -16,9 +16,10 @@ import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 import {calcMaxChildren, ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 
-import {CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
+import {BLANK_NODE_URI, CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
 import {getCardDescriptors, getClientConfig, getData, getDictionary, getToolDescriptors} from "@/Data";
 import {createFilterControl, updatedToolControl} from "@/Tools";
+import {TYPE_AGGREGATOR, TYPE_CONTEXT, TYPE_NAME, TYPE_NODES} from "@/graph/TypeDictionary";
 
 const APP = 'app';
 const BREADCRUMBS = 'breadcrumbs';
@@ -28,6 +29,8 @@ const HOVER_MENU = 'hover-menu';
 const TOOL_HEIGHT = 10;
 const BREADCRUMB_LANE_HEIGHT = 120;
 const SCROLLBAR_HEIGHT = 30;
+
+const createContext = () => new GraphNode(TYPE_CONTEXT, BLANK_NODE_URI);
 
 class App extends Component {
 
@@ -80,10 +83,10 @@ class App extends Component {
           Cache.validateNodes();
           if (!this.state.error) {
             const startData = new GraphNode(TYPE_AGGREGATOR, Cache.createUri());
-            Object.keys(Cache.rootNode).forEach(entityType => {
-              startData.setBulkAssociation(entityType, Cache.rootNode[entityType]);
+            Cache.getEntityTypes().forEach(entityType => {
+              startData.setBulkAssociation(entityType, Cache.rootNode.get(entityType));
             })
-            startData[TYPE_CONTEXT] = {}
+            startData.set(TYPE_CONTEXT, createContext());
             this.setState({
               focusData: startData,
               dataLoaded: true
@@ -420,7 +423,7 @@ class App extends Component {
     const { aggregate } = template;
     let nodeTypeUri = 'core:start';
     if (data && data.getTypeUri() === TYPE_AGGREGATOR ) {
-      const subNodes = data[TYPE_NODES];
+      const subNodes = data.get(TYPE_NODES);
       if (subNodes && subNodes.length > 0) {
         nodeTypeUri = subNodes[0].getTypeUri();
       }
@@ -481,8 +484,8 @@ class App extends Component {
     if (focusData.getTypeUri() !== TYPE_AGGREGATOR) {
       throw new Error('UpdateFocusCard called for non-aggregate card');
     }
-    const data = createPreprocessedCardNode(applyFilters(Object.values(filters), focusData[TYPE_NODES]),
-        {}, focusCard.template, focusData[TYPE_NAME]);
+    const data = createPreprocessedCardNode(applyFilters(Object.values(filters), focusData.get(TYPE_NODES)),
+        createContext(), focusCard.template, focusData.get(TYPE_NAME));
     return  {...focusCard, data};
   }
 
@@ -532,12 +535,12 @@ class App extends Component {
     const {focusData, currentFilters, mainWidth, focusHeight} = this.state;
     const template = TemplateRegistry.getTemplate(viewId);
 
-    if (template.aggregate && !focusData[TYPE_NODES]) {
+    if (template.aggregate && !focusData.get(TYPE_NODES)) {
       throw new Error(`Template ${template.id} is marked as aggregate, but applied to non-aggregate data ${focusData.getUniqueKey()}`);
     }
 
     const data = template.aggregate ?  createPreprocessedCardNode(applyFilters(Object.values(currentFilters),
-        focusData[TYPE_NODES].map(node => (node.originalNode || node))), {}, template, focusData[TYPE_NAME]): this.state.focusCard.data;
+        focusData.get(TYPE_NODES).map(node => (node.originalNode || node))), createContext(), template, focusData.get(TYPE_NAME)): this.state.focusCard.data;
 
     const currentViewOptions = template.getDefaultOptions();
 

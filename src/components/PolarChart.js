@@ -1,5 +1,5 @@
 import P from 'prop-types';
-import Cache from '@/graph/Cache';
+import TypeDictionary from '@/graph/TypeDictionary';
 import Component from "@symb/Component";
 import GraphNode from "@/graph/GraphNode";
 import {RADIAL_GRADIENT, Stop, Svg_} from "@/components/Svg";
@@ -67,7 +67,7 @@ class PolarChart extends Component {
       lines.push(polygonPath([center, lineEnd], false));
       arrows.push(polygonPath(translate(rotate(arrowTip, angle), lineEnd), true));
       const labelPos = {x: Math.max(0, Math.min(diameter - labelWidth, center.x + cos * labelRadius - 0.5 * labelWidth)), y: center.y + sin * labelRadius - 0.2 * labelHeight};
-      const labelText = labels ? labels[dimensionIdx] : Cache.getType(dimension).name;
+      const labelText = labels ? labels[dimensionIdx] : TypeDictionary.getType(dimension).name;
       labelChildren.push(Caption({key: `label${dimension}`, x: labelPos.x, y: labelPos.y, w: labelWidth, h: labelHeight, text: labelText, style: {...labelStyle, 'h-align': 'center'}}))
 
       const x = center.x + scaled * cos;

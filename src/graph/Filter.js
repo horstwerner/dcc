@@ -1,7 +1,8 @@
 import GraphNode from "@/graph/GraphNode";
-import {resolveProperty, TYPE_TYPE} from "@/graph/Cache";
+import {resolveProperty} from "@/graph/Cache";
 import Type from "@/graph/Type";
 import {fillIn} from "@symb/util";
+import {TYPE_TYPE} from "@/graph/TypeDictionary";
 
 export const restAfter = function(string, prefix) {
   for (let i = 0; i < prefix.length; i++) {

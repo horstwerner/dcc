@@ -1,8 +1,8 @@
 import {EMPTY, sliceBy} from "@/graph/GroupedSet";
 import {LOD_FULL} from "@/components/CardSet";
 import {ChildSet} from "@/components/Generators";
-import {TYPE_CONTEXT} from "@/graph/Cache";
 import {getNodeArray} from "@symb/util";
+import {TYPE_CONTEXT} from "@/graph/TypeDictionary";
 
 
 const Trellis = function Trellis(data, descriptor, onClick, clickMode) {
