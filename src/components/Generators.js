@@ -194,10 +194,10 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
   const { key, name, source, lod, align, arrangement, inputSelector, viewName, x, y, w, h, options} = descriptor;
 
   const nodes = getNodeArray(inputSelector, source, data);
-  if (!nodes) return null;
+  if (!nodes || nodes.length === 0) return null;
 
   const templateName = descriptor.template;
-  const template = templateName ? TemplateRegistry.getTemplate(templateName) : TemplateRegistry.getTemplateFor(nodes[0].getTypeUri(), viewName || DEFAULT_VIEW_NAME);
+  const template = templateName ? TemplateRegistry.getTemplate(templateName) : TemplateRegistry.getTemplateForSingleCard(nodes[0].getTypeUri(), viewName || DEFAULT_VIEW_NAME);
   const nativeChildSize = template.getSize();
 
   if (aggregate) {
@@ -219,7 +219,7 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
 
   const arrangementDescriptor = {type: GRID, x: 0, y: 0, w, h, padding: PADDING, ...arrangement};
   const cardNodes = nodes.map(node => {
-    const cardTemplate = template || TemplateRegistry.getTemplateFor(node.getTypeUri(), viewName || 'default');
+    const cardTemplate = template || TemplateRegistry.getTemplateForSingleCard(node.getTypeUri(), viewName || 'default');
     return createPreprocessedCardNode(node, context, cardTemplate,null);
   });
   if (align) {

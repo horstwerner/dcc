@@ -582,7 +582,7 @@ class App extends Component {
       return;
     }
 
-    const template = TemplateRegistry.getTemplateFor(node.getTypeUri(), DEFAULT_VIEW_NAME);
+    const template = TemplateRegistry.getTemplateForSingleCard(node.getTypeUri(), DEFAULT_VIEW_NAME);
     const { mainWidth, focusHeight, breadCrumbHeight } = this.state;
 
     const spatial = this.calcHoverCardSpatial({template, mainWidth, focusHeight, breadCrumbHeight});

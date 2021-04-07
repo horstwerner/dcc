@@ -66,11 +66,10 @@ class Cache {
   }
 
   getAllNodesOf (nodeType) {
-    return this.rootNode.get(nodeType) || [];
-  };
-
-  mapAllNodesOf (nodeType, callback) {
-    return (this.rootNode.get(nodeType) || []).map(callback);
+    let type = TypeDictionary.getType(nodeType);
+    let result = this.rootNode.get(nodeType) || [];
+    type.subTypes.forEach(subType => result.push(...this.getAllNodesOf(subType.uri)));
+    return result;
   };
 
   search(searchTerm) {
