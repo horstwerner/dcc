@@ -29,11 +29,11 @@
 
 .panelButtonActive,
 .panelButtonInactive {
-  padding: 5px 8px 4px 8px;
-  height: 22px;
+  padding: 4px 8px 4px 8px;
+  height: 23px;
   margin: 2px;
   overflow: hidden;
-  text-wrap: none;
+  white-space: nowrap;
   text-overflow: ellipsis;
 }
 

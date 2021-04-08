@@ -15,8 +15,8 @@ const fallbackTemplate = {
         {
           "key": "heading-large",
           "type": "textfield",
-          "x": 15, "y": 35, "w": 190, "h": 50,
-          "attribute": "uri",
+          "x": 15, "y": 20, "w": 190, "h": 80,
+          "attribute": "core:name",
           "style": {"font-weight": "normal", "color": "#202020", "font-size": "18px", "h-align": "center", "v-align": "center"}
         }
       ]
