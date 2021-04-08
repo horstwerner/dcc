@@ -20,6 +20,7 @@ import hoverMenuCss from './HoverCardMenu.css';
 import {Link_} from "@/components/Link";
 import {TYPE_CONTEXT, TYPE_NODE_COUNT} from "@/graph/TypeDictionary";
 import {BLANK_NODE_URI} from "@/components/Constants";
+import GraphNode from "@/graph/GraphNode";
 
 export const STYLE_ATTRIBUTES = [
  'color',
@@ -128,7 +129,7 @@ export const Caption = function Caption(props) {
   return FlexBox_({key, className: css.caption, spatial:{ x, y, scale: 1},
         style: { width: w, height: h, justifyContent: hAlign, alignItems: vAlign, zIndex: style && style['z-index'] }
         },
-      Div_({key: 'innertext', style: calcStyle({'font-size': h, ...style})}, text)._Div
+      Div_({key: 'innertext', style: calcStyle({'font-size': h, ...style}), title: text}, text)._Div
   )._FlexBox;
 }
 
@@ -180,7 +181,7 @@ createArrangement.propTypes = {
  */
 export const createPreprocessedCardNode = function createPreprocessedCardNode(data, context, template, name) {
   const result = createCardNode(data,null, name);
-  const newContext = context.clone(BLANK_NODE_URI);
+  const newContext = context ? context.clone(BLANK_NODE_URI) : new GraphNode(TYPE_CONTEXT, BLANK_NODE_URI);
   result.set(TYPE_CONTEXT, newContext);
   const { preprocessing } = template.descriptor;
   if (preprocessing) {

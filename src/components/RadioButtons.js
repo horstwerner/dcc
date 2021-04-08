@@ -39,6 +39,7 @@ class RadioButtons extends Component {
     options.forEach(option => children.push(Div_({
       key: option.id,
       className: option.id === selectedId ? activeStyle : inactiveStyle,
+      title: option.name,
       children: option.name,
       onClick: option.id === selectedId ? null : option.onSelect
     })._Div));
