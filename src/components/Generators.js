@@ -129,7 +129,7 @@ export const Caption = function Caption(props) {
   return FlexBox_({key, className: css.caption, spatial:{ x, y, scale: 1},
         style: { width: w, height: h, justifyContent: hAlign, alignItems: vAlign, zIndex: style && style['z-index'] }
         },
-      Div_({key: 'innertext', style: calcStyle({'font-size': h, ...style}), title: text}, text)._Div
+      Div_({key: 'innertext', style: calcStyle({'font-size': h, ...style})}, text)._Div
   )._FlexBox;
 }
 
