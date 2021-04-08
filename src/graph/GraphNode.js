@@ -3,7 +3,7 @@ import TypeDictionary, {
   DATATYPE_BOOLEAN,
   DATATYPE_FLOAT, DATATYPE_INTEGER,
   DATATYPE_STRING,
-  TYPE_CONTEXTUAL_NODE,
+  TYPE_CONTEXTUAL_NODE, TYPE_NAME,
   TYPE_THING, TYPE_URI
 } from './TypeDictionary';
 import {getConfig} from "@/Config";
@@ -117,6 +117,9 @@ export default class GraphNode {
   get(propertyUri) {
     if (propertyUri === TYPE_URI) {
       return this.uri;
+    }
+    if (propertyUri === TYPE_NAME) {
+      return this.getDisplayName();
     }
     let propName = propertyUri;
     let filter = null;

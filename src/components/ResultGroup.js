@@ -30,7 +30,6 @@ class ResultGroup extends Component {
                   onKeyUp: (event) => {if (event.key === 'Enter') onSearchResultClick(node)}},
                 node.getDisplayName()
             )._Div))._Div,
-
     ];
   }
 }
