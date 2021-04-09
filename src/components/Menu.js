@@ -33,7 +33,7 @@ class MenuPanel extends Component {
 
     const children = [Div_({className: css.title, children:title})._Div];
     if (entries) {
-      entries.forEach(entry => children.push(Div_({className: entry.selected ? css.entrySelected : css.entry, children:entry.name, onClick: () => onEntryClick(entry.id)})._Div))
+      entries.forEach(entry => children.push(Div_({className: entry.selected ? css.entrySelected : css.entry, title: entry.name, children:entry.name, onClick: () => onEntryClick(entry.id)})._Div))
     }
 
     return children;

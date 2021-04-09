@@ -4,7 +4,7 @@ import TypeDictionary, {
   DATATYPE_FLOAT, DATATYPE_INTEGER,
   DATATYPE_STRING,
   TYPE_CONTEXTUAL_NODE, TYPE_NAME,
-  TYPE_THING, TYPE_URI
+  TYPE_THING, TYPE_TYPE, TYPE_URI
 } from './TypeDictionary';
 import {getConfig} from "@/Config";
 
@@ -115,12 +115,16 @@ export default class GraphNode {
   };
 
   get(propertyUri) {
-    if (propertyUri === TYPE_URI) {
-      return this.uri;
+
+    switch (propertyUri) {
+      case TYPE_TYPE:
+        return this.type;
+      case TYPE_URI:
+        return this.uri;
+      case TYPE_NAME:
+        return this.getDisplayName();
     }
-    if (propertyUri === TYPE_NAME) {
-      return this.getDisplayName();
-    }
+
     let propName = propertyUri;
     let filter = null;
     if (propertyUri.charAt(propertyUri.length - 1) === ']') {
