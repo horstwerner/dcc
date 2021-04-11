@@ -366,7 +366,7 @@
           "key": "label_title",
           "type": "caption",
           "style": {"$": "GROUP_HEADING_STYLE"},
-          "x": {"$": "MARGIN"}, "y": {"$": "MARGIN"}, "w": 100, "h": 32,
+          "x": {"$": "MARGIN"}, "y": {"$": "MARGIN"}, "w": 150, "h": 32,
           "text": "Dependencies"
         },
         {

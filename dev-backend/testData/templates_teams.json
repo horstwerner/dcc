@@ -24,7 +24,7 @@
           "key": "heading",
           "type": "textfield",
           "x": 12, "y": 10, "w": 80, "h": 18,
-          "attribute": "uri",
+          "attribute": "core:name",
           "style": {"$": "LABEL_STYLE"}
         },
         {
