@@ -48,7 +48,7 @@ class PolarChart extends Component {
     const lineRadius = 0.5 * diameter * 0.92;
 
     const labelHeight = 0.08 * diameter;
-    const labelWidth = 3.5 * labelHeight;
+    const labelWidth = 4.5 * labelHeight;
     const labelRadius = 0.55 * diameter + labelHeight;
     const labelChildren = [];
     const corners = [];

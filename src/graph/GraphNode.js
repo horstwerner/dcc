@@ -102,7 +102,9 @@ export default class GraphNode {
   };
 
   getDisplayName() {
-    return this.properties[getConfig('displayNameAttribute')] || this.uri;
+    const result = this.properties[getConfig('displayNameAttribute')];
+    if (result) return result;
+    return this.originalNode ? this.originalNode.getDisplayName() : this.uri;
   }
 
   // noinspection JSUnusedGlobalSymbols
