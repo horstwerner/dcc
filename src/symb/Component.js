@@ -170,11 +170,11 @@ export default class Component {
     const updatedChildren = {};
     let count = 0;
     let result;
-    let predecessor = null;
     if (!this.childByKey) {
       this.childByKey = {};
     }
     if (Array.isArray(descriptor)) {
+      let predecessor = null;
       result = descriptor
           .filter(Boolean)
           .map(childDescriptor => {
@@ -185,11 +185,10 @@ export default class Component {
             predecessor = childComponent;
           })
     } else {
-      result = this.createChild(`surrogate_key${count}`, descriptor, predecessor, tween);
+      result = this.createChild(`surrogate_key${count}`, descriptor, null, tween);
       if (result.key) {
         updatedChildren[result.key] = result;
       }
-      predecessor = result;
     }
     // remove old children that aren't part of children list
     Object.keys(this.childByKey).forEach(key => {
@@ -351,7 +350,7 @@ export default class Component {
   addChild(child, predecessor) {
     this.childByKey[child.key] = child;
     if (predecessor) {
-      predecessor.dom.after(child.dom)
+      predecessor.dom.after(child.dom);
     } else {
       this.dom.insertBefore(child.dom, this.dom.firstChild);
     }
