@@ -106,7 +106,7 @@ export default class Component {
     return targetArray;
   }
 
-  createChild(fallbackKey, childDescriptor, predecesor, tween) {
+  createChild(fallbackKey, childDescriptor, predecessor, tween) {
     if (typeof childDescriptor === 'string' || typeof childDescriptor === 'number' || typeof childDescriptor === 'boolean') {
       this.dom.innerText = String(childDescriptor);
       return childDescriptor;
@@ -130,16 +130,13 @@ export default class Component {
       if (existing) {
         existing.destroy();
       }
-      if (childDescriptor.key === 'breadcrumbhover-card1') {
-        console.log(`creating hover`);
-      }
       const newChild = ComponentFactory.create(childDescriptor, this);
       if (tween) {
         let targetAlpha = newChild.getAlpha();
         newChild.setAlpha(0);
         tween.addFade(newChild, targetAlpha);
       }
-      return this.addChild(newChild, predecesor);
+      return this.addChild(newChild, predecessor);
     } else {
       existing.update(netProps, tween);
     }
@@ -368,19 +365,18 @@ export default class Component {
 
   transitionToState(partialState) {
     if (this.transitionTween) {
-      setTimeout(() => this.setState(partialState) , TRANSITION_DURATION);
+      this.transitionTween.onEndCall(() => this.setState(partialState), TRANSITION_DURATION);
+      return;
     }
-    const transitionTween = new Tween(TRANSITION_DURATION).onEndCall(() => {this.transitionTween = null; console.log(`tween removed: ${this.key}`)});
+    const transitionTween = new Tween(TRANSITION_DURATION).onEndCall(() => {this.transitionTween = null;});
     if (this.updateScheduled) {
       this.onStateRendered = () => {
-        console.log(`adding transition tween to ${this.key} - 1`);
         this.transitionTween = transitionTween;
         this.setState(partialState);
         this.onStateRendered = null;
         transitionTween.start();
       };
     } else {
-      console.log(`adding transition tween to ${this.key} - 2`);
       this.transitionTween = transitionTween;
       this.setState(partialState);
       transitionTween.start();
