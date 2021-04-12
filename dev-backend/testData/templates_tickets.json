@@ -2,7 +2,7 @@
   "constants": [
     {"MARGIN":  20},
     {"CARD_BACKGROUND_COLOR":  "#FAFAFA"},
-    {"AREA_BACKGROUND_COLOR":  "#F5F5F5"},
+    {"AREA_BACKGROUND_COLOR":  "#F5F5F3"},
     {"TEXT_COLOR": "rgba(0,0,0,0.7)"},
     {"HEADING_COLOR": "rgba(0,0,0,0.83)"},
     {"TEXT_STYLE": {
@@ -142,7 +142,7 @@
           "x": 10,
           "y": 10,
           "w": 200,
-          "h": 18,
+          "h": 24,
           "attribute": "core:uri",
           "style": {
             "font-weight": "bold",
@@ -311,9 +311,11 @@
       "aggregate": true,
       "background": {
         "type": "rect",
-        "w": 1580,
-        "h": 900,
-        "color": "rgba(255,255,255,0.0)"
+        "w": 1620,
+        "h": 940,
+        "color": "#FEFEFD",
+        "borderColor": "#E0E0E0",
+        "cornerRadius": 6
       },
       "elements": [
         {
@@ -321,21 +323,21 @@
           "type": "card",
           "template": "stories-by-feature",
           "source": "~jira:ticket",
-          "x": 0, "y":0, "w": 420, "h": 500
+          "x": 20, "y":20, "w": 420, "h": 500
         },
         {
           "key": "dependencies",
           "type": "card",
           "source": "~jira:ticket",
           "template": "dependency-graph",
-          "x": 440, "y": 0, "w": 700, "h": 500
+          "x": 460, "y": 20, "w": 700, "h": 500
         },
         {
           "key": "teams",
           "type": "card",
           "source": "~jira:team",
           "template": "team-overview",
-          "x": 1160, "y":0, "w": 420, "h": 900
+          "x": 1180, "y":20, "w": 420, "h": 900
         }
       ]
     },

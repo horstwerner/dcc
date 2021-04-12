@@ -1,8 +1,21 @@
 import { pick } from 'lodash';
 import {TYPE_NAME} from "@/graph/TypeDictionary";
+import cssBreadCrumbDefault from "@/components/themes/default/BreadcrumbLane.css";
+import cssBreadCrumbGray from "@/components/themes/gray/BreadcrumbLane.css";
+import cssMenuDefault from "@/components/themes/default/Menu.css";
+import cssMenuGray from "@/components/themes/gray/Menu.css";
+import cssMenuPanelDefault from "@/components/themes/default/MenuPanel.css";
+import cssMenuPanelGray from "@/components/themes/gray/MenuPanel.css";
+import cssRadioButtonsDefault from "@/components/themes/default/RadioButtons.css";
+import cssRadioButtonsGray from "@/components/themes/gray/RadioButtons.css";
+import cssAppDefault from "@/components/themes/default/App.css";
+import cssAppGray from "@/components/themes/gray/App.css";
+
 
 export const DEBUG_MODE = true;
 export const OFFLINE_MODE = false;
+export const THEME_DEFAULT = 'default';
+export const THEME_GRAY = 'gray';
 
 if (DEBUG_MODE) {
   const error = console.error;
@@ -44,7 +57,8 @@ export const QCC_GRAY_5 = '#696966';
 export const QCC_GRAY_SIDEBAR = `rgb(233,234,228)`;
 
 const configuration = {
-  displayNameAttribute : TYPE_NAME
+  displayNameAttribute : TYPE_NAME,
+  theme: THEME_DEFAULT
 };
 
 export const setConfig = function setConfig(config) {
@@ -57,4 +71,44 @@ export const getConfigs = function getConfigs(parameterList) {
 
 export const getConfig = function (parameterName) {
   return configuration[parameterName];
+}
+
+export const getAppCss = function getAppCss() {
+  switch (configuration.theme) {
+    case THEME_GRAY:
+      return cssAppGray;
+  }
+  return cssAppDefault;
+}
+
+export const getBreadCrumbCss = function getBreadCrumbCss() {
+  switch (configuration.theme) {
+    case THEME_GRAY:
+      return cssBreadCrumbGray;
+  }
+  return cssBreadCrumbDefault;
+}
+
+export const getRadioButtonCss = function getMenuCss() {
+  switch (configuration.theme) {
+    case THEME_GRAY:
+      return cssRadioButtonsGray;
+  }
+  return cssRadioButtonsDefault;
+}
+
+export const getMenuCss = function getMenuCss() {
+  switch (configuration.theme) {
+    case THEME_GRAY:
+      return cssMenuGray;
+  }
+  return cssMenuDefault;
+}
+
+export const getMenuPanelCss = function getMenuPanelCss() {
+  switch (configuration.theme) {
+    case THEME_GRAY:
+      return cssMenuPanelGray;
+  }
+  return cssMenuPanelDefault;
 }

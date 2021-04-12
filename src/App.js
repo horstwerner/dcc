@@ -1,7 +1,6 @@
 import P from 'prop-types';
 import {get, omit, pick} from 'lodash';
 import Component from '@symb/Component';
-import css from './App.css';
 import ComponentFactory from "@symb/ComponentFactory";
 import Cache from './graph/Cache';
 import TemplateRegistry, {DEFAULT_VIEW_NAME} from './templates/TemplateRegistry';
@@ -9,7 +8,7 @@ import {Div_} from '@symb/Div';
 import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
-import {getConfig, HOVER_MENU_DELAY, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
+import {getAppCss, getConfig, HOVER_MENU_DELAY, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
 import {fit, isDataEqual, relSpatial} from "@symb/util";
 import {breadCrumbHoverIcon, createPreprocessedCardNode, hoverCardMenu} from "@/components/Generators";
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
@@ -35,12 +34,10 @@ const createContext = () => new GraphNode(TYPE_CONTEXT, BLANK_NODE_URI);
 class App extends Component {
 
   static type = APP;
-  static className = css.app;
 
   static propTypes = {
     title: P.string
   };
-
 
   // noinspection DuplicatedCode
   constructor(props, parent, domNode) {
@@ -114,6 +111,12 @@ class App extends Component {
     document.body.onkeyup = this.handleKeyUp;
     document.body.onkeydown = this.handleKeyDown;
     this.onResize(window.innerWidth, window.innerHeight);
+  }
+
+  updateDom(props, tween) {
+    if (this.state.dataLoaded) {
+      this.dom.className = getAppCss().app;
+    }
   }
 
   onError(error) {
@@ -646,7 +649,7 @@ class App extends Component {
 
   createChildDescriptors(props) {
 
-    const {focusCard, tools, activeTools, views, error, mainWidth, focusHeight, sideBarWidth, breadCrumbCards, nextChildPos,
+    const { dataLoaded, focusCard, tools, activeTools, views, error, mainWidth, focusHeight, sideBarWidth, breadCrumbCards, nextChildPos,
       hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions,
       breadCrumbHoverIcon } = this.state;
 
@@ -654,6 +657,8 @@ class App extends Component {
     if (error) {
       return Div_({}, `An error occurred: ${error.message}`)._Div;
     }
+
+    if (!dataLoaded) return null;
 
     const hoverChildren = [];
     if (hoverCard) {
@@ -682,7 +687,7 @@ class App extends Component {
       })._ToolPanel,
       Div_({
         key: FOCUS,
-        className: css.focus,
+        className: getAppCss().focus,
         spatial: {x: 0, y: breadCrumbHeight, scale: 1},
         children: [focusCard, ...hoverChildren]
       })._Div,
