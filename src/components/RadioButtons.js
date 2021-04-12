@@ -1,8 +1,8 @@
 import P from 'prop-types';
 import Component from "@symb/Component";
 import ComponentFactory from "@symb/ComponentFactory";
-import css from './RadioButtons.css';
 import {Div_} from "@symb/Div";
+import {getRadioButtonCss} from "@/Config";
 
 const RADIO = 'radio';
 export const VERTICAL = 'vertical';
@@ -11,7 +11,6 @@ export const HORIZONTAL = 'horizontal';
 class RadioButtons extends Component {
 
   static type = RADIO;
-  static className = css.radioBar;
 
   static propTypes = {
     options: P.arrayOf(P.shape({id: P.string.isRequired, name: P.string.isRequired, onSelect: P.func.isRequired})),
@@ -24,12 +23,14 @@ class RadioButtons extends Component {
 
   updateDom(props, tween) {
     const { orientation } = props;
+    const css = getRadioButtonCss();
     this.dom.className = orientation === VERTICAL ? css.radioPanel : css.radioBar;
     this.updateStyle({flexDirection: (orientation === VERTICAL ? 'column' : 'row')});
   }
 
   createChildDescriptors(props) {
 
+    const css = getRadioButtonCss();
     const { label, options, selectedId, orientation } = props;
     const children = [Div_({key: 'label', className: orientation === VERTICAL ? css. panelLabel : css.label, children: label})._Div];
 
