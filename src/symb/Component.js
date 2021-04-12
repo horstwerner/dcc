@@ -106,7 +106,7 @@ export default class Component {
     return targetArray;
   }
 
-  createChild(fallbackKey, childDescriptor, tween) {
+  createChild(fallbackKey, childDescriptor, predecessor, tween) {
     if (typeof childDescriptor === 'string' || typeof childDescriptor === 'number' || typeof childDescriptor === 'boolean') {
       this.dom.innerText = String(childDescriptor);
       return childDescriptor;
@@ -136,14 +136,9 @@ export default class Component {
         newChild.setAlpha(0);
         tween.addFade(newChild, targetAlpha);
       }
-      return this.addChild(newChild);
+      return this.addChild(newChild, predecessor);
     } else {
       existing.update(netProps, tween);
-      const scrollLeft = existing.dom.scrollLeft;
-      const scrollTop = existing.dom.scrollTop;
-      if (!scrollLeft && !scrollTop) {
-        this.dom.appendChild(existing.dom);
-      }
     }
     return existing;
   }
@@ -162,7 +157,9 @@ export default class Component {
     delete child.parent.childByKey[child.key];
     child.update({spatial});
     child.parent = this;
-    this.addChild(child);
+    this.childByKey[child.key] = child;
+    this.dom.appendChild(child.dom);
+    return child;
   }
 
   getChild(key) {
@@ -177,16 +174,18 @@ export default class Component {
       this.childByKey = {};
     }
     if (Array.isArray(descriptor)) {
+      let predecessor = null;
       result = descriptor
           .filter(Boolean)
           .map(childDescriptor => {
-            const childComponent = this.createChild(`surrogate_key${count++}`, childDescriptor, tween);
+            const childComponent = this.createChild(`surrogate_key${count++}`, childDescriptor, predecessor, tween);
             if (childComponent.key) {
               updatedChildren[childComponent.key] = childComponent;
             }
+            predecessor = childComponent;
           })
     } else {
-      result = this.createChild(`surrogate_key${count}`, descriptor, tween);
+      result = this.createChild(`surrogate_key${count}`, descriptor, null, tween);
       if (result.key) {
         updatedChildren[result.key] = result;
       }
@@ -348,9 +347,13 @@ export default class Component {
     }
   }
 
-  addChild(child) {
+  addChild(child, predecessor) {
     this.childByKey[child.key] = child;
-    this.dom.appendChild(child.dom);
+    if (predecessor) {
+      predecessor.dom.after(child.dom);
+    } else {
+      this.dom.insertBefore(child.dom, this.dom.firstChild);
+    }
     return child;
   }
 
@@ -360,7 +363,11 @@ export default class Component {
   }
 
   transitionToState(partialState) {
-    const transitionTween = new Tween(TRANSITION_DURATION).onEndCall(() => {this.transitionTween = null});
+    if (this.transitionTween) {
+      this.transitionTween.onEndCall(() => this.setState(partialState));
+      return;
+    }
+    const transitionTween = new Tween(TRANSITION_DURATION).onEndCall(() => {this.transitionTween = null;});
     if (this.updateScheduled) {
       this.onStateRendered = () => {
         this.transitionTween = transitionTween;
@@ -379,8 +386,6 @@ export default class Component {
   setState(partialState) {
     if (this.transitionTween && this.transitionTween.isRunning()) {
       setTimeout(() => this.setState(partialState) , TRANSITION_DURATION);
-      // this.transitionTween.finish();
-      // this.transitionTween = null;
     }
     this.state = {...this.state, ...partialState};
     if (!this.updateScheduled) {
