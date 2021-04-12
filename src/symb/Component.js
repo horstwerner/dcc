@@ -106,7 +106,7 @@ export default class Component {
     return targetArray;
   }
 
-  createChild(fallbackKey, childDescriptor, tween) {
+  createChild(fallbackKey, childDescriptor, predecesor, tween) {
     if (typeof childDescriptor === 'string' || typeof childDescriptor === 'number' || typeof childDescriptor === 'boolean') {
       this.dom.innerText = String(childDescriptor);
       return childDescriptor;
@@ -130,20 +130,18 @@ export default class Component {
       if (existing) {
         existing.destroy();
       }
+      if (childDescriptor.key === 'breadcrumbhover-card1') {
+        console.log(`creating hover`);
+      }
       const newChild = ComponentFactory.create(childDescriptor, this);
       if (tween) {
         let targetAlpha = newChild.getAlpha();
         newChild.setAlpha(0);
         tween.addFade(newChild, targetAlpha);
       }
-      return this.addChild(newChild);
+      return this.addChild(newChild, predecesor);
     } else {
       existing.update(netProps, tween);
-      const scrollLeft = existing.dom.scrollLeft;
-      const scrollTop = existing.dom.scrollTop;
-      if (!scrollLeft && !scrollTop) {
-        this.dom.appendChild(existing.dom);
-      }
     }
     return existing;
   }
@@ -162,7 +160,9 @@ export default class Component {
     delete child.parent.childByKey[child.key];
     child.update({spatial});
     child.parent = this;
-    this.addChild(child);
+    this.childByKey[child.key] = child;
+    this.dom.appendChild(child.dom);
+    return child;
   }
 
   getChild(key) {
@@ -173,6 +173,7 @@ export default class Component {
     const updatedChildren = {};
     let count = 0;
     let result;
+    let predecessor = null;
     if (!this.childByKey) {
       this.childByKey = {};
     }
@@ -180,16 +181,18 @@ export default class Component {
       result = descriptor
           .filter(Boolean)
           .map(childDescriptor => {
-            const childComponent = this.createChild(`surrogate_key${count++}`, childDescriptor, tween);
+            const childComponent = this.createChild(`surrogate_key${count++}`, childDescriptor, predecessor, tween);
             if (childComponent.key) {
               updatedChildren[childComponent.key] = childComponent;
             }
+            predecessor = childComponent;
           })
     } else {
-      result = this.createChild(`surrogate_key${count}`, descriptor, tween);
+      result = this.createChild(`surrogate_key${count}`, descriptor, predecessor, tween);
       if (result.key) {
         updatedChildren[result.key] = result;
       }
+      predecessor = result;
     }
     // remove old children that aren't part of children list
     Object.keys(this.childByKey).forEach(key => {
@@ -348,9 +351,13 @@ export default class Component {
     }
   }
 
-  addChild(child) {
+  addChild(child, predecessor) {
     this.childByKey[child.key] = child;
-    this.dom.appendChild(child.dom);
+    if (predecessor) {
+      predecessor.dom.after(child.dom)
+    } else {
+      this.dom.insertBefore(child.dom, this.dom.firstChild);
+    }
     return child;
   }
 
@@ -360,15 +367,20 @@ export default class Component {
   }
 
   transitionToState(partialState) {
-    const transitionTween = new Tween(TRANSITION_DURATION).onEndCall(() => {this.transitionTween = null});
+    if (this.transitionTween) {
+      setTimeout(() => this.setState(partialState) , TRANSITION_DURATION);
+    }
+    const transitionTween = new Tween(TRANSITION_DURATION).onEndCall(() => {this.transitionTween = null; console.log(`tween removed: ${this.key}`)});
     if (this.updateScheduled) {
       this.onStateRendered = () => {
+        console.log(`adding transition tween to ${this.key} - 1`);
         this.transitionTween = transitionTween;
         this.setState(partialState);
         this.onStateRendered = null;
         transitionTween.start();
       };
     } else {
+      console.log(`adding transition tween to ${this.key} - 2`);
       this.transitionTween = transitionTween;
       this.setState(partialState);
       transitionTween.start();
@@ -379,8 +391,6 @@ export default class Component {
   setState(partialState) {
     if (this.transitionTween && this.transitionTween.isRunning()) {
       setTimeout(() => this.setState(partialState) , TRANSITION_DURATION);
-      // this.transitionTween.finish();
-      // this.transitionTween = null;
     }
     this.state = {...this.state, ...partialState};
     if (!this.updateScheduled) {

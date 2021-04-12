@@ -8,7 +8,7 @@ import {Div_} from '@symb/Div';
 import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
-import {getAppCss, getConfig, HOVER_MENU_DELAY, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
+import {getAppCss, getConfig, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT, TRANSITION_DURATION} from "@/Config";
 import {fit, isDataEqual, relSpatial} from "@symb/util";
 import {breadCrumbHoverIcon, createPreprocessedCardNode, hoverCardMenu} from "@/components/Generators";
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
@@ -30,6 +30,7 @@ const BREADCRUMB_LANE_HEIGHT = 120;
 const SCROLLBAR_HEIGHT = 30;
 
 const createContext = () => new GraphNode(TYPE_CONTEXT, BLANK_NODE_URI);
+const hoverIconKey = (key) => `breadcrumbhover-${key}`;
 
 class App extends Component {
 
@@ -248,7 +249,6 @@ class App extends Component {
   }
 
 
-
   moveCardToBreadcrumbs(card, targetState, endState) {
     const { breadCrumbCards, breadCrumbHeight } = this.state;
     const focusPlane = this.getFocusPlane();
@@ -272,6 +272,7 @@ class App extends Component {
       const newState = { ...(endState || {}), allowInteractions: true, hoverCard: null};
       if (adoptCard) {
         const instance = focusPlane.childByKey[card.key];
+        if (!instance) return;
         this.getBreadcrumbLane().adoptChild( instance );
         // instance.setSpatial(breadCrumbCard.spatial);
         newState.breadCrumbCards = [...breadCrumbCards, breadCrumbCard];
@@ -335,11 +336,15 @@ class App extends Component {
 
   handleBreadcrumbEnter(key) {
     this.hoverBreadCrumbKey = key;
-    setTimeout(() => {
-      if (this.hoverBreadCrumbKey === key) {
-        this.addBreadcrumbHoverMenu(key);
-      }
-    }, HOVER_MENU_DELAY)
+    if (this.transitionTween) {
+      setTimeout(() => {
+        if (this.hoverBreadCrumbKey === key) {
+          this.handleBreadcrumbEnter(key);
+        }}, TRANSITION_DURATION);
+      return;
+    }
+    if (this.state.breadCrumbHoverIcon && this.state.breadCrumbHoverIcon.key === hoverIconKey(key)) return;
+    this.addBreadcrumbHoverMenu(key);
   }
 
   handleHoverEnter(key) {
@@ -347,9 +352,10 @@ class App extends Component {
   }
 
   handleHoverLeave(key) {
+    if (this.hoverMenuKey !== key) return;
     this.hoverMenuKey = null;
     setTimeout(() => {
-      if (this.hoverBreadCrumbKey !== key && this.state.breadCrumbHoverIcon) {
+      if (this.hoverBreadCrumbKey === null && this.state.breadCrumbHoverIcon) {
         this.setState({breadCrumbHoverIcon: null});
       }
     }, 150);
@@ -357,14 +363,14 @@ class App extends Component {
   }
 
   handleBreadcrumbLeave(key) {
+    if (this.transitionTween) return;
     if (key === this.hoverBreadCrumbKey) {
       this.hoverBreadCrumbKey = null;
       setTimeout(() => {
-        if (this.hoverMenuKey !== key && this.state.breadCrumbHoverIcon) {
+        if (this.hoverBreadCrumbKey == null && this.hoverMenuKey == null && this.state.breadCrumbHoverIcon) {
           this.setState({breadCrumbHoverIcon: null});
         }
-      }, 150);
-
+      }, TRANSITION_DURATION);
     }
   }
 
@@ -394,7 +400,7 @@ class App extends Component {
     const top = card.spatial.y;
     const scaledWidth = template.getSize().width * card.spatial.scale;
     const right = card.spatial.x + scaledWidth;
-    const icon = breadCrumbHoverIcon('breadcrumbhover', top, right, () => this.removeBreadCrumb(key), () => this.handleHoverEnter(key), () => this.handleHoverLeave(key));
+    const icon = breadCrumbHoverIcon(hoverIconKey(card.key), top, right, () => this.removeBreadCrumb(key), () => this.handleHoverEnter(key), () => this.handleHoverLeave(key));
     this.setState({breadCrumbHoverIcon: icon});
   }
 
