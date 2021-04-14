@@ -76,7 +76,7 @@ class Cache {
 
     const searchString = searchTerm.toLowerCase().replace(String.fromCharCode(160), ' ');
 
-    const typeHits = mapValues(this.rootNode, (value) => value.filter(node => {
+    const typeHits = mapValues(this.rootNode.properties, (value) => value.filter(node => {
       const name = node.getDisplayName();
          return !!name && String(name).toLowerCase().includes(searchString)}
          ));
