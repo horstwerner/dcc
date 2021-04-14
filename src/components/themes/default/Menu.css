@@ -32,7 +32,8 @@
   text-align: center;
   border-radius: 2px;
   overflow: hidden;
-  /*letter-spacing: 1px;*/
+  white-space: nowrap;
+  text-overflow: ellipsis;
   padding: 4px 2px 0 10px;
   height: 22px;
   cursor: pointer;

@@ -8,10 +8,7 @@
 .radioPanel {
   background-color: #e0e0dc;
   border-radius: 6px;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 8px;
-  padding-right: 8px;
+  padding: 4px 8px;
   box-shadow: inset 1px 1px 2px 0 rgba(0,0,0,0.15);
 }
 
@@ -29,9 +26,12 @@
 
 .panelButtonActive,
 .panelButtonInactive {
-  padding: 5px 8px 4px 8px;
+  padding: 4px 8px 4px 8px;
   height: 23px;
   margin: 2px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .buttonActive,
@@ -53,7 +53,7 @@
 
 .buttonInactive:hover,
 .panelButtonInactive:hover {
-  background-color: #d1d1d1
+  background-color: #d1d1d0
 }
 
 .buttonInactive {

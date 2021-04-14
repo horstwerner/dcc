@@ -3,8 +3,8 @@ import TypeDictionary, {
   DATATYPE_BOOLEAN,
   DATATYPE_FLOAT, DATATYPE_INTEGER,
   DATATYPE_STRING,
-  TYPE_CONTEXTUAL_NODE,
-  TYPE_THING, TYPE_URI
+  TYPE_CONTEXTUAL_NODE, TYPE_NAME,
+  TYPE_THING, TYPE_TYPE, TYPE_URI
 } from './TypeDictionary';
 import {getConfig} from "@/Config";
 
@@ -102,7 +102,9 @@ export default class GraphNode {
   };
 
   getDisplayName() {
-    return this.properties[getConfig('displayNameAttribute')] || this.uri;
+    const result = this.properties[getConfig('displayNameAttribute')];
+    if (result) return result;
+    return this.originalNode ? this.originalNode.getDisplayName() : this.uri;
   }
 
   // noinspection JSUnusedGlobalSymbols
@@ -115,9 +117,16 @@ export default class GraphNode {
   };
 
   get(propertyUri) {
-    if (propertyUri === TYPE_URI) {
-      return this.uri;
+
+    switch (propertyUri) {
+      case TYPE_TYPE:
+        return this.type;
+      case TYPE_URI:
+        return this.uri;
+      case TYPE_NAME:
+        return this.getDisplayName();
     }
+
     let propName = propertyUri;
     let filter = null;
     if (propertyUri.charAt(propertyUri.length - 1) === ']') {

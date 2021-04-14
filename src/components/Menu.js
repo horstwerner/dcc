@@ -1,8 +1,8 @@
 import P from 'prop-types';
 import Component from "@symb/Component";
-import css from "./Menu.css"
 import ComponentFactory from "@symb/ComponentFactory";
 import {Div_} from "@symb/Div";
+import {getMenuCss} from "@/Config";
 
 const MENU = 'menu';
 
@@ -12,7 +12,6 @@ export const calcMenuHeight = function calcMenuHeight(entries) {
 
 class MenuPanel extends Component {
   static type = MENU;
-  static className = css.menu;
 
   static propTypes = {
     title: P.string.isRequired,
@@ -21,6 +20,10 @@ class MenuPanel extends Component {
     w: P.number.isRequired,
   };
 
+  constructor(props, parent, domNode) {
+    super({...props, className: getMenuCss().menu}, parent, domNode);
+  }
+
   updateDom(props, tween) {
     const { entries } = props;
     const height = calcMenuHeight(entries);
@@ -28,12 +31,13 @@ class MenuPanel extends Component {
   }
 
   createChildDescriptors(props) {
+    const css = getMenuCss();
 
     const {title, entries, onEntryClick} = props;
 
     const children = [Div_({className: css.title, children:title})._Div];
     if (entries) {
-      entries.forEach(entry => children.push(Div_({className: entry.selected ? css.entrySelected : css.entry, children:entry.name, onClick: () => onEntryClick(entry.id)})._Div))
+      entries.forEach(entry => children.push(Div_({className: entry.selected ? css.entrySelected : css.entry, title: entry.name, children:entry.name, onClick: () => onEntryClick(entry.id)})._Div))
     }
 
     return children;

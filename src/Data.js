@@ -95,7 +95,7 @@ export const getDictionaryFromDb = function (onError) {
         Cache.importTypes(result.data)})
       .catch(error => {
         console.log(error.stack);
-        onError(error);
+        onError(error.message);
       });
 };
 
@@ -110,7 +110,7 @@ export const getClientConfigFromDB = function (onError) {
         setConfig(result.data)})
       .catch(error => {
         console.log(error.stack);
-        onError(error);
+        onError(error.message);
       });
 }
 
@@ -130,7 +130,7 @@ export const getCardDescriptorsFromDb = function (onError) {
       })
       .catch(error => {
         console.log(error.stack);
-        onError(error);
+        onError(error.message);
       });
 };
 
@@ -149,7 +149,7 @@ export const getToolDescriptorsFromDb = function (onError) {
       })
       .catch(error => {
         console.log(error.stack);
-        onError(error)
+        onError(error.message)
       });
 };
 
@@ -175,7 +175,7 @@ export const getDataFromDB = function(onError) {
               }
             }).catch(error => {
               console.log(error.stack);
-              onError(error);
+              onError(error.message);
             })
     );
   }
@@ -191,7 +191,7 @@ export const getDataFromDB = function(onError) {
           })
           .catch(error => {
             console.log(error.stack);
-            onError(error);
+            onError(error.message);
           })
       );
     });

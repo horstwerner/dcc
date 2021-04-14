@@ -20,6 +20,7 @@ import hoverMenuCss from './HoverCardMenu.css';
 import {Link_} from "@/components/Link";
 import {TYPE_CONTEXT, TYPE_NODE_COUNT} from "@/graph/TypeDictionary";
 import {BLANK_NODE_URI} from "@/components/Constants";
+import GraphNode from "@/graph/GraphNode";
 
 export const STYLE_ATTRIBUTES = [
  'color',
@@ -180,7 +181,7 @@ createArrangement.propTypes = {
  */
 export const createPreprocessedCardNode = function createPreprocessedCardNode(data, context, template, name) {
   const result = createCardNode(data,null, name);
-  const newContext = context.clone(BLANK_NODE_URI);
+  const newContext = context ? context.clone(BLANK_NODE_URI) : new GraphNode(TYPE_CONTEXT, BLANK_NODE_URI);
   result.set(TYPE_CONTEXT, newContext);
   const { preprocessing } = template.descriptor;
   if (preprocessing) {

@@ -67,6 +67,7 @@ class DropdownList extends Component {
         className: option.id === selectedId ? css.entryActive : css.entryInactive,
         size: {width: listW, height: ROW_HEIGHT},
         spatial: {x: 0, y:yCursor, scale: 1},
+        title: option.name,
         children: option.name,
         onClick: option.id === selectedId ? null : option.onSelect
       })._Div);

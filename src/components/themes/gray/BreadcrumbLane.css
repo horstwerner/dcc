@@ -2,32 +2,32 @@
     position: absolute;
     overflow-y: hidden;
     overflow-x: scroll;
-    background-color: #5e7b80;
-    border-top: solid 1px #536e73;
+    background-color: #F5F5F3;
+    border-top: solid 1px #d9d9d9;
     box-sizing: border-box;
     user-select: none;
     /*noinspection CssUnknownProperty*/
-    scrollbar-color: #69878c #5e7b80;
+    scrollbar-color: #c7c7c5 #e6e6e4;
 }
 .lane::-webkit-scrollbar {
     height: 14px;
 }
 .lane::-webkit-scrollbar-thumb {
-    background-color: #69878c;
-    border-top: solid 1px #5c7980;
+    background-color: #dbdbd9;
+    border-top: solid 1px #d9d9d7;
     height: 100%;
     border-radius: 7px;
     cursor: grab;
     transition: background-color 0.4s;
-    border-bottom: solid 1px #536d73;
+    border-bottom: solid 1px #d9d9d7;
 }
 .lane::-webkit-scrollbar-thumb:horizontal:hover {
-    background-color: #7f9ea3;
+    background-color: #c7c7c5;
 }
 .lane::-webkit-scrollbar-track {
-    background-color: #5e7b80;
+    background-color: #e6e6e4;
     height: 100%;
-    border-bottom: solid 1px #546e73;
+    border-bottom: solid 1px #d9d9d7;
 }
 .canvas {
     /*position: absolute;*/
