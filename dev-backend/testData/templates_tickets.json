@@ -284,7 +284,7 @@
           "key": "label_features",
           "type": "caption",
           "style": {"$": "GROUP_HEADING_STYLE"},
-          "x": {"$": "MARGIN"}, "y": {"$": "MARGIN"}, "w": 200, "h": 32,
+          "x": {"$": "MARGIN"}, "y": {"$": "MARGIN"}, "w": 300, "h": 32,
           "text": "{{core:nodeCount}} Storypoints, grouped"
         },
         {
@@ -330,7 +330,7 @@
           "type": "card",
           "source": "~jira:bug",
           "template": "bugs",
-          "x": 0, "y": 420, "w": 420, "h": 500
+          "x": 20, "y": 440, "w": 420, "h": 500
         },
         {
           "key": "dependencies",
