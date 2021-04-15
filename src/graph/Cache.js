@@ -66,18 +66,17 @@ class Cache {
   }
 
   getAllNodesOf (nodeType) {
-    return this.rootNode.get(nodeType) || [];
-  };
-
-  mapAllNodesOf (nodeType, callback) {
-    return (this.rootNode.get(nodeType) || []).map(callback);
+    let type = TypeDictionary.getType(nodeType);
+    let result = [...this.rootNode.get(nodeType)] || [];
+    type.subTypes.forEach(subType => result.push(...this.getAllNodesOf(subType.uri)));
+    return result;
   };
 
   search(searchTerm) {
 
     const searchString = searchTerm.toLowerCase().replace(String.fromCharCode(160), ' ');
 
-    const typeHits = mapValues(this.rootNode, (value) => value.filter(node => {
+    const typeHits = mapValues(this.rootNode.properties, (value) => value.filter(node => {
       const name = node.getDisplayName();
          return !!name && String(name).toLowerCase().includes(searchString)}
          ));

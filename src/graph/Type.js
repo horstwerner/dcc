@@ -12,6 +12,9 @@ export default class Type extends CheckedObject{
     inverseType: P.string
   };
 
+  superType;
+  subTypes = [];
+
   getInverseType (fallbackTargettype) {
     if (!this.isAssociation && !fallbackTargettype) {
       throw new Error(`Inverse type to entity ${this.name} requested without fallback target type`)

@@ -1,0 +1,5 @@
+jira:bug,core:name,jira:status,jira:team,jira:sprint,jira:release
+BUG-688,Flux Distortion,open,Datastore,2020-05,1.2
+BUG-689,Unstable Time Dilatation,closed,Simulation,2020-03,1.2
+BUG-690,Hubble Orbit Oscillation,in progress,Platform,2020-05,1.2
+BUG-691,Quantum Leaks,in validation,Datastore,2020-05,1.2

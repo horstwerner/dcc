@@ -1,5 +1,6 @@
+import {get} from 'lodash';
 import Template from './Template';
-import {TYPE_THING} from "@/graph/TypeDictionary";
+import TypeDictionary, {TYPE_THING} from "@/graph/TypeDictionary";
 
 export const DEFAULT_VIEW_NAME = 'default';
 
@@ -75,19 +76,25 @@ class TemplateRegistry {
     return this.templateById[id];
   }
 
-  getDefaultTemplateFor(typeUri) {
-    return this.getTemplateFor(typeUri, DEFAULT_VIEW_NAME);
-  }
+  getTemplateForSingleCard(typeUri, viewName) {
 
-  getTemplateFor(typeUri, viewName) {
+    const superType = get(TypeDictionary.getType(typeUri),'subClassOf');
     const searchName = viewName.toLowerCase();
     const candidates = this.getViewsFor(typeUri, false);
     if (candidates.length === 0)  {
       console.log(`No template registered for type ${typeUri} - falling back to generic`);
-       return this.getTemplate(TYPE_THING);
+      if (superType) {
+        return this.getTemplateForSingleCard(superType, viewName);
+      } else {
+        return this.getTemplate(TYPE_THING);
+      }
     }
     let result = candidates.find(template => (template.name || '').toLowerCase() === searchName);
     if (result) return result;
+    if (superType) {
+      return this.getTemplateForSingleCard(superType, viewName);
+    }
+
     console.log(`Warning: Can't find view ${viewName} for ${typeUri}. Falling back to default or other`);
     if (searchName !== DEFAULT_VIEW_NAME) {
       result = candidates.find(template => (template.name || '').toLowerCase() === DEFAULT_VIEW_NAME);
@@ -97,20 +104,30 @@ class TemplateRegistry {
     return candidates[0];
   }
 
-  getToolsFor(nodeType) {
-    return this.toolsByContentType[nodeType] || [];
-  }
-
-  getTool(toolId) {
-    return this.toolsById[toolId];
+  getToolsFor(typeUri) {
+    const result = this.toolsByContentType[typeUri] || [];
+    const superType = get(TypeDictionary.getType(typeUri),'subClassOf');
+    if (superType) {
+      result.push(...this.getToolsFor(superType));
+    }
+    return result;
   }
 
   getViewsFor(typeUri, aggregate) {
-    if (!this.templatesByContentType[typeUri]) {
-      throw new Error(`No template for content type ${typeUri} registered`)
+    const superType = get(TypeDictionary.getType(typeUri),'subClassOf');
+
+    const viewMap = {};
+    if (superType) {
+        this.getViewsFor(superType, aggregate).forEach(view => {if (view.name) {viewMap[view.name] = view}});
     }
-    // convert undefined to boolean
-    return this.templatesByContentType[typeUri].filter(template => !template.aggregate === !aggregate);
+
+    if (this.templatesByContentType[typeUri]) {
+      this.templatesByContentType[typeUri]
+          .filter(template => !template.aggregate === !aggregate)
+          .forEach(view => {if (view.name) {viewMap[view.name] = view}});
+    }
+
+    return Object.values(viewMap);
   }
 
 }

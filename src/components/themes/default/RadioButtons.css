@@ -42,6 +42,7 @@
   margin-left: 2px;
   margin-right: 2px;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .buttonInactive,

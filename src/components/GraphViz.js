@@ -213,7 +213,7 @@ class GraphViz extends Component {
     children.push(Svg_({style:{pointerEvents: 'none'}, width: w, height: h, children: lines.map(line => createSvgPath(line, roundDist))})._Svg);
 
     vizNodes.forEach(vizNode => {
-      const template = TemplateRegistry.getTemplateFor(vizNode.graphNode.getTypeUri(), viewName || 'default');
+      const template = TemplateRegistry.getTemplateForSingleCard(vizNode.graphNode.getTypeUri(), viewName || 'default');
       const { width, height } = template.getSize();
       children.push(Card_({data: vizNode.graphNode, template, onClick: onNodeClick, clickMode: CLICK_OPAQUE, spatial: fit(childW, childH, width, height, vizNode.pos.x - 0.5 * childW, vizNode.pos.y - 0.5 * childH)})._Card)
     });

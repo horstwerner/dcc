@@ -284,8 +284,8 @@
           "key": "label_features",
           "type": "caption",
           "style": {"$": "GROUP_HEADING_STYLE"},
-          "x": {"$": "MARGIN"}, "y": {"$": "MARGIN"}, "w": 200, "h": 32,
-          "text": "Storypoints, grouped"
+          "x": {"$": "MARGIN"}, "y": {"$": "MARGIN"}, "w": 300, "h": 32,
+          "text": "{{core:nodeCount}} Storypoints, grouped"
         },
         {
           "key": "features",
@@ -322,13 +322,20 @@
           "key": "map-feature",
           "type": "card",
           "template": "stories-by-feature",
-          "source": "~jira:ticket",
+          "source": "jira:ticket",
           "x": 20, "y":20, "w": 420, "h": 500
+        },
+        {
+          "key": "bugs",
+          "type": "card",
+          "source": "~jira:bug",
+          "template": "bugs",
+          "x": 20, "y": 440, "w": 420, "h": 500
         },
         {
           "key": "dependencies",
           "type": "card",
-          "source": "~jira:ticket",
+          "source": "jira:ticket",
           "template": "dependency-graph",
           "x": 460, "y": 20, "w": 700, "h": 500
         },
@@ -338,6 +345,53 @@
           "source": "~jira:team",
           "template": "team-overview",
           "x": 1180, "y":20, "w": 420, "h": 900
+        }
+      ]
+    },
+    { "id": "bugs",
+      "name": "Bugs",
+      "appliesTo": "jira:bug",
+      "aggregate": true,
+      "background": {
+        "type": "rect",
+        "w": 420,
+        "h": 300,
+        "color": {"$": "AREA_BACKGROUND_COLOR"},
+        "cornerRadius": 6
+      },
+      "options":  {
+        "view": {
+          "caption": "Ticket Style",
+          "display": "radio-buttons",
+          "selection": [
+            {"label":  "Compact", "value": "Compact"}, {"label": "Full", "value": "Default"}
+          ],
+          "defaultValue": "Default"
+        }
+      },
+      "clickable": true,
+      "elements": [
+        {
+          "key": "label_title",
+          "type": "caption",
+          "style": {"$": "GROUP_HEADING_STYLE"},
+          "x": {"$": "MARGIN"}, "y": {"$": "MARGIN"}, "w": 100, "h": 32,
+          "text": "Bugs"
+        },
+        {
+          "key": "nodes",
+          "type": "cards",
+          "source": "core:subNodes",
+          "x": 20,
+          "y": 60,
+          "w": 380,
+          "h": 200,
+          "arrangement": {
+            "type": "grid",
+            "lod": "full",
+            "padding": 0.1
+          },
+          "viewName": "$view"
         }
       ]
     },
@@ -490,7 +544,7 @@
             "lod": "full",
             "padding": 0.1
           },
-          "template": "jira:ticket"
+          "template": "ticket-compact"
         }
       ]
     },

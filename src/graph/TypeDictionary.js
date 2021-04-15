@@ -47,12 +47,13 @@ class TypeDictionary {
 
   resolveSuperTypes() {
     this.getTypeList().forEach(type => {
-      if (type.subclassOf) {
-        const superType = this.typeMap[type.subclassOf];
+      if (type.subClassOf) {
+        const superType = this.typeMap[type.subClassOf];
         if (!superType) {
-          throw new Error(`Type ${type.uri} declares nonexistent super type ${type.subclassOf}`);
+          throw new Error(`Type ${type.uri} declares nonexistent super type ${type.subClassOf}`);
         }
         type.superType = superType;
+        superType.subTypes.push(type);
       }
     })
 
