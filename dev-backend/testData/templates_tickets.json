@@ -307,7 +307,6 @@
     {
       "id": "root",
       "name": "Start View",
-      "appliesTo": "core:start",
       "aggregate": true,
       "background": {
         "type": "rect",
@@ -388,6 +387,7 @@
           "h": 200,
           "arrangement": {
             "type": "grid",
+            "centerX": true,
             "lod": "full",
             "padding": 0.1
           },

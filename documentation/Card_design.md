@@ -60,6 +60,23 @@ Here is an example from the development server:
     },
 ```
 
+## Data Paths
+Most card elements visualize data associated with nodes. This data is identified for example by the `attribute` parameter,
+by the `source` parameter in the `chart`, `card`, `cards` and `trellis` elements and inside handlebars `{{<path>}}` 
+in the caption's `text` or the link's `url` parameter. Such data can be directly associated with a node, in which case
+the reference simply consists of the name of the attribute or association. When an associated node is used as reference
+for a text element (caption or textfield), the display name of that node is automatically used.
+
+If data of associated nodes is used in a card, the reference is a path, which is a segment of path segments separated by
+slashes (`/`). Each segment is the name of an association with an optional target type filter (or an attribute in the
+case of the last segment). A target type filter has the form `[<node type>]` and is appended to the association name.
+It will traverse only associations of the specified name that point to nodes of the specified node type. For example,
+a path `dcc:dependsOn[jira:story]/jira:team` will return only the teams working on _stories_ that the focus node depends
+on, but not teams working on bugs that may be associated with that focus node. If a type hierarchy is established in
+the dictionary, specifying a supertype in the type filter will automatically include all sub-types.
+
+Data paths can be also used in conditions and color coders.
+
 ## Element parameters
 
 ### All elements:

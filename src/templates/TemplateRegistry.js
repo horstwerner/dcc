@@ -113,10 +113,13 @@ class TemplateRegistry {
     return result;
   }
 
-  getViewsFor(typeUri, aggregate) {
+  getViewsFor(typeUri, aggregate, includeTemplate) {
     const superType = get(TypeDictionary.getType(typeUri),'subClassOf');
 
     const viewMap = {};
+    if (includeTemplate) {
+      viewMap[includeTemplate.name] = includeTemplate;
+    }
     if (superType) {
         this.getViewsFor(superType, aggregate).forEach(view => {if (view.name) {viewMap[view.name] = view}});
     }
