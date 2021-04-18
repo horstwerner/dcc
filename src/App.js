@@ -86,11 +86,11 @@ class App extends Component {
             })
             startData.set(TYPE_CONTEXT, createContext());
             this.setState({
-              focusData: startData,
+              focusData: null,
               dataLoaded: true
             });
             const startTemplate = getConfig('startTemplate');
-            this.setFocusCard(this.createFocusCard(startData, TemplateRegistry.getTemplate(startTemplate), null), startData);
+            this.setFocusCard(this.createFocusCard(startData, TemplateRegistry.getTemplate(startTemplate), null), null);
           }
         });
     this.handleNodeClick = this.handleNodeClick.bind(this);
@@ -439,7 +439,7 @@ class App extends Component {
     } else if (data){
       nodeTypeUri = data.getTypeUri();
     }
-    const views = TemplateRegistry.getViewsFor(nodeTypeUri, aggregate).filter(view => view.selectable);
+    const views = TemplateRegistry.getViewsFor(nodeTypeUri, aggregate, template).filter(view => view.selectable);
     const tools = aggregate ? TemplateRegistry.getToolsFor(nodeTypeUri) : [];
     const activeTools = {};
     const toolControls = [];
