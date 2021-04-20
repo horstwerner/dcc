@@ -78,8 +78,8 @@ class Cache {
 
     const typeHits = mapValues(this.rootNode.properties, (value) => value.filter(node => {
       const name = node.getDisplayName();
-         return !!name && String(name).toLowerCase().includes(searchString)}
-         ));
+      return !!name && String(name).toLowerCase().includes(searchString)}
+    ));
 
     return Object.keys(typeHits).filter(typeUri => typeHits[typeUri].length > 0).map(typeUri => ({
       nodeType: TypeDictionary.getType(typeUri),
@@ -171,6 +171,16 @@ const cacheInstance = new Cache();
 
 export default cacheInstance;
 
+const getSegmentData = function getSegmentData(current, segment) {
+  if (segment.charAt(0) === '~') {
+    return  cacheInstance.getAllNodesOf(segment.substring(1));
+  } else if (segment.charAt(0) === '#') {
+    return cacheInstance.getNode(null, segment.substring(1));
+  } else {
+    return GraphNode.isGraphNode(current) ? current.get(segment) : current[segment];
+  }
+}
+
 export const traverse = function(source, path) {
   const steps = path.split('/');
   let curSet = new Set(Array.isArray(source) ? source : [source]);
@@ -180,7 +190,7 @@ export const traverse = function(source, path) {
     let nextSet = new Set();
 
     curSet.forEach(node => {
-          const related = node.get(step);
+          const related = getSegmentData(node, step);
           if (related != null) {
             if (Array.isArray(related)) {
               for (let j = 0; j < related.length; j++) {
@@ -199,16 +209,10 @@ export const traverse = function(source, path) {
 };
 
 export const resolve = function (node, path) {
-
-  if (path.charAt(0) === '~') {
-    return cacheInstance.getAllNodesOf(path.substring(1));
-  }  else if (path.charAt(0) === '#') {
-    return cacheInstance.getNode(null, path.substring(1));
+  if (path.includes('/')) {
+    return Array.from(traverse(node, path));
   }
-  else {
-    return resolveProperty(node, path);
-  }
-
+  return resolveProperty(node, path);
 }
 
 /**
@@ -239,7 +243,7 @@ export const resolveProperty = function (node, path) {
     let current = node;
     for (let segIdx = 0; segIdx < segments.length; segIdx++) {
       if (!current) break;
-      current = GraphNode.isGraphNode(current) ? current.get(segments[segIdx]) : current[segments[segIdx]];
+      current = getSegmentData(current, segments[segIdx]);
       // simplistic disambiguation - if multiple, select first
       if (segIdx < segments.length - 1 && Array.isArray(current)) {
         current = current[0];
@@ -247,9 +251,8 @@ export const resolveProperty = function (node, path) {
     }
     result = current;
   } else {
-    result = GraphNode.isGraphNode(node) ? node.get(path) : node[path];
+    result = getSegmentData(node, path);
   }
 
   return result;
 };
-
