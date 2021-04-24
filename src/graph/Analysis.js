@@ -118,7 +118,7 @@ export const pathAnalysis = function pathAnalysis(sourceNodes, associationType, 
 }
 
 export const deriveAssociations = function deriveAssociations(sourceNodes, path, derivedAssociation, recursive) {
-  const processedNodes = {};
+  const processedNodes = sourceNodes.reduce((map, node) => {map[node.getUniqueKey()] = true; return map;}, {});
   const result = [];
   let currentNodes = sourceNodes;
   while (currentNodes.length > 0) {

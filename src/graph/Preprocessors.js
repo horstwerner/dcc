@@ -24,6 +24,7 @@ import Filter from "@/graph/Filter";
 import {deriveAssociations, pathAnalysis} from "@/graph/Analysis";
 import {intersectLists, subtractLists, unifyLists} from "@/graph/SetOperations";
 import {TYPE_NODES} from "@/graph/TypeDictionary";
+import {nodeArray} from "@symb/util";
 
 export const PATH_ANALYSIS = "path-analysis";
 export const AGGREGATE = "aggregate";
@@ -47,7 +48,8 @@ export const preprocess = function preprocess(data, context, preprocessors) {
 
     const filter = inputSelector ? Filter.fromDescriptor(inputSelector) : null;
 
-    const source = filter ? resolve(data, input || TYPE_NODES).filter(filter.matches) : resolve(data, input || TYPE_NODES);
+    const unfiltered = resolve(data, input || TYPE_NODES);
+    const source = (unfiltered && filter) ? nodeArray(unfiltered).filter(filter.matches) : unfiltered;
     if (source == null) {
       debugger
       if (!input) {
