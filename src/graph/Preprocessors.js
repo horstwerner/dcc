@@ -21,11 +21,13 @@
 import Aggregator from "@/Aggregator";
 import {resolve} from "@/graph/Cache";
 import Filter from "@/graph/Filter";
-import {deriveAssociations, pathAnalysis} from "@/graph/Analysis";
+import {deriveAssociations, mapNode, pathAnalysis} from "@/graph/Analysis";
 import {intersectLists, subtractLists, unifyLists} from "@/graph/SetOperations";
 import {TYPE_NODES} from "@/graph/TypeDictionary";
 import {nodeArray} from "@symb/util";
+import {BLANK_NODE_URI} from "@/components/Constants";
 
+export const CREATE_NODE = "create-node";
 export const PATH_ANALYSIS = "path-analysis";
 export const AGGREGATE = "aggregate";
 export const SET_CONTEXT = "set-context";
@@ -55,11 +57,19 @@ export const preprocess = function preprocess(data, context, preprocessors) {
       if (!input) {
         throw new Error(`Can't preprocess data: no subNodes property and input undefined in ${data.getUniqueKey()}`);
       } else {
-        throw new Error(`Can't preprocess data: input ${input} not present in ${data.getUniqueKey()}`);
+        console.log(`Skipping preprocess ${method} input ${input} not present in ${data.getUniqueKey()}`);
+        return;
       }
     }
 
+    if (source === []) return;
+
     switch (method) {
+      case CREATE_NODE: {
+        const {type, mapping, result} = descriptor;
+        data.set(result, mapNode(data, type, BLANK_NODE_URI, mapping));
+        break;
+      }
       case PATH_ANALYSIS: {
         const {associationType, upstreamAggregate, downstreamAggregate} = descriptor;
         data.set(result, pathAnalysis(source, associationType, new Aggregator(upstreamAggregate), new Aggregator(downstreamAggregate)));

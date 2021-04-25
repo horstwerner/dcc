@@ -22,6 +22,8 @@ import {
   UNIFY
 } from "@/graph/Preprocessors";
 
+export const SYNTH_NODE_MAP = 'map';
+export const SYNTH_NODE_RETRIEVE = 'retrieve';
 
 const fillPlaceholders = function fillPlaceholders(element, options, defaultValues) {
   return mapValues(element,(value) => {
@@ -58,6 +60,13 @@ export default class Template {
     appliesTo: P.oneOfType([P.string,P.array]),
     clickable: P.bool,
     detailTemplate: P.string,
+    detailNode: P.shape({
+      type: P.string.isRequired,
+      uri: P.string.isRequired,
+      method: P.oneOf([SYNTH_NODE_MAP,SYNTH_NODE_RETRIEVE]).isRequired,
+      mapping: P.object,
+      request: P.string
+      }),
     preprocessing: P.arrayOf(P.shape({method: P.oneOf([PATH_ANALYSIS, AGGREGATE, SET_CONTEXT,
         DERIVE_ASSOCIATIONS, INTERSECT, UNIFY, SUBTRACT, FILTER]),
       result: P.string, inputSelector: P.object, input: P.string})),
@@ -104,6 +113,10 @@ export default class Template {
 
   getDetailTemplateId() {
     return this.descriptor.detailTemplate || this.id;
+  }
+
+  getDetailNode() {
+    return this.descriptor.detailNode;
   }
 
   getDefaultOptions() {

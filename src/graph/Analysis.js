@@ -1,6 +1,7 @@
 import {get} from 'lodash';
 import GraphNode from "@/graph/GraphNode";
 import Cache, {
+  resolve,
   traverse
 } from "@/graph/Cache";
 import {
@@ -10,6 +11,7 @@ import {
   TYPE_PREDECESSOR_COUNT,
   TYPE_SUCCESSOR_COUNT
 } from "@/graph/TypeDictionary";
+import {BLANK_NODE_URI} from "@/components/Constants";
 
 export const getAssociated = function getAssociated(node, association) {
 
@@ -145,5 +147,16 @@ export const deriveAssociations = function deriveAssociations(sourceNodes, path,
       currentNodes = [];
     }
   }
+  return result;
+}
+
+export const mapNode = function (referenceNode, typeUri, uri, mapping) {
+  const result = uri ? Cache.getNode(typeUri, uri) : new GraphNode(typeUri, BLANK_NODE_URI);
+  // Assumption: data immutable, no different mappings for same node
+  if (result) return result;
+  Object.keys(mapping).forEach(key => {
+    result[key] = resolve(referenceNode, mapping[key]);
+  });
+
   return result;
 }
