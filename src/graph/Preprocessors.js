@@ -51,7 +51,7 @@ export const preprocess = function preprocess(data, context, preprocessors) {
 
     const unfiltered = resolve(data, input || TYPE_NODES);
     const source = (unfiltered && filter) ? nodeArray(unfiltered).filter(filter.matches) : unfiltered;
-    if (source == null && method !== CREATE_NODE) {
+    if (source == null && (method === PATH_ANALYSIS || method === AGGREGATE || method === FILTER || method === DERIVE_ASSOCIATIONS)) {
       if (!input) {
         throw new Error(`Can't preprocess data: no subNodes property and input undefined in ${data.getUniqueKey()}`);
       } else {
@@ -59,8 +59,6 @@ export const preprocess = function preprocess(data, context, preprocessors) {
         return;
       }
     }
-
-    if (source === []) return;
 
     switch (method) {
       case CREATE_NODE: {
@@ -87,7 +85,7 @@ export const preprocess = function preprocess(data, context, preprocessors) {
       }
       case DERIVE_ASSOCIATIONS: {
         const { path, derived, recursive } = descriptor;
-        data.set(result, deriveAssociations(data.get(TYPE_NODES), path, derived, recursive));
+        data.set(result, deriveAssociations(source, path, derived, recursive));
         break;
       }
       case UNIFY: {
@@ -106,9 +104,6 @@ export const preprocess = function preprocess(data, context, preprocessors) {
         break;
       }
       case FILTER: {
-        if (!inputSelector) {
-          throw new Error(`For preprocessing of type "filter" parameter "inputSelector" must be defined`);
-        }
         data.set(result, source);
         break;
       }
