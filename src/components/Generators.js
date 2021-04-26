@@ -231,6 +231,19 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
     cardNodes.forEach(cardNode => Object.assign(cardNode, aligned));
   }
 
+  if (cardNodes.length === 1) {
+    return Card_({
+      key,
+      template,
+      lod,
+      spatial: fit(w, h, nativeChildSize.width, nativeChildSize.height, x, y),
+      data:  cardNodes[0],
+      onClick,
+      clickMode,
+      options
+    })._Card;
+  }
+
   return CardSet_({key,
     nodes: cardNodes,
     template,

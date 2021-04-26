@@ -156,7 +156,7 @@ export const mapNode = function (referenceNode, typeUri, uri, mapping) {
   if (result) return result;
   result = uri ? Cache.getNode(typeUri, uri) : new GraphNode(typeUri, BLANK_NODE_URI);
   Object.keys(mapping).forEach(key => {
-    result[key] = resolve(referenceNode, mapping[key]);
+    result.set(key,resolve(referenceNode, mapping[key]));
   });
 
   return result;

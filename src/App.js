@@ -463,6 +463,7 @@ class App extends Component {
     if (GraphNode.isGraphNode(data)) {
       console.log(`----------------------------------------------------------`);
       console.log(`focus data is ${data.getSummary()}`);
+      console.log(`\nTemplate is ${focusCard.template.id}`);
     }
 
     const { template } = focusCard;
