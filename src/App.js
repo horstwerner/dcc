@@ -586,8 +586,9 @@ class App extends Component {
       throw new Error(`Template ${template.id} is marked as aggregate, but applied to non-aggregate data ${focusData.getUniqueKey()}`);
     }
 
-    const data = template.aggregate ?  createPreprocessedCardNode(applyFilters(Object.values(currentFilters),
-        focusData.get(TYPE_NODES).map(node => (node.originalNode || node))), createContext(), template, focusData.get(TYPE_NAME)): this.state.focusCard.data;
+    const rawData = template.aggregate ?  applyFilters(Object.values(currentFilters),
+        focusData.get(TYPE_NODES).map(node => (node.originalNode || node))): this.state.focusCard.data;
+    const data = createPreprocessedCardNode(rawData, null, template, focusData.get(TYPE_NAME));
 
     const currentViewOptions = template.getDefaultOptions();
 
