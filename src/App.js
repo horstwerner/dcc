@@ -87,14 +87,15 @@ class App extends Component {
             Cache.getEntityTypes().forEach(entityType => {
               startData.setBulkAssociation(entityType, Cache.rootNode.get(entityType));
             })
-            startData.set(TYPE_CONTEXT, createContext());
+            const startTemplate = TemplateRegistry.getTemplate(getConfig('startTemplate'));
+            const startNode = createPreprocessedCardNode(startData, null, startTemplate);
             this.setState({
               focusData: null,
               waiting: false,
               dataLoaded: true
             });
-            const startTemplate = getConfig('startTemplate');
-            this.setFocusCard(this.createFocusCard(startData, TemplateRegistry.getTemplate(startTemplate), null), null);
+
+            this.setFocusCard(this.createFocusCard(startNode, startTemplate, null), null);
           }
         });
     this.handleNodeClick = this.handleNodeClick.bind(this);
@@ -227,18 +228,18 @@ class App extends Component {
     if (cloneNodeConfig) {
       const {method, type, uri} = cloneNodeConfig;
 
-      const finalUri = fillIn(uri, data);
+      const finalUri = uri ? fillIn(uri, data) : null;
       switch (method) {
         case SYNTH_NODE_MAP:
           result.data = mapNode(data, type, finalUri, cloneNodeConfig.mapping);
           break;
         case SYNTH_NODE_RETRIEVE:
-          result.data = Cache.getNode(type, finalUri);
+          result.data = finalUri ? Cache.getNodeByUri(finalUri) : null;
           if (result.data == null) {
             this.setState({waiting: true});
             const requestUrl = fillIn(cloneNodeConfig.request, data);
-            fetchSubGraph(requestUrl, type, finalUri, this.onError).then(data => {
-              result.data = data;
+            fetchSubGraph(requestUrl, type, finalUri, this.onError).then(entryNode => {
+              result.data = entryNode;
               this.setState({waiting: false, hoverCard: result, allowInteractions: false});
               onAvailable(result);
             })

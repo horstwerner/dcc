@@ -52,8 +52,7 @@ export const preprocess = function preprocess(data, context, preprocessors) {
 
     const unfiltered = resolve(data, input || TYPE_NODES);
     const source = (unfiltered && filter) ? nodeArray(unfiltered).filter(filter.matches) : unfiltered;
-    if (source == null) {
-      debugger
+    if (source == null && method !== CREATE_NODE) {
       if (!input) {
         throw new Error(`Can't preprocess data: no subNodes property and input undefined in ${data.getUniqueKey()}`);
       } else {

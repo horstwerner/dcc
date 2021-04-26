@@ -44,6 +44,11 @@ export default class GraphNode {
     }
   }
 
+  clearProperties() {
+    this.properties = {};
+    return this;
+  }
+
   clone(uri) {
     const result = new GraphNode(this.getTypeUri(), uri);
     result.properties = {...this.properties};

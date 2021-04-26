@@ -40,6 +40,12 @@ class Cache {
     return this.entityTypes;
   }
 
+
+  getNodeByUri (uri) {
+    return this.lookUpGlobal[uri];
+  };
+
+
   getNode (typeUri, uri) {
     if (typeUri && !this.rootNode.get(typeUri)) {
       this.rootNode.set(typeUri, []);

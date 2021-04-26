@@ -167,7 +167,7 @@ export const fetchSubGraph = function getGraph(queryUrl, entryPointType, entryPo
           Cache.importNodes(res.data);
         }
         if (res.entryPoint && entryPointType) {
-          const entryNode = entryPointUri ? Cache.getNode(entryPointType, entryPointUri) : new GraphNode(entryPointType, BLANK_NODE_URI);
+          const entryNode = entryPointUri ? Cache.getNode(entryPointType, entryPointUri).clearProperties() : new GraphNode(entryPointType, BLANK_NODE_URI);
           Cache.importNodeData(entryNode, res.entryPoint);
           return entryNode;
         }
