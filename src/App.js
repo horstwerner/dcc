@@ -699,7 +699,7 @@ class App extends Component {
 
     // const backgroundColor = (map && map.backColor) || '#ffffff';
     if (error) {
-      return Div_({}, `An error occurred: ${error.message}`)._Div;
+      return Div_({}, `An error occurred: ${error}`)._Div;
     }
 
     if (!dataLoaded) return null;
