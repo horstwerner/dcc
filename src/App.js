@@ -242,9 +242,9 @@ class App extends Component {
               result.data = entryNode;
               this.setState({waiting: false, hoverCard: result, allowInteractions: false});
               onAvailable(result);
-            })
+            });
+            return;
           }
-          return;
       }
     }
     this.setState({hoverCard: result, allowInteractions: false});
