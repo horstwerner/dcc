@@ -219,6 +219,7 @@ export const traverse = function(source, path) {
 };
 
 export const resolve = function (node, path) {
+  if (path === 'this') return node;
   if (path.includes('/')) {
     return Array.from(traverse(node, path));
   }
