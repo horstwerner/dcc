@@ -195,13 +195,11 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
   const { key, name, source, lod, align, arrangement, inputSelector, viewName, x, y, w, h, options} = descriptor;
 
   const nodes = getNodeArray(inputSelector, source, data);
-  if (!nodes || nodes.length === 0) return null;
-
-  const templateName = descriptor.template;
-  const template = templateName ? TemplateRegistry.getTemplate(templateName) : TemplateRegistry.getTemplateForSingleCard(nodes[0].getTypeUri(), viewName || DEFAULT_VIEW_NAME);
-  const nativeChildSize = template.getSize();
 
   if (aggregate) {
+    const template = TemplateRegistry.getTemplate(descriptor.template);
+    const nativeChildSize = template.getSize();
+
     if (!template) {
       throw new Error(`No template specified for aggregate card ${key} - ${name}`);
     }
@@ -217,6 +215,12 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
       options
     })._Card;
   }
+
+  if (!nodes || nodes.length === 0) return null;
+
+  const templateName = descriptor.template;
+  const template = templateName ? TemplateRegistry.getTemplate(templateName) : TemplateRegistry.getTemplateForSingleCard(nodes[0].getTypeUri(), viewName || DEFAULT_VIEW_NAME);
+  const nativeChildSize = template.getSize();
 
   const arrangementDescriptor = {type: GRID, x: 0, y: 0, w, h, padding: PADDING, ...arrangement};
   const cardNodes = nodes.map(node => {
@@ -253,7 +257,7 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
     onClick,
     clickMode,
     options})._CardSet
-}
+};
 
 
 

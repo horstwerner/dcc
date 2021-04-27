@@ -168,7 +168,7 @@ export const cloneObject = function cloneObject(object) {
 }
 
 export const nodeArray = function NodeArray(source) {
-  if (!source) return null;
+  if (!source) return [];
   return Array.isArray(source) ? source : [source];
 }
 

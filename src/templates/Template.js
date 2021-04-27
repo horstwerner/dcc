@@ -26,13 +26,18 @@ export const SYNTH_NODE_MAP = 'map';
 export const SYNTH_NODE_RETRIEVE = 'retrieve';
 
 const fillPlaceholders = function fillPlaceholders(element, options, defaultValues) {
-  return mapValues(element,(value) => {
+  const result = mapValues(element,(value) => {
     if (typeof value === 'string' && value.charAt(0)==='$') {
       const key = value.substring(1);
-      return options[key] != null ? options[key] : defaultValues[key];
+      return options[key] != null ? options[key] : (defaultValues[key] || value);
     } else return value;
-  })
-}
+  });
+
+  if (result.options) {
+    result.options = fillPlaceholders(result.options, options, defaultValues);
+  }
+  return result;
+};
 
 const elementClassByType = {};
 const elementTypes = [];
