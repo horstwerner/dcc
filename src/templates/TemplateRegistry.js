@@ -104,13 +104,20 @@ class TemplateRegistry {
     return candidates[0];
   }
 
-  getToolsFor(typeUri) {
-    const result = this.toolsByContentType[typeUri] || [];
+  getToolMap(typeUri) {
     const superType = get(TypeDictionary.getType(typeUri),'subClassOf');
+    const map = {};
     if (superType) {
-      result.push(...this.getToolsFor(superType));
+      Object.assign(map, this.getToolMap(superType))
     }
-    return result;
+    Object.assign(map,(this.toolsByContentType[typeUri] || []).reduce(
+        (map, tool) => {map[tool.id] = tool; return map;}, {})
+    );
+    return map;
+  }
+
+  getToolsFor(typeUri) {
+    return Object.values(this.getToolMap(typeUri));
   }
 
   getViewsFor(typeUri, aggregate, includeTemplate) {
