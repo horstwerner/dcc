@@ -174,12 +174,12 @@ export const nodeArray = function NodeArray(source) {
 
 export const describeSource = function describeSource(source) {
   if (Array.isArray(source)) {
-    return `[${source.map(node => node.uri).join()}]`;
+    return `[${source.map(node => node.uri).join('\n')}](${source.length})`;
   } else if (!GraphNode.isGraphNode(source)) {
     return String(source);
   }
   if (source.getTypeUri() === TYPE_AGGREGATOR) {
-    return `*-[${(source.get(TYPE_NODES)||[]).map(node => node.uri).join()}]`;
+    return `*-[${(source.get(TYPE_NODES)||[]).map(node => node.uri).join('\n')}](${source.length})`;
   }
   return source.uri;
 }

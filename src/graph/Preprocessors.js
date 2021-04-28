@@ -112,7 +112,7 @@ export const preprocess = function preprocess(data, context, preprocessors, logL
       }
       case DERIVE_ASSOCIATIONS: {
         const { path, derived, recursive } = descriptor;
-        data.set(result, deriveAssociations(source, path, derived, recursive));
+        data.set(result, deriveAssociations(source, path, derived, recursive, logLevel));
         break;
       }
       case UNIFY: {
@@ -120,7 +120,7 @@ export const preprocess = function preprocess(data, context, preprocessors, logL
         if (logLevel) {
           console.log(`Unify: `);
         }
-        const setContents = getSetContents(data, sets);
+        const setContents = getSetContents(data, sets, logLevel);
         data.set(result, unifyLists(setContents));
         if (logLevel) {
 
@@ -132,7 +132,7 @@ export const preprocess = function preprocess(data, context, preprocessors, logL
         if (logLevel) {
           console.log(`Intersect: `);
         }
-        const setContents = getSetContents(data, sets);
+        const setContents = getSetContents(data, sets, logLevel);
         data.set(result, intersectLists(setContents));
         break;
       }
@@ -141,7 +141,7 @@ export const preprocess = function preprocess(data, context, preprocessors, logL
           console.log(`Subtract: `);
         }
         const { sets } = descriptor;
-        const setContents = getSetContents(data, sets);
+        const setContents = getSetContents(data, sets, logLevel);
         data.set(result, subtractLists(setContents));
         break;
       }
