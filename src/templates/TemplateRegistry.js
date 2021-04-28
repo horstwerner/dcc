@@ -108,7 +108,7 @@ class TemplateRegistry {
     const superType = get(TypeDictionary.getType(typeUri),'subClassOf');
     const map = {};
     if (superType) {
-      Object.assign(map, this.getToolMap(superType))
+      Object.assign(map, this.getToolMap(superType));
     }
     Object.assign(map,(this.toolsByContentType[typeUri] || []).reduce(
         (map, tool) => {map[tool.id] = tool; return map;}, {})
