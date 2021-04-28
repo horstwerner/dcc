@@ -11,7 +11,7 @@ import {Image_} from "@symb/Image";
 import {GRID} from "@/arrangement/GridArrangement";
 import Aggregator from "@/Aggregator";
 import TemplateRegistry, {DEFAULT_VIEW_NAME} from "@/templates/TemplateRegistry";
-import {createCardNode, fit, flexHorizontalAlign, flexVerticalAlign, getNodeArray} from "@symb/util";
+import {createCardNode, describeSource, fit, flexHorizontalAlign, flexVerticalAlign, getNodeArray} from "@symb/util";
 import {CardSet_} from "@/components/CardSet";
 import {Card_} from "@/components/Card";
 import CompactGridArrangement from "@/arrangement/CompactGridArrangement";
@@ -21,6 +21,7 @@ import {Link_} from "@/components/Link";
 import {TYPE_CONTEXT, TYPE_NODE_COUNT} from "@/graph/TypeDictionary";
 import {BLANK_NODE_URI} from "@/components/Constants";
 import GraphNode from "@/graph/GraphNode";
+import Filter from "@/graph/Filter";
 
 export const STYLE_ATTRIBUTES = [
  'color',
@@ -185,7 +186,16 @@ export const createPreprocessedCardNode = function createPreprocessedCardNode(da
   result.set(TYPE_CONTEXT, newContext);
   const { preprocessing } = template.descriptor;
   if (preprocessing) {
-    preprocess(result, newContext, preprocessing)
+    const { log } = template.descriptor;
+    let logLevel = null;
+    if (log && (!log.condition || Filter.fromDescriptor(log.condition).matches(data))) {
+        logLevel = log.logLevel;
+    }
+    if (logLevel) {
+      console.log(`Template: ${template.id}`);
+      console.log(`Preprocessing log for ${describeSource(data)}`);
+    }
+    preprocess(result, newContext, preprocessing, logLevel)
   }
   return result;
 }

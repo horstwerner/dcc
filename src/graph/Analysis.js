@@ -150,13 +150,14 @@ export const deriveAssociations = function deriveAssociations(sourceNodes, path,
   return result;
 }
 
-export const mapNode = function (referenceNode, typeUri, uri, mapping) {
+export const mapNode = function (referenceNode, typeUri, uri, mapping, logLevel) {
   let result = uri ? Cache.getNodeByUri(uri) : null;
   // Assumption: data immutable, no different mappings for same node
   if (result) return result;
   result = uri ? Cache.getNode(typeUri, uri) : new GraphNode(typeUri, BLANK_NODE_URI);
   Object.keys(mapping).forEach(key => {
-    result.set(key,resolve(referenceNode, mapping[key]));
+    if (logLevel) {console.log(`assigning ${key}:`)}
+    result.set(key, resolve(referenceNode, mapping[key], logLevel));
   });
 
   return result;

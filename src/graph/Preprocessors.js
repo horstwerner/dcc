@@ -24,7 +24,7 @@ import Filter from "@/graph/Filter";
 import {deriveAssociations, mapNode, pathAnalysis} from "@/graph/Analysis";
 import {intersectLists, subtractLists, unifyLists} from "@/graph/SetOperations";
 import {TYPE_NODES} from "@/graph/TypeDictionary";
-import {nodeArray} from "@symb/util";
+import {describeSource, nodeArray} from "@symb/util";
 
 export const CREATE_NODE = "create-node";
 export const PATH_ANALYSIS = "path-analysis";
@@ -36,25 +36,44 @@ export const UNIFY = "unify";
 export const SUBTRACT = "subtract";
 export const FILTER = "filter";
 
+const getSetContents = function (data, sets, logLevel) {
+  return sets.map( setName => {
+    const content = data.get(setName);
+    if (logLevel) {
+      console.log(`${setName} is ${describeSource(content)}`);
+    }
+    return content;
+  });
+}
+
 /**
  *
  * @param {GraphNode} data: modified during operation
  * @param {Object} context: modified during operation
  * @param {Object[]} preprocessors
+ * @param {string} logLevel
  */
-export const preprocess = function preprocess(data, context, preprocessors) {
+export const preprocess = function preprocess(data, context, preprocessors, logLevel) {
 
   preprocessors.forEach(descriptor => {
     const {input, inputSelector, method, result} = descriptor;
 
-    const filter = inputSelector ? Filter.fromDescriptor(inputSelector) : null;
+    let source;
+    if (method === PATH_ANALYSIS || method === AGGREGATE || method === FILTER || method === DERIVE_ASSOCIATIONS) {
+      const filter = inputSelector ? Filter.fromDescriptor(inputSelector) : null;
 
-    const unfiltered = resolve(data, input || TYPE_NODES);
-    const source = (unfiltered && filter) ? nodeArray(unfiltered).filter(filter.matches) : unfiltered;
-    if (source == null && (method === PATH_ANALYSIS || method === AGGREGATE || method === FILTER || method === DERIVE_ASSOCIATIONS)) {
-      if (!input) {
+      if (logLevel) {
+        console.log(`Method ${method}, input unfiltered:`)
+      }
+      const unfiltered = resolve(data, input || TYPE_NODES, logLevel);
+      source = (unfiltered && filter) ? nodeArray(unfiltered).filter(filter.matches) : unfiltered;
+      if (logLevel && unfiltered && filter) {
+        console.log(`Filtered: ${describeSource(source)}`);
+      }
+
+      if (source == null && !input) {
         throw new Error(`Can't preprocess data: no subNodes property and input undefined in ${data.getUniqueKey()}`);
-      } else {
+      } else if (source == null) {
         console.log(`Skipping preprocess ${method} input ${input} not present in ${data.getUniqueKey()}`);
         return;
       }
@@ -63,7 +82,7 @@ export const preprocess = function preprocess(data, context, preprocessors) {
     switch (method) {
       case CREATE_NODE: {
         const {type, mapping, result} = descriptor;
-        data.set(result, mapNode(data, type, null, mapping));
+        data.set(result, mapNode(data, type, null, mapping, logLevel));
         break;
       }
       case PATH_ANALYSIS: {
@@ -80,7 +99,15 @@ export const preprocess = function preprocess(data, context, preprocessors) {
       }
       case SET_CONTEXT: { // add key-value pairs to context object in order to be passed down
         const {values} = descriptor;
-        Object.keys(values).forEach(targetField => context.set(targetField, resolve(data, values[targetField])));
+        if (logLevel) {
+          console.log(`Method set-context`);
+        }
+        Object.keys(values).forEach(targetField => {
+          if (logLevel) {
+            console.log(`setting ${targetField}:`)
+          }
+          context.set(targetField, resolve(data, values[targetField], logLevel))
+        });
         break;
       }
       case DERIVE_ASSOCIATIONS: {
@@ -90,17 +117,32 @@ export const preprocess = function preprocess(data, context, preprocessors) {
       }
       case UNIFY: {
         const { sets } = descriptor;
-        data.set(result, unifyLists(sets.map(setName => data.get(setName))));
+        if (logLevel) {
+          console.log(`Unify: `);
+        }
+        const setContents = getSetContents(data, sets);
+        data.set(result, unifyLists(setContents));
+        if (logLevel) {
+
+        }
         break;
       }
       case INTERSECT: {
         const { sets } = descriptor;
-        data.set(result, intersectLists(sets.map(setName => data.get(setName))));
+        if (logLevel) {
+          console.log(`Intersect: `);
+        }
+        const setContents = getSetContents(data, sets);
+        data.set(result, intersectLists(setContents));
         break;
       }
       case SUBTRACT: {
+        if (logLevel) {
+          console.log(`Subtract: `);
+        }
         const { sets } = descriptor;
-        data.set(result, subtractLists(sets.map(setName => data.get(setName))));
+        const setContents = getSetContents(data, sets);
+        data.set(result, subtractLists(setContents));
         break;
       }
       case FILTER: {
