@@ -40,6 +40,12 @@ class Cache {
     return this.entityTypes;
   }
 
+
+  getNodeByUri (uri) {
+    return this.lookUpGlobal[uri];
+  };
+
+
   getNode (typeUri, uri) {
     if (typeUri && !this.rootNode.get(typeUri)) {
       this.rootNode.set(typeUri, []);
@@ -95,6 +101,30 @@ class Cache {
     TypeDictionary.resolveSuperTypes();
   };
 
+  importNodeData(node, rawNode) {
+    Object.keys(rawNode).forEach(propUri => {
+      if (propUri === 'id' || propUri === 'type') return;
+      const propType = TypeDictionary.getType(propUri);
+      if (!propType) {
+        throw new Error(`Property type ${propUri} not declared in data dictionary`);
+      }
+      switch (propType.dataType) {
+        case DATATYPE_ENTITY:
+          node.addAssociation(propType, rawNode[propUri], null);
+          break;
+        case DATATYPE_INTEGER:
+        case DATATYPE_FLOAT:
+          node.set(propUri, Number(rawNode[propUri]));
+          break;
+        case DATATYPE_BOOLEAN:
+          node.set(propUri, Boolean(rawNode[propUri]));
+          break;
+        default:
+          node.set(propUri, String(rawNode[propUri]));
+      }
+    })
+  }
+
   importNodes(nodeArray) {
     if (!nodeArray) {
       console.log('Warning: Cache.importNodes called without argument');
@@ -103,27 +133,7 @@ class Cache {
     nodeArray.forEach(rawNode => {
       const { id, type } = rawNode;
       const node = this.getNode(type, id);
-      Object.keys(rawNode).forEach(propUri => {
-        if (propUri === 'id' || propUri === 'type') return;
-        const propType = TypeDictionary.getType(propUri);
-        if (!propType) {
-          throw new Error(`Property type ${propUri} not declared in data dictionary`);
-        }
-        switch (propType.dataType) {
-          case DATATYPE_ENTITY:
-            node.addAssociation(propType, rawNode[propUri], null);
-            break;
-          case DATATYPE_INTEGER:
-          case DATATYPE_FLOAT:
-            node.set(propUri, Number(rawNode[propUri]));
-            break;
-          case DATATYPE_BOOLEAN:
-            node.set(propUri, Boolean(rawNode[propUri]));
-            break;
-          default:
-            node.set(propUri, String(rawNode[propUri]));
-        }
-      })
+      this.importNodeData(node, rawNode);
     });
   }
 
@@ -209,6 +219,7 @@ export const traverse = function(source, path) {
 };
 
 export const resolve = function (node, path) {
+  if (path === 'this') return node;
   if (path.includes('/')) {
     return Array.from(traverse(node, path));
   }

@@ -14,6 +14,8 @@ A card template is a JSON object with the following properties:
 used as a layout element in other cards.
 * `detailTemplate` is the id of another (more detailed) template that can be used as focus (or hover) card when the user
   clicks on the card. This allows the realization of semantic zoom.
+* `detailNode` can be used in conjunction with `detailTemplate` to navigate to a view that renders not a graph node, but
+  a synthetic node. See more under [Synthetic Nodes](#synthetic-nodes)
 * `background` The background can have two values for `type`:  `rect` or `image`
 * `colorcoding` optional. Describes how the background color is derived from attribute values of the data node
 * `elements` An array of JSON objects defining the inner layout. Each element must have a `key` and `type` attribute, as well as `x`, `y`, `w` and `h` to define position and size. Other attributes depend on the element type.
@@ -76,6 +78,31 @@ on, but not teams working on bugs that may be associated with that focus node. I
 the dictionary, specifying a supertype in the type filter will automatically include all sub-types.
 
 Data paths can be also used in conditions and color coders.
+
+## Synthetic Nodes
+In order to render views that don't represent plain graph nodes but composite data, synthetic nodes can be created.
+Synthetic nodes need to have a type that is declared in the dictionary, and they may have an uri (if no uri is specified,
+the uri will be set to `core:blank-node` and the node will not be registered in the cache). The way to create a synthetic
+node is to declare it as `detailNode` in a clickable template. When the template is clicked, the synthetic node will
+be used instead of the original graph node for the detail card that becomes the focus (or hover card). The base parameters
+are:
+* `type`
+* `method` - either `map`, to create it from data related to the current node or `retrieve` to retrieve it from the server
+* `uri` - an uri should always be specified if the `retrieve` method is used or the mapping contains long paths. It will 
+cause the node to be cached so it is available if needed again. Handlebars `{{...}}` containing data paths can be used to 
+  to dynamically generate a uri. 
+  
+### Mapped Synthetic Nodes
+If the method is `map`, an additional parameter `mapping` must be provided. It is a key-value object, where the keys
+specify the properties of the synthetic node and the values are data paths relative to the current node.
+
+### Retrieved Synthetic Nodes
+For the method `retrieve`, the additional parameter `request` is required. It is a string that can contain handlebar
+expressions `{{...}}` containing data paths. The url will be called to retrieve a full subgraph and the synthetic node
+serves as entry point and identifier of this subgraph (ensuring that the same subgraph doesn't need to be retrieved
+more than once). Consequently, the expected response has to match that of the `api/graph` call, but in addition to the
+`data` array of graph nodes, it will also contain a property `entryPoint` which is the synthetic node and can point to 
+nodes in the subgraph via associations (the association types, too, must be known in the dictionary).
 
 ## Element parameters
 

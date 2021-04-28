@@ -13,7 +13,7 @@ export const getDictionaryOffline = function (onError) {
         Cache.importTypes(data)})
       .catch(error => {
         console.log(error.stack);
-        onError(error);
+        onError(error.message);
       });
 };
 
@@ -34,7 +34,7 @@ export const getCardDescriptorsOffline = function (onError) {
       })
       .catch(error => {
         console.log(error.stack);
-        onError(error);
+        onError(error.message);
       });
 };
 
@@ -49,7 +49,7 @@ export const getToolDescriptorsOffline = function (onError) {
       })
       .catch(error => {
         console.log(error.stack);
-        onError(error)
+        onError(error.message)
       });
 };
 
@@ -68,7 +68,7 @@ export const getDataOffline = function(onError) {
                 Cache.importNodes(data);
             }).catch(error => {
           console.log(error.stack);
-          onError(error);
+          onError(error.message);
         })
     );
   }
@@ -86,7 +86,7 @@ export const getDataOffline = function(onError) {
           })
           .catch(error => {
             console.log(error.stack);
-            onError(error);
+            onError(error.message);
           })
       );
     });

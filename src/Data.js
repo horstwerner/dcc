@@ -9,6 +9,8 @@ import {
   getDictionaryOffline,
   getToolDescriptorsOffline
 } from "@/OfflineData/pseudobackend";
+import {BLANK_NODE_URI} from "@/components/Constants";
+import GraphNode from "@/graph/GraphNode";
 
 export const handleResponse = function (response) {
   if (response.ok) {
@@ -157,6 +159,24 @@ export const getData = function (onError) {
   return OFFLINE_MODE ? getDataOffline(onError) : getDataFromDB(onError);
 }
 
+export const fetchSubGraph = function getGraph(queryUrl, entryPointType, entryPointUri, onError) {
+  return fetch(queryUrl, {})
+      .then(handleResponse)
+      .then(res => {
+        if (res.data) {
+          Cache.importNodes(res.data);
+        }
+        if (res.entryPoint && entryPointType) {
+          const entryNode = entryPointUri ? Cache.getNode(entryPointType, entryPointUri).clearProperties() : new GraphNode(entryPointType, BLANK_NODE_URI);
+          Cache.importNodeData(entryNode, res.entryPoint);
+          return entryNode;
+        }
+      }).catch(error => {
+    console.log(error.stack);
+    onError(error.message);
+  });
+}
+
 export const getDataFromDB = function(onError) {
 
   const {getTables, getGraph} = getConfigs(['getTables', 'getGraph']);
@@ -166,18 +186,7 @@ export const getDataFromDB = function(onError) {
    */
   const result = [];
   if (getGraph) {
-    result.push(
-        fetch(`/api/graph`, {})
-            .then(handleResponse)
-            .then(res => {
-              if (res.data) {
-                Cache.importNodes(res.data);
-              }
-            }).catch(error => {
-              console.log(error.stack);
-              onError(error.message);
-            })
-    );
+    result.push(fetchSubGraph(`/api/graph`,null, null, onError));
   }
 
   if (getTables) {

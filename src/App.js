@@ -9,16 +9,18 @@ import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
 import {getAppCss, getConfig, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT, TRANSITION_DURATION} from "@/Config";
-import {fit, isDataEqual, relSpatial} from "@symb/util";
+import {fillIn, fit, isDataEqual, relSpatial} from "@symb/util";
 import {breadCrumbHoverIcon, createPreprocessedCardNode, hoverCardMenu} from "@/components/Generators";
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 import {calcMaxChildren, ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 
 import {BLANK_NODE_URI, CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
-import {getCardDescriptors, getClientConfig, getData, getDictionary, getToolDescriptors} from "@/Data";
+import {fetchSubGraph, getCardDescriptors, getClientConfig, getData, getDictionary, getToolDescriptors} from "@/Data";
 import {createFilterControl, updatedToolControl} from "@/Tools";
 import {TYPE_AGGREGATOR, TYPE_CONTEXT, TYPE_NAME, TYPE_NODES} from "@/graph/TypeDictionary";
+import {SYNTH_NODE_MAP, SYNTH_NODE_RETRIEVE} from "@/templates/Template";
+import {mapNode} from "@/graph/Analysis";
 
 const APP = 'app';
 const BREADCRUMBS = 'breadcrumbs';
@@ -59,6 +61,7 @@ class App extends Component {
       focusCard: null,
       hoverCard: null,
       allowInteractions: true,
+      waiting: true,
       dataLoaded: false,
       windowWidth: window.innerWidth,
       windowHeight: window.innerHeight,
@@ -84,13 +87,15 @@ class App extends Component {
             Cache.getEntityTypes().forEach(entityType => {
               startData.setBulkAssociation(entityType, Cache.rootNode.get(entityType));
             })
-            startData.set(TYPE_CONTEXT, createContext());
+            const startTemplate = TemplateRegistry.getTemplate(getConfig('startTemplate'));
+            const startNode = createPreprocessedCardNode(startData, null, startTemplate);
             this.setState({
               focusData: null,
+              waiting: false,
               dataLoaded: true
             });
-            const startTemplate = getConfig('startTemplate');
-            this.setFocusCard(this.createFocusCard(startData, TemplateRegistry.getTemplate(startTemplate), null), null);
+
+            this.setFocusCard(this.createFocusCard(startNode, startTemplate, null), null);
           }
         });
     this.handleNodeClick = this.handleNodeClick.bind(this);
@@ -108,6 +113,7 @@ class App extends Component {
     this.handleSearchResultClick = this.handleSearchResultClick.bind(this);
     this.onError = this.onError.bind(this);
     this.removeBreadCrumbHoverMenu = this.removeBreadCrumbHoverMenu.bind(this);
+    this.moveCardToFocus = this.moveCardToFocus.bind(this);
 
     document.body.onkeyup = this.handleKeyUp;
     document.body.onkeydown = this.handleKeyDown;
@@ -117,6 +123,11 @@ class App extends Component {
   updateDom(props, tween) {
     if (this.state.dataLoaded) {
       this.dom.className = getAppCss().app;
+    }
+    if (this.state.waiting) {
+      this.dom.style.cursor = 'wait';
+    } else {
+      this.dom.style.cursor = '';
     }
   }
 
@@ -184,7 +195,7 @@ class App extends Component {
 
     const newFocusCard = {...hoverCard,  hover: false, onClick: this.handleNodeClick, clickMode: CLICK_TRANSPARENT};
 
-    this.moveCardToFocus(newFocusCard, hoverCard.data);
+    this.moveCardToFocus(newFocusCard);
   }
 
 
@@ -197,52 +208,78 @@ class App extends Component {
     }
   }
 
+  //    const cloneNodeConfig = template.getDetailNode();
 
-  cloneNodeToFocus(component) {
-    const { data, template, options } = component.innerProps;
+  createCloneCard(component, clickMode, onClick, onAvailable) {
+    const { data, template, options} = component.innerProps;
     let spatial = component.getRelativeSpatial(this.getFocusPlane());
     const cloneTemplate = TemplateRegistry.getTemplate(template.getDetailTemplateId());
+
     if (cloneTemplate !== template) {
       const {width, height} = template.getSize();
       const cloneSize = cloneTemplate.getSize();
       spatial = fit(width * spatial.scale, height * spatial.scale, cloneSize.width, cloneSize.height, spatial.x, spatial.y);
     }
 
-    const newFocusCard = Card_({ key: this.createChildKey(), data, hover: false, template: cloneTemplate, options, spatial,
-      onClick: this.handleNodeClick, clickMode: CLICK_TRANSPARENT, style: { zIndex: 2 } })._Card
-    this.setState({hoverCard: newFocusCard, allowInteractions: false});
-    this.moveCardToFocus(newFocusCard, data);
+    const result = Card_({ key: this.createChildKey(), data, hover: false, template: cloneTemplate, options, spatial,
+      onClick, clickMode, style: { zIndex: 2 } })._Card
+
+    const cloneNodeConfig = template.getDetailNode();
+    if (cloneNodeConfig) {
+      const {method, type, uri} = cloneNodeConfig;
+
+      const finalUri = uri ? fillIn(uri, data) : null;
+      switch (method) {
+        case SYNTH_NODE_MAP:
+          result.data = mapNode(data, type, finalUri, cloneNodeConfig.mapping);
+          break;
+        case SYNTH_NODE_RETRIEVE:
+          result.data = finalUri ? Cache.getNodeByUri(finalUri) : null;
+          if (result.data == null) {
+            this.setState({waiting: true});
+            const requestUrl = fillIn(cloneNodeConfig.request, data);
+            fetchSubGraph(requestUrl, type, finalUri, this.onError).then(entryNode => {
+              result.data = entryNode;
+              this.setState({waiting: false, hoverCard: result, allowInteractions: false});
+              onAvailable(result);
+            });
+            return;
+          }
+      }
+    }
+    this.setState({hoverCard: result, allowInteractions: false});
+    onAvailable(result);
+  }
+
+  cloneNodeToFocus(component) {
+
+    this.createCloneCard(component, CLICK_TRANSPARENT, this.handleNodeClick, this.moveCardToFocus);
+
   }
 
 
   cloneNodeToHover(component) {
-    const { data, template, options } = component.innerProps;
     const { mainWidth, focusHeight, breadCrumbHeight } = this.state;
 
-    let spatial = component.getRelativeSpatial(this.getFocusPlane());
-    const cloneTemplate = TemplateRegistry.getTemplate(template.getDetailTemplateId());
-    if (cloneTemplate !== template) {
-      const {width, height} = template.getSize();
-      const cloneSize = cloneTemplate.getSize();
-      spatial = fit(width * spatial.scale, height * spatial.scale, cloneSize.width, cloneSize.height, spatial.x, spatial.y);
-    }
+    this.createCloneCard(component, CLICK_OPAQUE, this.handleHoverCardPin, clone => {
 
-    const clone = Card_({key: this.createChildKey(), data, hover: true, template: cloneTemplate, options, spatial, clickMode: CLICK_OPAQUE,
-      onClick: this.handleHoverCardPin,
-      style: {zIndex: 2}})._Card
-    this.setState({hoverCard: clone, allowInteractions: false});
-
-    const newSpatial = this.calcHoverCardSpatial({template: cloneTemplate, mainWidth, focusHeight, breadCrumbHeight});
-    this.transitionToState({hoverCard:{...clone, spatial: newSpatial}}).onEndCall(() => {
-          this.setState({allowInteractions: true});
-        }
-    );
+      const newSpatial = this.calcHoverCardSpatial({
+        template: clone.template,
+        mainWidth,
+        focusHeight,
+        breadCrumbHeight
+      });
+      this.transitionToState({hoverCard: {...clone, spatial: newSpatial}}).onEndCall(() => {
+            this.setState({allowInteractions: true});
+          }
+      );
+    });
   }
 
 
-  moveCardToFocus(newFocusCard, data) {
+  moveCardToFocus(newFocusCard) {
     const { focusCard } = this.state;
-    const targetState = this.createStateForFocus(newFocusCard, data);
+    const targetState = this.createStateForFocus(newFocusCard, newFocusCard.data);
     const endState = {focusCard: {...targetState.focusCard, style: {zIndex: 0}}};
     this.removeModals();
     this.moveCardToBreadcrumbs(focusCard, targetState, endState);
@@ -426,6 +463,7 @@ class App extends Component {
     if (GraphNode.isGraphNode(data)) {
       console.log(`----------------------------------------------------------`);
       console.log(`focus data is ${data.getSummary()}`);
+      console.log(`\nTemplate is ${focusCard.template.id}`);
     }
 
     const { template } = focusCard;
@@ -548,8 +586,9 @@ class App extends Component {
       throw new Error(`Template ${template.id} is marked as aggregate, but applied to non-aggregate data ${focusData.getUniqueKey()}`);
     }
 
-    const data = template.aggregate ?  createPreprocessedCardNode(applyFilters(Object.values(currentFilters),
-        focusData.get(TYPE_NODES).map(node => (node.originalNode || node))), createContext(), template, focusData.get(TYPE_NAME)): this.state.focusCard.data;
+    const rawData = template.aggregate ?  applyFilters(Object.values(currentFilters),
+        focusData.get(TYPE_NODES).map(node => (node.originalNode || node))): this.state.focusCard.data;
+    const data = createPreprocessedCardNode(rawData, null, template, focusData.get(TYPE_NAME));
 
     const currentViewOptions = template.getDefaultOptions();
 
@@ -661,7 +700,7 @@ class App extends Component {
 
     // const backgroundColor = (map && map.backColor) || '#ffffff';
     if (error) {
-      return Div_({}, `An error occurred: ${error.message}`)._Div;
+      return Div_({}, `An error occurred: ${error}`)._Div;
     }
 
     if (!dataLoaded) return null;

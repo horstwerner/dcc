@@ -104,7 +104,7 @@ router.get("/data", (req, res) => {
 
 router.get("/graph", (req, res) => {
   console.log(`serving graph`);
-  return res.json({success: true, data: nodeArray});
+  return res.json({success: true, data: nodeArray, entryPoint: nodeArray[0]});
 });
 
 router.get("/config", (req, res) => {

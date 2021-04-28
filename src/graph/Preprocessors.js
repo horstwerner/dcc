@@ -21,11 +21,12 @@
 import Aggregator from "@/Aggregator";
 import {resolve} from "@/graph/Cache";
 import Filter from "@/graph/Filter";
-import {deriveAssociations, pathAnalysis} from "@/graph/Analysis";
+import {deriveAssociations, mapNode, pathAnalysis} from "@/graph/Analysis";
 import {intersectLists, subtractLists, unifyLists} from "@/graph/SetOperations";
 import {TYPE_NODES} from "@/graph/TypeDictionary";
 import {nodeArray} from "@symb/util";
 
+export const CREATE_NODE = "create-node";
 export const PATH_ANALYSIS = "path-analysis";
 export const AGGREGATE = "aggregate";
 export const SET_CONTEXT = "set-context";
@@ -50,16 +51,21 @@ export const preprocess = function preprocess(data, context, preprocessors) {
 
     const unfiltered = resolve(data, input || TYPE_NODES);
     const source = (unfiltered && filter) ? nodeArray(unfiltered).filter(filter.matches) : unfiltered;
-    if (source == null) {
-      debugger
+    if (source == null && (method === PATH_ANALYSIS || method === AGGREGATE || method === FILTER || method === DERIVE_ASSOCIATIONS)) {
       if (!input) {
         throw new Error(`Can't preprocess data: no subNodes property and input undefined in ${data.getUniqueKey()}`);
       } else {
-        throw new Error(`Can't preprocess data: input ${input} not present in ${data.getUniqueKey()}`);
+        console.log(`Skipping preprocess ${method} input ${input} not present in ${data.getUniqueKey()}`);
+        return;
       }
     }
 
     switch (method) {
+      case CREATE_NODE: {
+        const {type, mapping, result} = descriptor;
+        data.set(result, mapNode(data, type, null, mapping));
+        break;
+      }
       case PATH_ANALYSIS: {
         const {associationType, upstreamAggregate, downstreamAggregate} = descriptor;
         data.set(result, pathAnalysis(source, associationType, new Aggregator(upstreamAggregate), new Aggregator(downstreamAggregate)));
@@ -79,7 +85,7 @@ export const preprocess = function preprocess(data, context, preprocessors) {
       }
       case DERIVE_ASSOCIATIONS: {
         const { path, derived, recursive } = descriptor;
-        data.set(result, deriveAssociations(data.get(TYPE_NODES), path, derived, recursive));
+        data.set(result, deriveAssociations(source, path, derived, recursive));
         break;
       }
       case UNIFY: {
@@ -98,9 +104,6 @@ export const preprocess = function preprocess(data, context, preprocessors) {
         break;
       }
       case FILTER: {
-        if (!inputSelector) {
-          throw new Error(`For preprocessing of type "filter" parameter "inputSelector" must be defined`);
-        }
         data.set(result, source);
         break;
       }
