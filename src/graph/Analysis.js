@@ -122,6 +122,7 @@ export const pathAnalysis = function pathAnalysis(sourceNodes, associationType, 
 
 export const deriveAssociations = function deriveAssociations(sourceNodes, path, derivedAssociation, recursive, logLevel) {
   const processedNodes = sourceNodes.reduce((map, node) => {map[node.getUniqueKey()] = true; return map;}, {});
+  const spaces = '  ';
   const result = [];
   let currentNodes = sourceNodes;
   while (currentNodes.length > 0) {
@@ -131,7 +132,7 @@ export const deriveAssociations = function deriveAssociations(sourceNodes, path,
     }
     currentNodes.forEach(node => {
       console.log(`  for ${node.uri}`)
-      const associated = traverse(node, path, logLevel);
+      const associated = traverse(node, path, logLevel, spaces);
       associated.delete(node);
       if (associated.size !== 0) {
         const contextual = node.createContextual();

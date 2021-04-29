@@ -193,9 +193,10 @@ const getSegmentData = function getSegmentData(current, segment) {
   }
 }
 
-export const traverse = function(source, path, logLevel) {
+export const traverse = function(source, path, logLevel, indent) {
+  const spaces = `    ${indent || ''}`;
   if (logLevel === LOG_LEVEL_PATHS) {
-    console.log (`resolving ${path}:`);
+    console.log (`${indent || ''}resolving ${path}:`);
   }
   const steps = path.split('/');
   let curSet = new Set(Array.isArray(source) ? source : [source]);
@@ -219,22 +220,22 @@ export const traverse = function(source, path, logLevel) {
         }
     );
     if (logLevel === LOG_LEVEL_PATHS) {
-      console.log(`   ${step}: ${describeSource(Array.from(nextSet))}`);
+      console.log(`${spaces}${step}: ${describeSource(Array.from(nextSet), spaces)}`);
     }
     curSet = nextSet;
   }
   if (logLevel === LOG_LEVEL_RESULTS) {
-    console.log(describeSource(Array.from(curSet)));
+    console.log(describeSource(Array.from(curSet), spaces));
   }
   return curSet;
 };
 
-export const resolve = function (node, path, logLevel) {
+export const resolve = function (node, path, logLevel, indent) {
   if (path === 'this') return node;
   if (path.includes('/')) {
-    return Array.from(traverse(node, path, logLevel));
+    return Array.from(traverse(node, path, logLevel, indent));
   }
-  return resolveProperty(node, path, logLevel);
+  return resolveProperty(node, path, logLevel, indent);
 }
 
 /**
@@ -244,7 +245,7 @@ export const resolve = function (node, path, logLevel) {
  * @return {String | Number} resolved attribute or display name of resolved node
  */
 export const resolveAttribute = function (node, path) {
-  const result = resolveProperty(node, path, null);
+  const result = resolveProperty(node, path, null, null);
 
   return (GraphNode.isGraphNode(result)) ?
       result.getDisplayName() :
@@ -255,13 +256,15 @@ export const resolveAttribute = function (node, path) {
  *
  * @param {GraphNode} node
  * @param {String[] | String} path
- * @param {string} logLevel
+ * @param {string | null} logLevel
+ * @param {string | null} indent
  * @return {String | Number | Object} resolved attribute or resolved node
  */
-export const resolveProperty = function (node, path, logLevel) {
+export const resolveProperty = function (node, path, logLevel, indent) {
   let result;
+  const spaces = `${indent || ''}   `;
   if (logLevel === LOG_LEVEL_PATHS) {
-    console.log (`resolving ${path}:`);
+    console.log (`${spaces}resolving ${path}:`);
   }
   if (Array.isArray(path) || path.includes('/')) {
     const segments = Array.isArray(path) ? path : path.split('/');
@@ -270,13 +273,13 @@ export const resolveProperty = function (node, path, logLevel) {
       if (!current) break;
       current = getSegmentData(current, segments[segIdx]);
       if (logLevel === LOG_LEVEL_PATHS) {
-        console.log(`   ${segments[segIdx]}: ${describeSource(current)}`);
+        console.log(`${spaces}${segments[segIdx]}: ${describeSource(current, spaces)}`);
       }
       // simplistic disambiguation - if multiple, select first
       if (segIdx < segments.length - 1 && Array.isArray(current)) {
         current = current[0];
         if (logLevel === LOG_LEVEL_PATHS) {
-          console.log(`     disambiguated to ${describeSource(current)}`);
+          console.log(`${spaces}disambiguated to ${describeSource(current, spaces)}`);
         }
       }
     }
@@ -284,12 +287,12 @@ export const resolveProperty = function (node, path, logLevel) {
   } else {
     result = getSegmentData(node, path);
     if (logLevel === LOG_LEVEL_PATHS) {
-      console.log(describeSource(result));
+      console.log(describeSource(result, spaces));
     }
   }
 
   if (logLevel === LOG_LEVEL_RESULTS) {
-    console.log(describeSource(result));
+    console.log(describeSource(result, spaces));
   }
   return result;
 };

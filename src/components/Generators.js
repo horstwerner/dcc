@@ -200,20 +200,26 @@ export const createPreprocessedCardNode = function createPreprocessedCardNode(da
   return result;
 }
 
-export const ChildSet = function ChildSet(data, context, descriptor, aggregate, onClick, clickMode) {
+export const ChildSet = function ChildSet(data, context, descriptor, singleCard, onClick, clickMode) {
 
   const { key, name, source, lod, align, arrangement, inputSelector, viewName, x, y, w, h, options} = descriptor;
 
   const nodes = getNodeArray(inputSelector, source, data);
 
-  if (aggregate) {
+  if (singleCard) {
     const template = TemplateRegistry.getTemplate(descriptor.template);
     const nativeChildSize = template.getSize();
 
     if (!template) {
       throw new Error(`No template specified for aggregate card ${key} - ${name}`);
     }
-    const cardNode = createPreprocessedCardNode(nodes, context, template, name || key);
+
+    if (!template.aggregate && (!nodes || nodes.length === 0)) {
+      return null;
+    }
+
+    const cardNode = createPreprocessedCardNode(template.aggregate ? nodes : nodes[0],
+        context, template, name || key);
     return Card_({
       key,
       template,
@@ -243,19 +249,6 @@ export const ChildSet = function ChildSet(data, context, descriptor, aggregate, 
     const aggregations = mapValues(align, (calculate, key) => ({attribute: key, calculate}));
     const aligned = omit(new Aggregator(aggregations).aggregate(cardNodes), TYPE_NODE_COUNT);
     cardNodes.forEach(cardNode => Object.assign(cardNode, aligned));
-  }
-
-  if (cardNodes.length === 1) {
-    return Card_({
-      key,
-      template,
-      lod,
-      spatial: fit(w, h, nativeChildSize.width, nativeChildSize.height, x, y),
-      data:  cardNodes[0],
-      onClick,
-      clickMode,
-      options
-    })._Card;
   }
 
   return CardSet_({key,
