@@ -173,7 +173,7 @@ class Cache {
   validateNodes() {
     Object.values(this.lookUpGlobal).forEach(node => {
       if (!node.type) {
-        console.warn(`node ${node.uri} has no type`);
+        console.log(`WARNING - node ${node.uri} has no type`);
       }
     });
   }

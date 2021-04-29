@@ -173,7 +173,7 @@ export const nodeArray = function NodeArray(source) {
 }
 
 export const describeSource = function describeSource(source, indent) {
-  const spaces = `${indent || ''} `;
+  const spaces = `${indent || ''}  `;
   if (Array.isArray(source)) {
     return `[${source.map(node => node.uri).join(`\n${spaces}`)}](${source.length})`;
   } else if (!GraphNode.isGraphNode(source)) {

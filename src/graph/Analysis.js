@@ -128,10 +128,12 @@ export const deriveAssociations = function deriveAssociations(sourceNodes, path,
   while (currentNodes.length > 0) {
     let newNodes = {};
     if (logLevel === LOG_LEVEL_PATHS) {
-      console.log(`  traversing ${path}`)
+      console.log(`  traversing ${path}`);
     }
     currentNodes.forEach(node => {
-      console.log(`  for ${node.uri}`)
+      if (logLevel === LOG_LEVEL_PATHS) {
+        console.log(`  for ${node.uri}`);
+      }
       const associated = traverse(node, path, logLevel, spaces);
       associated.delete(node);
       if (associated.size !== 0) {

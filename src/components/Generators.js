@@ -188,7 +188,7 @@ export const createPreprocessedCardNode = function createPreprocessedCardNode(da
   if (preprocessing) {
     const { log } = template.descriptor;
     let logLevel = null;
-    if (log && (!log.condition || Filter.fromDescriptor(log.condition).matches(data))) {
+    if (log && (!log.condition || Filter.fromDescriptor(log.condition).matches(result))) {
         logLevel = log.logLevel;
     }
     if (logLevel) {
