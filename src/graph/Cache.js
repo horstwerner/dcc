@@ -287,12 +287,12 @@ export const resolveProperty = function (node, path, logLevel, indent) {
   } else {
     result = getSegmentData(node, path);
     if (logLevel === LOG_LEVEL_PATHS) {
-      console.log(describeSource(result, spaces));
+      console.log(`${spaces}${describeSource(result, spaces)}`);
     }
   }
 
   if (logLevel === LOG_LEVEL_RESULTS) {
-    console.log(describeSource(result, spaces));
+    console.log(`${spaces}${describeSource(result, spaces)}`);
   }
   return result;
 };

@@ -158,6 +158,9 @@ export const deriveAssociations = function deriveAssociations(sourceNodes, path,
       currentNodes = [];
     }
   }
+  if (logLevel) {
+    console.log(`  result of deriveAssociations is ${describeSource(result)}`);
+  }
   return result;
 }
 
