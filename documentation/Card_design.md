@@ -253,31 +253,41 @@ All results of preprocessing are written into the contextual card node, and each
 written by previous steps.
 
 `preprocess`: An array of preprocessing directives
-Each directive is an object with the following parameters:
-* `input`: the property (association type) of the card node to evaluate
-* `inputSelector`: a filter as described in the chart and cards elements
-* `method`: (`aggregate`, `set-context`, `path-analysis`, `derive-associations`)
-* `result` name of the attribute of the (contextual) card node in which the result is stored
+Each directive is an object which usually has the following parameters:
+* `set` name of the attribute of the (contextual) card node in which the result is stored.
+  for the functions `aggregate` and `create-node`, set is an object where the keys specify the attributes to set
+* `source`: the property (or data path) of the card node to evaluate
+  source is an array for the functions `unify`, `intersect`, `subtract`, and `first-found`, and
+  is not required for the function `create-node`. If requirend, but not specified, `source` defaults to
+  `core:subNodes`.
+* `inputSelector`: a filter as described in the chart and cards elements, which will be applied to the evaluated `source`
+  Does not apply if `source` is an array and for the functions `create-node`  
+* `function`: (`aggregate`, `set-context`, `path-analysis`, `derive-associations`, `create-node`, `unify`, `intersect`,
+  `subtract` or `first-found`)
 
-The following preprocessing methods are supported:
-* `aggregate`: runs simple aggregations over the selected sub nodes (after applying the input selector
-It has one parameter: `results` which is an array of objects of this form:
+In general the source is evaluated, filtered by the inputSelector (if specified and applicable), transformed through
+the function (if specified) and stored in the property specified by `set` or `set-context`.
+
+In the simplest form, a preprocessing is just setting an attribute of the card node to some data path expression:
+```
+{"set": "teamBugs", "source": "team/dcc:bugs"}
+```
+
+Alternatively to `set`, the key `set-context` can be used. Values set with `set-context` are not only visible
+to the card itself but also to all child cards (using the `core:context/` prefix).
+
+The following preprocessing functions are supported:
+* `aggregate`: runs simple aggregations over the source nodes (after applying the input selector
+  if this function is used, `set` is an object of the following form: 
   `{<key of result>: {attribute: <attribute name>, calculate: <aggregation>}}`
   where `<aggregation>` is one of `min`, `max`, `sum`, `avg`, `count`
-  
+  Hence, the aggregate function writes multiple properties at once. 
+
 Example:
 ```
 {"method":  "aggregate", "results": {"storyPointSum":  {"attribute":  "jira:storypoints", "calculate":  "sum"}} }
 ```
 
-* `set-context`: copies attribute values into the `core:context` object that is passed down to child cards
-It has one parameter: `values` which is an object where the keys are the properties of `core:context` to be set and the 
-  values are attribute names (or paths) from the current [contextual] card node
-
-Example:
-```
-{"method":  "set-context", "values":  {"allNodes": "core:subNodes"}}
-```
 * `derive-associations`: creates new associations (shortcuts) between the nodes of the set
 Its parameters are: 
   `path`: the association path to evaluate. Segments are separated by `/`
@@ -285,7 +295,7 @@ Its parameters are:
   `recursive`: true or false, determines whether the process should be repeated for all nodes reached by the path
   
 Keep in mind that only nodes for which the (full) specified path has been found (and a shortcut added) are stored in the
-property specified in `result`. Therefore the use of `derive-association` should in most cases be combined with using
+property specified in `set`. Therefore, the use of `derive-association` should in most cases be combined with using
 the `result` as `overlay` to amend a set of nodes and not as self-contained input into a visualization.
   
 * `path-analysis`: recursively traverses a specified association for all sets of the input set (after inputSelector applied)
@@ -293,12 +303,41 @@ and for each touched node stores aggregated values over all predecessors (upstre
 Its parameters are:
   `associationType` - the type of the association to traverse
   `upstreamAggregate` and `downstreamAggregate`, both conforming to the `aggregate` descriptor described above
+  The function writes an aggregated node representing all touched (and amended) nodes into the property specified by
+  `set`. That node can be used as `overlay`.
   
 `derive-associations` and `path-analysis` don't modify the original nodes, they create contextual nodes which only live
 in the specified `result` property of the card set's contextual node.
 The amended nodes of a result can be used in a chart instead of the original nodes of a set if the result is specified as
 the `overlay` parameter of that chart. The framework will replace each node with the contextual node with the matching URI
 before rendering the chart.
+
+* `unify`, `intersect`, and `subtract` have an array of properties (no data paths allowed) pointing to nodes as source and 
+  perform the respective set operations. If more than two sets are specified in `source`, the function `subtract` will
+  subtract all subsequent sets from the first set.
+
+* `first-found` also has an array as `source`, here data paths are allowed. The value written into the property specified
+  by `set` is the result of first path in the array that yields a result. The function is used to get "fallback" values
+  in case a property is not present.
+  
+### set-context vs. set
+* if `set-context` is used, the result of the source/filter/function chain is written into the `core:context` object that
+  is passed down to child cards
+* if both `set` and `set-context` are used, the results are written to both the card node and the context node. 
+
+Example:
+```
+{"set-context":  "allNodes", "source": "core:subNodes"}
+```
+
+### Logging in Preprocessing
+For troubleshooting, it is useful to get logs describing the intermediate results of all preprocessing steps.
+Therefore, it is possible to specify a `log` object in the template.
+The `log` object has two keys:
+* `logLevel`: One of `results` and `paths`. If `results` is specified, only the results of the preprocessing steps are
+  logged to the console. If `paths` is specified, all intermediate steps during the evaluation of a data path are logged.
+* `condition`: If specified, the logging is only activate if the card node matches the specified condition. The syntax is
+  the same as for filters and color coders.
 
 ## View Options
 

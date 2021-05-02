@@ -79,5 +79,9 @@
   padding: 2px 8px 0 2px;
 }
 .panelLabel {
+  font-weight: bold;
+  color: #696966;
+  text-transform: uppercase;
+  letter-spacing: 3px;
   padding: 5px 8px 0 8px;
 }

@@ -170,8 +170,8 @@ export const mapNode = function (referenceNode, typeUri, uri, mapping, logLevel)
   if (result) return result;
   result = uri ? Cache.getNode(typeUri, uri) : new GraphNode(typeUri, BLANK_NODE_URI);
   Object.keys(mapping).forEach(key => {
-    if (logLevel) {console.log(`assigning ${key}:`)}
-    result.set(key, resolve(referenceNode, mapping[key], logLevel));
+    if (logLevel) {console.log(`  assigning ${key}:`)}
+    result.set(key, resolve(referenceNode, mapping[key], logLevel, '  '));
   });
 
   return result;

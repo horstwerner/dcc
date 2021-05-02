@@ -248,7 +248,9 @@ export const ChildSet = function ChildSet(data, context, descriptor, singleCard,
     // calculate contains the aggregation formula for each aggregated attribute
     const aggregations = mapValues(align, (calculate, key) => ({attribute: key, calculate}));
     const aligned = omit(new Aggregator(aggregations).aggregate(cardNodes), TYPE_NODE_COUNT);
-    cardNodes.forEach(cardNode => Object.assign(cardNode, aligned));
+    cardNodes.forEach(cardNode => {
+      Object.keys(aligned).forEach(key => cardNode.set(key, aligned[key]));
+    });
   }
 
   return CardSet_({key,

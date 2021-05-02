@@ -172,6 +172,10 @@ export const nodeArray = function NodeArray(source) {
   return Array.isArray(source) ? source : [source];
 }
 
+export const describeDescriptor = function describeDescriptor(desc, indent) {
+  return Object.keys(desc).map(key => `${indent | ''}${key}: ${desc[key]}`).join();
+}
+
 export const describeSource = function describeSource(source, indent) {
   const spaces = `${indent || ''}  `;
   if (Array.isArray(source)) {
