@@ -8,6 +8,7 @@ import {DEBUG_MODE} from "@/Config";
 import {PolarChart_} from "@/components/PolarChart";
 import {getNodeArray, getUnfilteredNodeArray} from "@symb/util";
 import {TYPE_NODES} from "@/graph/TypeDictionary";
+import GraphNode from "@/graph/GraphNode";
 
 const fillInNumber = function fillInNumber(data, valueString) {
   if (isNaN(valueString)) {
@@ -37,7 +38,14 @@ const Chart = function Chart({data, descriptor, onClick}) {
     if (!Array.isArray(chartData)) {
       throw new Error(`Overlay (${overlay}) only allowed for node sets. ${source} is not a node set`);
     }
-    const overlayData = resolveProperty(data, [overlay, TYPE_NODES]);
+    let overlayData = resolveProperty(data, overlay);
+    if (!Array.isArray((overlayData))) {
+      if (GraphNode.isGraphNode(overlayData)) {
+        overlayData = overlayData.get(TYPE_NODES);
+      }  else {
+        overlayData = [];
+      }
+    }
     const overlayNodeByKey = {};
     // transform list into map
     overlayData.forEach(node => {overlayNodeByKey[node.getUniqueKey()] = node;})

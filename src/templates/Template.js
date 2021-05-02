@@ -21,6 +21,7 @@ import {
   SUBTRACT,
   UNIFY
 } from "@/graph/Preprocessors";
+import {LOG_LEVEL_PATHS, LOG_LEVEL_RESULTS} from "@/components/Constants";
 
 export const SYNTH_NODE_MAP = 'map';
 export const SYNTH_NODE_RETRIEVE = 'retrieve';
@@ -72,6 +73,10 @@ export default class Template {
       mapping: P.object,
       request: P.string
       }),
+    log: P.shape({
+      condition: P.object,
+      logLevel: P.oneOf([LOG_LEVEL_PATHS, LOG_LEVEL_RESULTS]).isRequired
+    }),
     preprocessing: P.arrayOf(P.shape({method: P.oneOf([PATH_ANALYSIS, AGGREGATE, SET_CONTEXT,
         DERIVE_ASSOCIATIONS, INTERSECT, UNIFY, SUBTRACT, FILTER]),
       result: P.string, inputSelector: P.object, input: P.string})),

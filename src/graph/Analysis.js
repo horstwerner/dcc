@@ -11,7 +11,8 @@ import {
   TYPE_PREDECESSOR_COUNT,
   TYPE_SUCCESSOR_COUNT
 } from "@/graph/TypeDictionary";
-import {BLANK_NODE_URI} from "@/components/Constants";
+import {BLANK_NODE_URI, LOG_LEVEL_PATHS} from "@/components/Constants";
+import {describeSource} from "@symb/util";
 
 export const getAssociated = function getAssociated(node, association) {
 
@@ -119,14 +120,21 @@ export const pathAnalysis = function pathAnalysis(sourceNodes, associationType, 
       .setBulkAssociation(TYPE_NODES, Object.values(allTouchedNodes));
 }
 
-export const deriveAssociations = function deriveAssociations(sourceNodes, path, derivedAssociation, recursive) {
+export const deriveAssociations = function deriveAssociations(sourceNodes, path, derivedAssociation, recursive, logLevel) {
   const processedNodes = sourceNodes.reduce((map, node) => {map[node.getUniqueKey()] = true; return map;}, {});
+  const spaces = '  ';
   const result = [];
   let currentNodes = sourceNodes;
   while (currentNodes.length > 0) {
     let newNodes = {};
+    if (logLevel === LOG_LEVEL_PATHS) {
+      console.log(`  traversing ${path}`);
+    }
     currentNodes.forEach(node => {
-      const associated = traverse(node, path);
+      if (logLevel === LOG_LEVEL_PATHS) {
+        console.log(`  for ${node.uri}`);
+      }
+      const associated = traverse(node, path, logLevel, spaces);
       associated.delete(node);
       if (associated.size !== 0) {
         const contextual = node.createContextual();
@@ -143,20 +151,27 @@ export const deriveAssociations = function deriveAssociations(sourceNodes, path,
     });
     if (recursive) {
       currentNodes = Object.values(newNodes);
+      if (logLevel) {
+        console.log(`recursive derivation for ${describeSource(currentNodes)}`);
+      }
     } else {
       currentNodes = [];
     }
   }
+  if (logLevel) {
+    console.log(`  result of deriveAssociations is ${describeSource(result)}`);
+  }
   return result;
 }
 
-export const mapNode = function (referenceNode, typeUri, uri, mapping) {
+export const mapNode = function (referenceNode, typeUri, uri, mapping, logLevel) {
   let result = uri ? Cache.getNodeByUri(uri) : null;
   // Assumption: data immutable, no different mappings for same node
   if (result) return result;
   result = uri ? Cache.getNode(typeUri, uri) : new GraphNode(typeUri, BLANK_NODE_URI);
   Object.keys(mapping).forEach(key => {
-    result.set(key,resolve(referenceNode, mapping[key]));
+    if (logLevel) {console.log(`assigning ${key}:`)}
+    result.set(key, resolve(referenceNode, mapping[key], logLevel));
   });
 
   return result;

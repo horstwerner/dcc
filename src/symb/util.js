@@ -172,6 +172,19 @@ export const nodeArray = function NodeArray(source) {
   return Array.isArray(source) ? source : [source];
 }
 
+export const describeSource = function describeSource(source, indent) {
+  const spaces = `${indent || ''}  `;
+  if (Array.isArray(source)) {
+    return `[${source.map(node => node.uri).join(`\n${spaces}`)}](${source.length})`;
+  } else if (!GraphNode.isGraphNode(source)) {
+    return String(source);
+  }
+  if (source.getTypeUri() === TYPE_AGGREGATOR) {
+    return `*-[${(source.get(TYPE_NODES)||[]).map(node => node.uri).join(`\n${spaces}`)}](${source.length})`;
+  }
+  return source.uri;
+}
+
 export const isDataEqual = function isDataEqual(nodeA, nodeB) {
   if (nodeA === nodeB) return true;
   if (nodeA.getTypeUri() === TYPE_AGGREGATOR && nodeB.getTypeUri() === TYPE_AGGREGATOR) {
