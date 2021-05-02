@@ -285,7 +285,7 @@ The following preprocessing functions are supported:
 
 Example:
 ```
-{"method":  "aggregate", "results": {"storyPointSum":  {"attribute":  "jira:storypoints", "calculate":  "sum"}} }
+{"function":  "aggregate", "set": {"storyPointSum":  {"attribute":  "jira:storypoints", "calculate":  "sum"}} }
 ```
 
 * `derive-associations`: creates new associations (shortcuts) between the nodes of the set
@@ -294,9 +294,9 @@ Its parameters are:
   `derived`: the name (or rather uri) of the derived association type
   `recursive`: true or false, determines whether the process should be repeated for all nodes reached by the path
   
-Keep in mind that only nodes for which the (full) specified path has been found (and a shortcut added) are stored in the
-property specified in `set`. Therefore, the use of `derive-association` should in most cases be combined with using
-the `result` as `overlay` to amend a set of nodes and not as self-contained input into a visualization.
+  Keep in mind that only nodes for which the (full) specified path has been found (and a shortcut added) are stored in the
+  property specified in `set`. Therefore, the use of `derive-association` should in most cases be combined with using
+  the `result` as `overlay` to amend a set of nodes and not as self-contained input into a visualization.
   
 * `path-analysis`: recursively traverses a specified association for all sets of the input set (after inputSelector applied)
 and for each touched node stores aggregated values over all predecessors (upstream) and over all successors (downstream)
