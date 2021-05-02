@@ -312,6 +312,10 @@ The amended nodes of a result can be used in a chart instead of the original nod
 the `overlay` parameter of that chart. The framework will replace each node with the contextual node with the matching URI
 before rendering the chart.
 
+* `create-node` Creates a synthetic node and stores it in the property specified by `set` (or `set-context`). Additional
+  parameters that need to be specified are `type`, (the URI of the type for the synthetic node) and `mapping` which is an
+  object, the keys of which are properties of the synthetic node and the corresponding values are data paths.
+
 * `unify`, `intersect`, and `subtract` have an array of properties (no data paths allowed) pointing to nodes as source and 
   perform the respective set operations. If more than two sets are specified in `source`, the function `subtract` will
   subtract all subsequent sets from the first set.

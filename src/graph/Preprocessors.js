@@ -120,8 +120,8 @@ export const preprocess = function preprocess(data, context, preprocessors, logL
 
     switch (func) {
       case CREATE_NODE: {
-        const {type} = descriptor;
-        result = mapNode(data, type, null, set, logLevel);
+        const {type, mapping} = descriptor;
+        result = mapNode(data, type, null, mapping, logLevel);
         break;
       }
       case PATH_ANALYSIS: {
