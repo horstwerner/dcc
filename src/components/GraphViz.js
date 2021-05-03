@@ -174,7 +174,7 @@ class GraphViz extends Component {
 
     lanes.forEach(lane => {
           const staggered = lane.length > LANE_BREAK_THRESHOLD;
-          const lanePositions = staggered ? Math.ceil(lane.length % 2) : lane.length - 1;
+          const lanePositions = staggered ? Math.ceil(lane.length / 2) -1 : lane.length - 1;
           let yCursor = (netLaneH - rasterH * lanePositions + childH) / 2;
           const yStep = rasterH; //netLaneH / ((lane.length - 1) || 1);
           lane.forEach(node => {
@@ -187,7 +187,7 @@ class GraphViz extends Component {
             if (!staggered) {
               node.pos = {x: xCursor, y: yCursor};
             } else  {
-              node.pos = {x: xCursor + (offset - 0.5) * maxChildW, y: yCursor + 0.5 * offset * yStep}
+              node.pos = {x: xCursor + (offset - 0.7) * maxChildW, y: yCursor + 0.5 * offset * yStep}
             }
             yCursor += yStep * (staggered ? offset : 1);
           });
@@ -196,7 +196,7 @@ class GraphViz extends Component {
     );
 
     const lines = [];
-    const edgeDist = 0.7 * childW;
+    const edgeDist = 0.6 * childW;
     // ####################### C R E A T E   E D G E S #################################################
     vizNodes.forEach(vizNode => {
       if (!vizNode.outEdges) return;
@@ -222,7 +222,7 @@ class GraphViz extends Component {
       });
     });
 
-    const roundDist = 0.3 * edgeDist;
+    const roundDist = edgeDist - 0.5 * childW;
     const children = [];
     children.push(Svg_({style:{pointerEvents: 'none'}, width: w, height: h, children: lines.map(line => createSvgPath(line, roundDist))})._Svg);
 
