@@ -3,7 +3,7 @@ import css from './Sidebar.css';
 import Cache from '@/graph/Cache';
 import Component from "@symb/Component";
 import ComponentFactory from "@symb/ComponentFactory";
-import {MARGIN, MENU_WIDTH} from "@/Config";
+import {getConfig, MARGIN, MENU_WIDTH} from "@/Config";
 import {MenuPanel_} from "@/components/MenuPanel";
 import {Div_} from "@symb/Div";
 import {Image_} from "@symb/Image";
@@ -12,9 +12,13 @@ import {SuggestList_} from "@/components/SuggestList";
 import {calcMenuHeight} from "@/components/Menu";
 
 const SIDEBAR = 'sidebar';
+const MENU_PANEL = 'menu-panel';
+const LOGO_BOX = 'logo-box';
+const LOGO = 'logo';
 const SEARCH_FIELD = 'searchField';
 const SEARCH_INPUT = 'searchInput';
 const PANEL_HEIGHT = 300;
+const LOGO_SIZE = 40;
 
 class Sidebar extends Component {
 
@@ -36,6 +40,11 @@ class Sidebar extends Component {
     this.handleSearchKeyUp = this.handleSearchKeyUp.bind(this);
     this.handleSearch = this.handleSearch.bind(this);
     this.state = {currentSearchResults: null};
+    this.dom.onclick = (e) => {
+      const key = e.target.getAttribute('data-key');
+      if (e.target === this.dom || key === MENU_PANEL || key === LOGO_BOX || key === LOGO) {
+      this.clearSearch();
+    }};
   }
 
   handleSearchKeyDown(event) {
@@ -47,7 +56,6 @@ class Sidebar extends Component {
   handleSearchKeyUp(event) {
     const key = event.key;
     const text = event.target.innerText;
-    console.log(key)
     if (key === 'Escape') {
       this.clearSearch();
     } else if (key === 'Enter' || text.length > 2) {
@@ -78,7 +86,7 @@ class Sidebar extends Component {
 
   createChildDescriptors(props) {
 
-    const { menuTop, views, tools, onViewClick, onToolToggle, options, currentViewOptions, onOptionSelect, onSearchResultClick} = props;
+    const { menuTop, views, tools, onViewClick, onToolToggle, options, currentViewOptions, onOptionSelect, onSearchResultClick, logoUrl} = props;
     const { currentSearchResults } = this.state;
     const optionsWidth = MENU_WIDTH - 16;
 
@@ -88,11 +96,14 @@ class Sidebar extends Component {
     const optionControls = createOptionControls(options, onOptionSelect, currentViewOptions, optionsWidth, 9, menuTop + Math.max(PANEL_HEIGHT + MARGIN, viewHeight + toolHeight));
 
     return[
-      Div_({key: SEARCH_FIELD, className: css.searchField, spatial: {x: 20, y: MARGIN, scale: 1},
+      Div_({key: LOGO_BOX, className: css.logoBox, spatial: {x: 0, y: 0.5 * MARGIN, scale: 1}, style: {justifyContent: getConfig('logoAlign')}},
+            Image_({key: LOGO, source: logoUrl, size:{width: LOGO_SIZE, height: LOGO_SIZE}})._Image)._Div,
+      Div_({key: SEARCH_FIELD, className: css.searchField, spatial: {x: 16, y: MARGIN + LOGO_SIZE, scale: 1},
         children: [
             Div_({key: SEARCH_INPUT, className: css.searchInput, tabIndex : 1, contentEditable: true, onKeyUp: this.handleSearchKeyUp, onKeyDown: this.handleSearchKeyDown})._Div,
             Image_({key: 'searchButton', className:css.searchButton, source:`public/SearchButton.svg`, onClick: this.handleSearch})._Image]})._Div,
       MenuPanel_({
+        key: MENU_PANEL,
         size: { width:  MENU_WIDTH },
         views,
         tools,

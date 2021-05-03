@@ -4,10 +4,20 @@
     box-shadow: -4px 0 8px 0 rgba(0,0,0,0.17);
 }
 
+.logoBox {
+    position: absolute;
+    display: flex;
+    box-sizing: border-box;
+    padding-left: 16px;
+    width: 224px;
+    align-items: center;
+    justify-content: center;
+}
+
 .searchField {
     position: absolute;
     background-color: #FEFEFE;
-    width: 210px;
+    width: 208px;
     height: 32px;
     border-radius: 16px;
     box-shadow: inset 1px 1px 2px 0 rgba(0,0,0,0.15);

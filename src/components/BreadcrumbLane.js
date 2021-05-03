@@ -14,12 +14,13 @@ class BreadcrumbLane extends Component {
   static baseTag = 'div';
 
   static propTypes = {
-    size: P.shape({width: P.number.isRequired, height: P.number.isRequired, onScroll: P.func.isRequired}),
+    size: P.shape({width: P.number.isRequired, height: P.number.isRequired, onScroll: P.func.isRequired, onClick: P.func}),
   }
 
   constructor(props, parent, domNode) {
     super({...props, className: getBreadCrumbCss().lane}, parent, domNode);
     this.dom.onscroll = props.onScroll;
+    this.dom.onclick = props.onClick;
   }
 
   getScale(width) {

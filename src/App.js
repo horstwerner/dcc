@@ -88,7 +88,7 @@ class App extends Component {
               startData.setBulkAssociation(entityType, Cache.rootNode.get(entityType));
             })
             const startTemplate = TemplateRegistry.getTemplate(getConfig('startTemplate'));
-            const startNode = createPreprocessedCardNode(startData, null, startTemplate);
+            const startNode = createPreprocessedCardNode(startData, null, startTemplate, null);
             this.setState({
               focusData: null,
               waiting: false,
@@ -114,6 +114,7 @@ class App extends Component {
     this.onError = this.onError.bind(this);
     this.removeBreadCrumbHoverMenu = this.removeBreadCrumbHoverMenu.bind(this);
     this.moveCardToFocus = this.moveCardToFocus.bind(this);
+    this.removeModals = this.removeModals.bind(this);
 
     document.body.onkeyup = this.handleKeyUp;
     document.body.onkeydown = this.handleKeyDown;
@@ -292,6 +293,7 @@ class App extends Component {
 
     // old card will be transformed into breadcrumb card. For the time of transition, it is the hoverCard
     const { breadCrumbCard, nextChildPos, targetScrollPos, adoptCard, updateCard } = this.turnIntoBreadCrumbCard(card);
+    // noinspection JSUnresolvedVariable
     const newHoverCard = {
       ...breadCrumbCard,
       style: {zIndex: 1},
@@ -722,6 +724,7 @@ class App extends Component {
         size:  {width: mainWidth, height: breadCrumbHeight},
         children: [...breadCrumbCards, breadCrumbHoverIcon],
         canvasWidth: nextChildPos,
+        onClick: this.removeModals,
         onScroll: this.removeBreadCrumbHoverMenu
       })._BreadcrumbLane,
       ToolPanel_({
@@ -734,10 +737,13 @@ class App extends Component {
         key: FOCUS,
         className: getAppCss().focus,
         spatial: {x: 0, y: breadCrumbHeight, scale: 1},
-        children: [focusCard, ...hoverChildren]
+        size: {width: mainWidth, height: focusHeight},
+        children: [focusCard, ...hoverChildren],
+        onClick: this.removeModals
       })._Div,
       Sidebar_({size: {width: sideBarWidth, height: windowHeight},
         menuTop: breadCrumbHeight,
+        logoUrl: getConfig('logoUrl'),
         key: SIDEBAR,
         spatial: {x: mainWidth, y: 0, scale: 1},
         views: views.map(view => ({id: view.id, name: view.name || view.id, selected: view.id === focusCard.template.id})),

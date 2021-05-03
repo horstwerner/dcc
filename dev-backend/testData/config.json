@@ -3,5 +3,5 @@
   "templateFiles": ["testData/templates_tickets.json", "testData/templates_teams.json"],
   "toolFile": "testData/tools.json",
   "dataFiles": ["testData/jira.csv", "testData/teams.csv", "testData/bugs.csv"],
-  "clientConfig": {"getGraph": false, "getTables":  ["jira:ticket", "jira:team", "jira:bug"], "startTemplate":  "root", "displayNameAttribute":  "core:name", "theme":  "default"}
+  "clientConfig": {"getGraph": false, "getTables":  ["jira:ticket", "jira:team", "jira:bug"], "startTemplate":  "root", "displayNameAttribute":  "core:name", "theme":  "default", "logoAlign":  "right"}
 }
