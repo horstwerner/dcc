@@ -402,7 +402,15 @@ class App extends Component {
   }
 
   handleBreadcrumbLeave(key) {
-    if (this.transitionTween) return;
+    if (this.transitionTween) {
+      this.hoverBreadCrumbKey = null;
+      this.transitionTween.onEndCall(() => {
+        if (this.hoverBreadCrumbKey === null) {
+          this.setState({breadCrumbHoverIcon: null});
+        }
+      });
+      return;
+    }
     if (key === this.hoverBreadCrumbKey) {
       this.hoverBreadCrumbKey = null;
       setTimeout(() => {
