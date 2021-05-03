@@ -12,6 +12,8 @@ import ComponentFactory from "@symb/ComponentFactory";
 import {CLICK_OPAQUE} from "@/components/Constants";
 import TemplateRegistry from "@/templates/TemplateRegistry";
 
+const LANE_BREAK_THRESHOLD = 8;
+
 const inspect = function inspect(associationName) {
   const lastPos = associationName.length - 1;
   if (associationName.charAt(lastPos) === '*') {
@@ -146,7 +148,11 @@ class GraphViz extends Component {
     vizNodes.forEach(vizNode => lanes[vizNode.depth].push(vizNode));
     lanes = lanes.filter(lane => lane && lane.length > 0);
 
-    const maxNodesPerLane = Math.max(...lanes.map(lane => lane.length));
+    let maxNodesPerLane = Math.max(...lanes.map(lane => lane.length));
+    if (maxNodesPerLane > LANE_BREAK_THRESHOLD) {
+      maxNodesPerLane = Math.ceil(maxNodesPerLane / 2);
+    }
+
     const maxChildH = 0.85 * h / ((maxNodesPerLane || 1) + 1);
     const maxChildW = 0.5 * w / (lanes.length || 1);
     const maxAR = maxChildW / (maxChildH || 1);
@@ -167,15 +173,23 @@ class GraphViz extends Component {
     let xCursor = childW;
 
     lanes.forEach(lane => {
-          let yCursor = (netLaneH - rasterH * (lane.length - 1) + childH) / 2
+          const staggered = lane.length > LANE_BREAK_THRESHOLD;
+          const lanePositions = staggered ? Math.ceil(lane.length % 2) : lane.length - 1;
+          let yCursor = (netLaneH - rasterH * lanePositions + childH) / 2;
           const yStep = rasterH; //netLaneH / ((lane.length - 1) || 1);
           lane.forEach(node => {
             node.rank = sum(node.inEdges.map(edge => get(vizNodesByKey[edge.sourceKey],'pos.y'))) / (node.inEdges.length || 1);
           });
           lane.sort((a, b) => a.rank - b.rank);
+          let count = 0;
           lane.forEach(node => {
-            node.pos = {x: xCursor, y: yCursor};
-            yCursor += yStep
+            const offset = count++ % 2;
+            if (!staggered) {
+              node.pos = {x: xCursor, y: yCursor};
+            } else  {
+              node.pos = {x: xCursor + (offset - 0.5) * maxChildW, y: yCursor + 0.5 * offset * yStep}
+            }
+            yCursor += yStep * (staggered ? offset : 1);
           });
           xCursor += xStep;
         }
