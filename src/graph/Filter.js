@@ -15,6 +15,7 @@ export const restAfter = function(string, prefix) {
 };
 
 export const COMPARISON_OF_TYPE = (testValue, value) => value.constructor === Type && value.isOfType(testValue);
+export const COMPARISON_NOT_OF_TYPE = (testValue, value) => value.constructor === Type && !value.isOfType(testValue);
 // noinspection EqualityComparisonWithCoercionJS
 export const COMPARISON_EQUAL =  (testValue, value) => (testValue == value);
 export const COMPARISON_CONTAINS = (testValue, value) => value.toLowerCase().includes(testValue.toLowerCase());
@@ -48,7 +49,8 @@ const comparisons = [
   {symbol: "exists", matches: COMPARISON_EXISTS},
   {symbol: "empty", matches: COMPARISON_EMPTY},
   {symbol: "->", matches: COMPARISON_HAS_ASSOCIATED},
-  {symbol: "is", matches: COMPARISON_OF_TYPE}
+  {symbol: "is", matches: COMPARISON_OF_TYPE},
+  {symbol: "!is", matches: COMPARISON_NOT_OF_TYPE}
 ];
 
 export const parseComparison = function parseComparison(condition) {
@@ -74,7 +76,7 @@ export default class Filter {
     if (attribute === 'core:type' && comparison.matches !== COMPARISON_OF_TYPE) {
       throw new Error(`Error in filter ${JSON.stringify(descriptor)}: use 'is' as comparator for core:type`);
     }
-    if (comparison.matches === COMPARISON_OF_TYPE && attribute === 'core:type') {
+    if (comparison.matches === COMPARISON_OF_TYPE && attribute !== 'core:type') {
       throw new Error(`Error in filter ${JSON.stringify(descriptor)}: 'is' can only be used for 'core:type'`);
     }
 
