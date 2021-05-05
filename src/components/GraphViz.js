@@ -5,12 +5,13 @@ import {Path_} from "./Path";
 import {Card_} from "./Card";
 import {getAssociated} from "@/graph/Analysis";
 import {Svg_} from "@/components/Svg";
-import {fit, roundCorners} from "@symb/util";
+import {createContext, fit, roundCorners} from "@symb/util";
 import P from "prop-types";
 import GraphNode from "@/graph/GraphNode";
 import ComponentFactory from "@symb/ComponentFactory";
 import {CLICK_OPAQUE} from "@/components/Constants";
 import TemplateRegistry from "@/templates/TemplateRegistry";
+import {createPreprocessedCardNode} from "@/components/Generators";
 
 const LANE_BREAK_THRESHOLD = 8;
 
@@ -187,7 +188,7 @@ class GraphViz extends Component {
             if (!staggered) {
               node.pos = {x: xCursor, y: yCursor};
             } else  {
-              node.pos = {x: xCursor + (offset - 0.7) * maxChildW, y: yCursor + 0.5 * offset * yStep}
+              node.pos = {x: xCursor + (offset - 0.5) * 1.1 * childW, y: yCursor + 0.5 * offset * yStep}
             }
             yCursor += yStep * (staggered ? offset : 1);
           });
@@ -229,7 +230,8 @@ class GraphViz extends Component {
     vizNodes.forEach(vizNode => {
       const template = TemplateRegistry.getTemplateForSingleCard(vizNode.graphNode.getTypeUri(), viewName || 'default');
       const { width, height } = template.getSize();
-      children.push(Card_({data: vizNode.graphNode, template, onClick: onNodeClick, clickMode: CLICK_OPAQUE, spatial: fit(childW, childH, width, height, vizNode.pos.x - 0.5 * childW, vizNode.pos.y - 0.5 * childH)})._Card)
+      const cardNode = createPreprocessedCardNode(vizNode.graphNode, createContext(), template, null);
+      children.push(Card_({data: cardNode, template, onClick: onNodeClick, clickMode: CLICK_OPAQUE, spatial: fit(childW, childH, width, height, vizNode.pos.x - 0.5 * childW, vizNode.pos.y - 0.5 * childH)})._Card)
     });
 
     return children;

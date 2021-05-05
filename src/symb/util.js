@@ -3,7 +3,8 @@ import Cache, {resolve, resolveAttribute} from "@/graph/Cache";
 
 import GraphNode from "@/graph/GraphNode";
 import Filter from "@/graph/Filter";
-import {TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/TypeDictionary";
+import {TYPE_AGGREGATOR, TYPE_CONTEXT, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/TypeDictionary";
+import {BLANK_NODE_URI} from "@/components/Constants";
 
 export function getTransformString(x, y, scale) {
   return `translate(${x}px, ${y}px) scale(${scale})`;
@@ -173,7 +174,7 @@ export const nodeArray = function NodeArray(source) {
 }
 
 export const describeDescriptor = function describeDescriptor(desc, indent) {
-  return Object.keys(desc).map(key => `${indent | ''}${key}: ${desc[key]}`).join();
+  return Object.keys(desc).map(key => `${indent || ''}${key}: ${JSON.stringify(desc[key])}`).join();
 }
 
 export const describeSource = function describeSource(source, indent) {
@@ -212,3 +213,5 @@ export function getNodeArray(inputSelector, source, data) {
   return filter ? unfiltered.filter(filter.matches) : unfiltered;
 
 }
+
+export const createContext = () => new GraphNode(TYPE_CONTEXT, BLANK_NODE_URI);
