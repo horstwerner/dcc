@@ -188,7 +188,7 @@ class GraphViz extends Component {
             if (!staggered) {
               node.pos = {x: xCursor, y: yCursor};
             } else  {
-              node.pos = {x: xCursor + (offset - 0.7) * maxChildW, y: yCursor + 0.5 * offset * yStep}
+              node.pos = {x: xCursor + (offset - 0.5) * 1.1 * childW, y: yCursor + 0.5 * offset * yStep}
             }
             yCursor += yStep * (staggered ? offset : 1);
           });
