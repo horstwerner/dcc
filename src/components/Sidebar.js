@@ -97,7 +97,7 @@ class Sidebar extends Component {
 
     return[
       Div_({key: LOGO_BOX, className: css.logoBox, spatial: {x: 0, y: 0.5 * MARGIN, scale: 1}, style: {justifyContent: getConfig('logoAlign')}},
-            Image_({key: LOGO, source: logoUrl, size:{width: LOGO_SIZE, height: LOGO_SIZE}})._Image)._Div,
+            Image_({key: LOGO, source: logoUrl, size:{height: LOGO_SIZE}})._Image)._Div,
       Div_({key: SEARCH_FIELD, className: css.searchField, spatial: {x: 16, y: MARGIN + LOGO_SIZE, scale: 1},
         children: [
             Div_({key: SEARCH_INPUT, className: css.searchInput, tabIndex : 1, contentEditable: true, onKeyUp: this.handleSearchKeyUp, onKeyDown: this.handleSearchKeyDown})._Div,
