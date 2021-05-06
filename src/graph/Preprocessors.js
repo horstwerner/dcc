@@ -53,7 +53,7 @@ const getFirstFound = function (data, paths, logLevel, indent) {
     if (logLevel) {
       console.log(`${indent || ''}${paths[i]} is ${describeSource(content)}`);
     }
-    if (content && !(Array.isArray(content) && content.leading === 0)) {
+    if (content && !(Array.isArray(content) && content.length === 0)) {
       return content;
     }
   }
