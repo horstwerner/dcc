@@ -751,6 +751,7 @@ class App extends Component {
       Sidebar_({size: {width: sideBarWidth, height: windowHeight},
         menuTop: breadCrumbHeight,
         logoUrl: getConfig('logoUrl'),
+        logoLink: getConfig('logoLink'),
         key: SIDEBAR,
         spatial: {x: mainWidth, y: 0, scale: 1},
         views: views.map(view => ({id: view.id, name: view.name || view.id, selected: view.id === focusCard.template.id})),
