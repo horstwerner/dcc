@@ -10,6 +10,7 @@ import {Image_} from "@symb/Image";
 import {createOptionControls} from "@/Tools";
 import {SuggestList_} from "@/components/SuggestList";
 import {calcMenuHeight} from "@/components/Menu";
+import {Link_} from "@/components/Link";
 
 const SIDEBAR = 'sidebar';
 const MENU_PANEL = 'menu-panel';
@@ -19,6 +20,11 @@ const SEARCH_FIELD = 'searchField';
 const SEARCH_INPUT = 'searchInput';
 const PANEL_HEIGHT = 300;
 const LOGO_SIZE = 40;
+
+const logo = function (logoUrl, logoLink) {
+  const image = Image_({key: LOGO, source: logoUrl, size:{height: LOGO_SIZE}})._Image;
+  return logoLink ? Link_({url: logoLink, className: css.logoLink}, image): image;
+}
 
 class Sidebar extends Component {
 
@@ -86,7 +92,7 @@ class Sidebar extends Component {
 
   createChildDescriptors(props) {
 
-    const { menuTop, views, tools, onViewClick, onToolToggle, options, currentViewOptions, onOptionSelect, onSearchResultClick, logoUrl} = props;
+    const { menuTop, views, tools, onViewClick, onToolToggle, options, currentViewOptions, onOptionSelect, onSearchResultClick, logoUrl, logoLink} = props;
     const { currentSearchResults } = this.state;
     const optionsWidth = MENU_WIDTH - 16;
 
@@ -97,7 +103,7 @@ class Sidebar extends Component {
 
     return[
       Div_({key: LOGO_BOX, className: css.logoBox, spatial: {x: 0, y: 0.5 * MARGIN, scale: 1}, style: {justifyContent: getConfig('logoAlign')}},
-            Image_({key: LOGO, source: logoUrl, size:{height: LOGO_SIZE}})._Image)._Div,
+            logo(logoUrl, logoLink))._Div,
       Div_({key: SEARCH_FIELD, className: css.searchField, spatial: {x: 16, y: MARGIN + LOGO_SIZE, scale: 1},
         children: [
             Div_({key: SEARCH_INPUT, className: css.searchInput, tabIndex : 1, contentEditable: true, onKeyUp: this.handleSearchKeyUp, onKeyDown: this.handleSearchKeyDown})._Div,
