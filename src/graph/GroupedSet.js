@@ -1,5 +1,5 @@
 import {mapValues, sortBy} from 'lodash';
-import {resolveAttribute, resolveProperty} from "@/graph/Cache";
+import {resolve, resolveAttribute} from "@/graph/Cache";
 import {createCardNode} from "@symb/util";
 import GraphNode from "@/graph/GraphNode";
 
@@ -46,10 +46,17 @@ export const getValueRange = function getValueRange(nodes, dimension) {
 
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
-    const value = resolveProperty(node, dimension) || null;
+    const value = resolve(node, dimension) || null;
     if (value) {
       if (GraphNode.isGraphNode(value)) {
         range[value.getUniqueKey()] = {id: value.getUniqueKey(), name: value.getDisplayName(), value};
+      } else if (Array.isArray(value)) {
+          value.forEach(val => {
+            const key = GraphNode.isGraphNode(val) ? val.getUniqueKey() : val;
+            range[key] = GraphNode.isGraphNode(val) ?
+                {id: key, name: val.getDisplayName(), value: val} :
+                {id: val, name: val, value: val};
+          })
       } else {
         range[String(value)] = {id: value, name: value, value};
       }
