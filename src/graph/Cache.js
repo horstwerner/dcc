@@ -215,6 +215,8 @@ export const traverse = function(source, path, logLevel, indent) {
             }
             else if (GraphNode.isGraphNode(related)) {
               nextSet.add(related);
+            } else {
+              console.log(`warning: attributes not allowed in traversal paths: ${step}\n result will be empty`);
             }
           }
         }
