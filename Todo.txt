@@ -1,4 +1,7 @@
-//TODO: LOD for cards on magnify
+//TODO: Fade out disappearing elements
+//TODO: Icon chooser
+//TODO: title attribute for images
+//TODO: type heading over view box
 //TODO: related
 //TODO: create card on click on rect in stacked bar
 //TODO: Card types: "menu", "analysis", "individual node"
