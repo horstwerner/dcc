@@ -31,7 +31,9 @@ const getGlobal = function getGlobal(constants, value) {
     if (Array.isArray(constant) || typeof constant !== 'object'){
       throw new Error(`Can't override parts of constant ${value['$']} - not an object`)
     }
-    return {...constant, ...omit(value, ['$'])};
+    const rest = {...omit(value, ['$'])};
+    processObject(constants, rest);
+    return {...constant, ...rest};
   }
 };
 

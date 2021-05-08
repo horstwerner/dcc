@@ -56,13 +56,24 @@ export const QCC_GRAY_5 = '#696966';
 
 export const QCC_GRAY_SIDEBAR = `rgb(233,234,228)`;
 
+const alignMap = {
+  left: 'flex-start',
+  right: 'flex-end',
+  center: 'center'
+}
+
 const configuration = {
   displayNameAttribute : TYPE_NAME,
-  theme: THEME_DEFAULT
+  theme: THEME_DEFAULT,
+  logoUrl: 'public/DCCLogo.svg',
+  logoAlign: 'flex-end'
 };
 
 export const setConfig = function setConfig(config) {
   Object.assign(configuration, config);
+  if (config.logoAlign) {
+    configuration.logoAlign = alignMap[config.logoAlign] || 'center';
+  }
 }
 
 export const getConfigs = function getConfigs(parameterList) {

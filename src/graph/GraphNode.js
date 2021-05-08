@@ -103,7 +103,7 @@ export default class GraphNode {
     if (!this.type) {
       return TYPE_THING;
     }
-    return this.originalNode ? this.originalNode.type.uri : this.type.uri;
+    return this.originalNode ? this.originalNode.getTypeUri() : this.type.uri;
   };
 
   getDisplayName() {
@@ -125,7 +125,7 @@ export default class GraphNode {
 
     switch (propertyUri) {
       case TYPE_TYPE:
-        return this.type;
+        return this.originalNode ? this.originalNode.get(propertyUri) : this.type;
       case TYPE_URI:
         return this.uri;
       case TYPE_NAME:

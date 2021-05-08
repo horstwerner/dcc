@@ -18,7 +18,7 @@
         "cornerRadius": 6
       },
       "clickable": true,
-      "preprocessing": [{"method":  "aggregate", "input": "jira:ticket", "results": {"storyPointSum":  {"attribute":  "jira:storypoints", "calculate": "sum"}, "storyPoints": {"attribute":  "jira:storypoints", "calculate": "sum"}}}],
+      "preprocessing": [{"source": "jira:ticket", "function":  "aggregate", "set": {"storyPointSum":  {"attribute":  "jira:storypoints", "calculate": "sum"}, "storyPoints": {"attribute":  "jira:storypoints", "calculate": "sum"}}}],
       "elements": [
         {
           "key": "heading",

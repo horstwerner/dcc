@@ -454,12 +454,12 @@
       },
       "clickable": true,
       "preprocessing": [
-        {"method":  "aggregate",
-        "input": "core:subNodes",
-        "results": {
-          "storyPointSum": {
-            "attribute": "jira:storypoints",
-            "calculate": "sum"
+        {"source": "core:subNodes",
+         "function":  "aggregate",
+         "set": {
+           "storyPointSum": {
+             "attribute": "jira:storypoints",
+             "calculate": "sum"
           }}
       }
       ],
@@ -554,7 +554,7 @@
       "background": {"type": "rect", "w": 380, "h": 30,
         "color": "rgba(0,0,0,0)"
       },
-      "preprocessing": [{"method":  "aggregate", "results":  {"storyPointSum":  {"attribute": "jira:storypoints", "calculate":  "sum"}}}],
+      "preprocessing": [{"function":  "aggregate", "set":  {"storyPointSum":  {"attribute": "jira:storypoints", "calculate":  "sum"}}}],
       "elements": [
         {
           "key": "label",
@@ -592,8 +592,8 @@
       "aggregate": true,
       "background": { "type": "rect", "w": 400, "h": 70},
       "preprocessing": [
-        {"method":  "aggregate",
-         "results": {
+        {"function":  "aggregate",
+         "set": {
           "storyPointSum": {
             "attribute": "jira:storypoints",
             "calculate": "sum"
@@ -651,8 +651,9 @@
         "y": 0
       },
       "clickable": true,
-      "preprocessing": [       {"method":  "aggregate",
-        "results": {
+      "preprocessing": [
+        {"function":  "aggregate",
+         "set": {
           "storyPointSum": {
             "attribute": "jira:storypoints",
             "calculate": "sum"
@@ -727,24 +728,24 @@
       "aggregate": true,
       "background": {"type": "rect", "w": 660, "h": 30},
       "preprocessing": [
-        {"method":  "aggregate",
-          "results": {"storyPointSum":  {"attribute":  "jira:storypoints", "calculate":  "sum"}}
+        {"function":  "aggregate",
+          "set": {"storyPointSum":  {"attribute":  "jira:storypoints", "calculate":  "sum"}}
         },
-        {"method":  "aggregate",
-          "input": "core:context/allNodes",
-          "results": {"totalStoryPointSum":  {"attribute":  "jira:storypoints", "calculate":  "sum"}}
+        {"function":  "aggregate",
+          "source": "core:context/allNodes",
+          "set": {"totalStoryPointSum":  {"attribute":  "jira:storypoints", "calculate":  "sum"}}
         },
         {
-        "method": "path-analysis",
-        "inputSelector": {"jira:release": "=1.2"},
-        "associationType": "jira:is-prerequisite-for",
-        "upstreamAggregate": {
-          "upstream-storypoints": {"attribute": "jira:storypoints", "calculate": "sum"}
-        },
-        "downstreamAggregate": {
-          "downstream-storypoints": {"attribute": "jira:storypoints", "calculate": "sum"}
-        },
-        "result": "dependencies"
+          "set": "dependencies",
+          "function": "path-analysis",
+          "inputSelector": {"jira:release": "=1.2"},
+          "associationType": "jira:is-prerequisite-for",
+          "upstreamAggregate": {
+            "upstream-storypoints": {"attribute": "jira:storypoints", "calculate": "sum"}
+          },
+          "downstreamAggregate": {
+            "downstream-storypoints": {"attribute": "jira:storypoints", "calculate": "sum"}
+          }
       }],
       "elements": [
         {
@@ -806,7 +807,7 @@
         }
       },
       "clickable": true,
-      "preprocessing": [{"method":  "set-context", "values":  {"allNodes": "core:subNodes"}}],
+      "preprocessing": [{"set-context":  "allNodes", "source": "core:subNodes"}],
       "elements": [
         {
           "key": "label_impact",

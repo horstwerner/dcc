@@ -24,7 +24,7 @@ import Filter from "@/graph/Filter";
 import {deriveAssociations, mapNode, pathAnalysis} from "@/graph/Analysis";
 import {intersectLists, subtractLists, unifyLists} from "@/graph/SetOperations";
 import {TYPE_NODES} from "@/graph/TypeDictionary";
-import {describeSource, nodeArray} from "@symb/util";
+import {describeDescriptor, describeSource, nodeArray} from "@symb/util";
 
 export const CREATE_NODE = "create-node";
 export const PATH_ANALYSIS = "path-analysis";
@@ -34,7 +34,8 @@ export const DERIVE_ASSOCIATIONS = "derive-associations";
 export const INTERSECT = "intersect";
 export const UNIFY = "unify";
 export const SUBTRACT = "subtract";
-export const FILTER = "filter";
+export const FIRST_FOUND = "first-found";
+
 
 const getSetContents = function (data, sets, logLevel) {
   return sets.map( setName => {
@@ -46,6 +47,29 @@ const getSetContents = function (data, sets, logLevel) {
   });
 }
 
+const getFirstFound = function (data, paths, logLevel, indent) {
+  for (let i = 0; i < paths.length; i++) {
+    const content = resolve(data, paths[i], logLevel, indent);
+    if (logLevel) {
+      console.log(`${indent || ''}${paths[i]} is ${describeSource(content)}`);
+    }
+    if (content && !(Array.isArray(content) && content.length === 0)) {
+      return content;
+    }
+  }
+}
+
+const funcNeedsSourceArray = {
+  [UNIFY]: true,
+  [INTERSECT]: true,
+  [SUBTRACT]: true,
+  [FIRST_FOUND]: true};
+
+const funcNeedsNoSource = {
+  [CREATE_NODE]: true
+};
+
+
 /**
  *
  * @param {GraphNode} data: modified during operation
@@ -56,101 +80,105 @@ const getSetContents = function (data, sets, logLevel) {
 export const preprocess = function preprocess(data, context, preprocessors, logLevel) {
 
   preprocessors.forEach(descriptor => {
-    const {input, inputSelector, method, result} = descriptor;
+    const { source, set, inputSelector } = descriptor;
+    const func = descriptor['function'];
+    const setContext = descriptor['set-context'];
 
-    let source;
-    if (method === PATH_ANALYSIS || method === AGGREGATE || method === FILTER || method === DERIVE_ASSOCIATIONS) {
+    if (logLevel) {
+      console.log(`------`);
+      console.log(describeDescriptor(descriptor));
+    }
+
+    let sourceData;
+    if (!funcNeedsNoSource[func] && !funcNeedsSourceArray[func]) {
       const filter = inputSelector ? Filter.fromDescriptor(inputSelector) : null;
-
       if (logLevel) {
-        console.log(`Method ${method}, input unfiltered:`)
+        console.log(`evaluating unfiltered source:`)
       }
-      const unfiltered = resolve(data, input || TYPE_NODES, logLevel);
-      source = (unfiltered && filter) ? nodeArray(unfiltered).filter(filter.matches) : unfiltered;
-      if (logLevel && unfiltered && filter) {
-        console.log(`Filtered: ${describeSource(source)}`);
-      }
-
-      if (source == null && !input) {
-        throw new Error(`Can't preprocess data: no subNodes property and input undefined in ${data.getUniqueKey()}`);
-      } else if (source == null) {
-        console.log(`Skipping preprocess ${method} input ${input} not present in ${data.getUniqueKey()}`);
+      const unfiltered = resolve(data, source || TYPE_NODES, logLevel);
+      if ( unfiltered == null ) {
+        console.log(`Skipping preprocess because no source data found for ${data.getUniqueKey()}`);
         return;
+      }
+      sourceData = (unfiltered && filter) ? nodeArray(unfiltered).filter(filter.matches) : unfiltered;
+      if (logLevel && unfiltered && filter) {
+        console.log(`Filtered: ${describeSource(sourceData)}`);
       }
     }
 
-    switch (method) {
+    let result = sourceData;
+    if (funcNeedsSourceArray[func] && !Array.isArray(source)) {
+      throw new Error(`Function ${func} requires array as source`);
+    }
+
+    if (funcNeedsNoSource[func] && (source || inputSelector)) {
+      if (!logLevel) {
+        console.log(describeDescriptor(descriptor))
+      }
+      console.log(`WARNING - parameters 'source' and 'inputSelector' are ignored for function ${func}`);
+    }
+
+    switch (func) {
       case CREATE_NODE: {
-        const {type, mapping, result} = descriptor;
-        data.set(result, mapNode(data, type, null, mapping, logLevel));
+        const {type, mapping} = descriptor;
+        result = mapNode(data, type, null, mapping, logLevel);
         break;
       }
       case PATH_ANALYSIS: {
         const {associationType, upstreamAggregate, downstreamAggregate} = descriptor;
-        data.set(result, pathAnalysis(source, associationType, new Aggregator(upstreamAggregate), new Aggregator(downstreamAggregate)));
+        result = pathAnalysis(sourceData, associationType, new Aggregator(upstreamAggregate), new Aggregator(downstreamAggregate));
         break;
       }
       case AGGREGATE: {
-        const {results} = descriptor;
-        const aggregator = new Aggregator(results);
-        const aggregated = aggregator.aggregate(source);
+        const { set } = descriptor;
+        const aggregator = new Aggregator(set);
+        const aggregated = aggregator.aggregate(sourceData);
         Object.keys(aggregated).forEach(key => data.set(key, aggregated[key]));
-        break;
-      }
-      case SET_CONTEXT: { // add key-value pairs to context object in order to be passed down
-        const {values} = descriptor;
-        if (logLevel) {
-          console.log(`Method set-context`);
-        }
-        Object.keys(values).forEach(targetField => {
-          if (logLevel) {
-            console.log(`setting ${targetField}:`)
-          }
-          context.set(targetField, resolve(data, values[targetField], logLevel))
-        });
         break;
       }
       case DERIVE_ASSOCIATIONS: {
         const { path, derived, recursive } = descriptor;
-        data.set(result, deriveAssociations(source, path, derived, recursive, logLevel));
+        result = deriveAssociations(sourceData, path, derived, recursive, logLevel);
         break;
       }
       case UNIFY: {
-        const { sets } = descriptor;
         if (logLevel) {
           console.log(`Unify: `);
         }
-        const setContents = getSetContents(data, sets, logLevel);
-        data.set(result, unifyLists(setContents));
-        if (logLevel) {
-
-        }
+        const setContents = getSetContents(data, source, logLevel);
+        result = unifyLists(setContents);
         break;
       }
       case INTERSECT: {
-        const { sets } = descriptor;
         if (logLevel) {
           console.log(`Intersect: `);
         }
-        const setContents = getSetContents(data, sets, logLevel);
-        data.set(result, intersectLists(setContents));
+        const setContents = getSetContents(data, source, logLevel);
+        result = intersectLists(setContents);
         break;
       }
       case SUBTRACT: {
         if (logLevel) {
           console.log(`Subtract: `);
         }
-        const { sets } = descriptor;
-        const setContents = getSetContents(data, sets, logLevel);
-        data.set(result, subtractLists(setContents));
+        const setContents = getSetContents(data, source, logLevel);
+        result = subtractLists(setContents);
         break;
       }
-      case FILTER: {
-        data.set(result, source);
+      case FIRST_FOUND: {
+        if (logLevel) {
+          console.log(`First Found:`);
+        }
+        result = getFirstFound(data, source, logLevel, '  ');
         break;
       }
-      default:
-        throw new Error(`Unknown preprocessing algorithm ${method}`);
     }
+
+   if (setContext) {
+      context.set(setContext, result);
+    }
+   if (set) {
+     data.set(set, result);
+   }
   });
 }

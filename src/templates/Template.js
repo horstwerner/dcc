@@ -14,12 +14,13 @@ import ChartElement from "@/templates/elements/ChartElement";
 import Filter from "@/graph/Filter";
 import {
   AGGREGATE,
-  DERIVE_ASSOCIATIONS, FILTER,
+  DERIVE_ASSOCIATIONS,
   INTERSECT,
   PATH_ANALYSIS,
   SET_CONTEXT,
   SUBTRACT,
-  UNIFY
+  UNIFY,
+  FIRST_FOUND, CREATE_NODE
 } from "@/graph/Preprocessors";
 import {LOG_LEVEL_PATHS, LOG_LEVEL_RESULTS} from "@/components/Constants";
 
@@ -77,9 +78,9 @@ export default class Template {
       condition: P.object,
       logLevel: P.oneOf([LOG_LEVEL_PATHS, LOG_LEVEL_RESULTS]).isRequired
     }),
-    preprocessing: P.arrayOf(P.shape({method: P.oneOf([PATH_ANALYSIS, AGGREGATE, SET_CONTEXT,
-        DERIVE_ASSOCIATIONS, INTERSECT, UNIFY, SUBTRACT, FILTER]),
-      result: P.string, inputSelector: P.object, input: P.string})),
+    preprocessing: P.arrayOf(P.shape({function: P.oneOf([PATH_ANALYSIS, AGGREGATE,
+        DERIVE_ASSOCIATIONS, INTERSECT, UNIFY, SUBTRACT, FIRST_FOUND, CREATE_NODE]),
+      set: P.oneOfType([P.object, P.string]), [SET_CONTEXT]: P.string, inputSelector: P.object, source: P.oneOfType([P.string, P.array])})),
     colorcoding: P.shape(ColorCoder.propertyTypes),
     options: P.objectOf(P.shape({options: P.arrayOf(P.shape({label: P.string, value: P.any})), default: P.any})),
     elements: P.arrayOf(P.shape(

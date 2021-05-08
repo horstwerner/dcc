@@ -9,16 +9,16 @@ import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
 import {getAppCss, getConfig, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT, TRANSITION_DURATION} from "@/Config";
-import {fillIn, fit, isDataEqual, relSpatial} from "@symb/util";
+import {createContext, fillIn, fit, isDataEqual, relSpatial} from "@symb/util";
 import {breadCrumbHoverIcon, createPreprocessedCardNode, hoverCardMenu} from "@/components/Generators";
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 import {calcMaxChildren, ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 
-import {BLANK_NODE_URI, CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
+import {CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
 import {fetchSubGraph, getCardDescriptors, getClientConfig, getData, getDictionary, getToolDescriptors} from "@/Data";
 import {createFilterControl, updatedToolControl} from "@/Tools";
-import {TYPE_AGGREGATOR, TYPE_CONTEXT, TYPE_NAME, TYPE_NODES} from "@/graph/TypeDictionary";
+import {TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODES} from "@/graph/TypeDictionary";
 import {SYNTH_NODE_MAP, SYNTH_NODE_RETRIEVE} from "@/templates/Template";
 import {mapNode} from "@/graph/Analysis";
 
@@ -31,7 +31,6 @@ const TOOL_HEIGHT = 10;
 const BREADCRUMB_LANE_HEIGHT = 120;
 const SCROLLBAR_HEIGHT = 30;
 
-const createContext = () => new GraphNode(TYPE_CONTEXT, BLANK_NODE_URI);
 const hoverIconKey = (key) => `breadcrumbhover-${key}`;
 
 class App extends Component {
@@ -88,7 +87,7 @@ class App extends Component {
               startData.setBulkAssociation(entityType, Cache.rootNode.get(entityType));
             })
             const startTemplate = TemplateRegistry.getTemplate(getConfig('startTemplate'));
-            const startNode = createPreprocessedCardNode(startData, null, startTemplate);
+            const startNode = createPreprocessedCardNode(startData, null, startTemplate, null);
             this.setState({
               focusData: null,
               waiting: false,
@@ -114,6 +113,7 @@ class App extends Component {
     this.onError = this.onError.bind(this);
     this.removeBreadCrumbHoverMenu = this.removeBreadCrumbHoverMenu.bind(this);
     this.moveCardToFocus = this.moveCardToFocus.bind(this);
+    this.removeModals = this.removeModals.bind(this);
 
     document.body.onkeyup = this.handleKeyUp;
     document.body.onkeydown = this.handleKeyDown;
@@ -292,6 +292,7 @@ class App extends Component {
 
     // old card will be transformed into breadcrumb card. For the time of transition, it is the hoverCard
     const { breadCrumbCard, nextChildPos, targetScrollPos, adoptCard, updateCard } = this.turnIntoBreadCrumbCard(card);
+    // noinspection JSUnresolvedVariable
     const newHoverCard = {
       ...breadCrumbCard,
       style: {zIndex: 1},
@@ -400,7 +401,15 @@ class App extends Component {
   }
 
   handleBreadcrumbLeave(key) {
-    if (this.transitionTween) return;
+    if (this.transitionTween) {
+      this.hoverBreadCrumbKey = null;
+      this.transitionTween.onEndCall(() => {
+        if (this.hoverBreadCrumbKey === null) {
+          this.setState({breadCrumbHoverIcon: null});
+        }
+      });
+      return;
+    }
     if (key === this.hoverBreadCrumbKey) {
       this.hoverBreadCrumbKey = null;
       setTimeout(() => {
@@ -722,6 +731,7 @@ class App extends Component {
         size:  {width: mainWidth, height: breadCrumbHeight},
         children: [...breadCrumbCards, breadCrumbHoverIcon],
         canvasWidth: nextChildPos,
+        onClick: this.removeModals,
         onScroll: this.removeBreadCrumbHoverMenu
       })._BreadcrumbLane,
       ToolPanel_({
@@ -734,10 +744,14 @@ class App extends Component {
         key: FOCUS,
         className: getAppCss().focus,
         spatial: {x: 0, y: breadCrumbHeight, scale: 1},
-        children: [focusCard, ...hoverChildren]
+        size: {width: mainWidth, height: focusHeight},
+        children: [focusCard, ...hoverChildren],
+        onClick: this.removeModals
       })._Div,
       Sidebar_({size: {width: sideBarWidth, height: windowHeight},
         menuTop: breadCrumbHeight,
+        logoUrl: getConfig('logoUrl'),
+        logoLink: getConfig('logoLink'),
         key: SIDEBAR,
         spatial: {x: mainWidth, y: 0, scale: 1},
         views: views.map(view => ({id: view.id, name: view.name || view.id, selected: view.id === focusCard.template.id})),
