@@ -90,7 +90,7 @@ export const preprocess = function preprocess(data, context, preprocessors, logL
     }
 
     let sourceData;
-    if (!funcNeedsNoSource[func] && !funcNeedsSourceArray[func]) {
+    if (source || (!funcNeedsNoSource[func] && !funcNeedsSourceArray[func])) {
       const filter = inputSelector ? Filter.fromDescriptor(inputSelector) : null;
       if (logLevel) {
         console.log(`evaluating unfiltered source:`)
@@ -111,17 +111,24 @@ export const preprocess = function preprocess(data, context, preprocessors, logL
       throw new Error(`Function ${func} requires array as source`);
     }
 
-    if (funcNeedsNoSource[func] && (source || inputSelector)) {
+    if (source || inputSelector) {
       if (!logLevel) {
         console.log(describeDescriptor(descriptor))
       }
-      console.log(`WARNING - parameters 'source' and 'inputSelector' are ignored for function ${func}`);
+      // console.log(`WARNING - parameters 'source' and 'inputSelector' are ignored for function ${func}`);
     }
 
     switch (func) {
       case CREATE_NODE: {
-        const {type, mapping} = descriptor;
-        result = mapNode(data, type, null, mapping, logLevel);
+        const {type, mapping, source} = descriptor;
+        const reference = (source ? sourceData : data);
+        if (!reference) return;
+
+        if (Array.isArray(reference)) {
+          result = reference.map(node => mapNode(node, type, Cache.createUri(), mapping, logLevel));
+        } else {
+          result = mapNode(reference, type, null, mapping, logLevel);
+        }
         break;
       }
       case PATH_ANALYSIS: {
