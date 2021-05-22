@@ -23,7 +23,7 @@ const LOGO_SIZE = 40;
 
 const logo = function (logoUrl, logoLink) {
   const image = Image_({key: LOGO, source: logoUrl, size:{height: LOGO_SIZE}})._Image;
-  return logoLink ? Link_({url: logoLink, className: css.logoLink}, image): image;
+  return logoLink ? Link_({url: logoLink, className: css.logoLink}, image)._Link: image;
 }
 
 class Sidebar extends Component {
