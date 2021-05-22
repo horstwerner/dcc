@@ -111,13 +111,6 @@ export const preprocess = function preprocess(data, context, preprocessors, logL
       throw new Error(`Function ${func} requires array as source`);
     }
 
-    if (source || inputSelector) {
-      if (!logLevel) {
-        console.log(describeDescriptor(descriptor))
-      }
-      // console.log(`WARNING - parameters 'source' and 'inputSelector' are ignored for function ${func}`);
-    }
-
     switch (func) {
       case CREATE_NODE: {
         const {type, mapping, source} = descriptor;
