@@ -90,7 +90,7 @@ export const preprocess = function preprocess(data, context, preprocessors, logL
     }
 
     let sourceData;
-    if (source || (!funcNeedsNoSource[func] && !funcNeedsSourceArray[func])) {
+    if ((source || !funcNeedsNoSource[func]) && !funcNeedsSourceArray[func]) {
       const filter = inputSelector ? Filter.fromDescriptor(inputSelector) : null;
       if (logLevel) {
         console.log(`evaluating unfiltered source:`)
