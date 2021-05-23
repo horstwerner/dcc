@@ -248,7 +248,7 @@ class GraphViz extends Component {
     vizNodes.forEach(vizNode => {
       const cardNode = createPreprocessedCardNode(vizNode.graphNode, createContext(), vizNode.template, null);
       const {spatial, template} = vizNode;
-      children.push(Card_({data: cardNode, template, onClick: onNodeClick, clickMode: CLICK_OPAQUE, spatial})._Card)
+      children.push(Card_({key: cardNode.getUniqueKey(), data: cardNode, template, onClick: onNodeClick, clickMode: CLICK_OPAQUE, spatial})._Card)
     });
 
     return children;
