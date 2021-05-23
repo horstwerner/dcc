@@ -213,7 +213,7 @@ export const traverse = function(source, path, logLevel, indent) {
                 nextSet.add( related[j]);
               }
             }
-            else if (GraphNode.isGraphNode(related)) {
+            else if (GraphNode.isGraphNode(related) || i === steps.length - 1) {
               nextSet.add(related);
             } else {
               console.log(`warning: attributes not allowed in traversal paths: ${step}\n result will be empty`);
