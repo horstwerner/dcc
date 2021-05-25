@@ -19,7 +19,7 @@
 // "result": "dependencies"
 
 import Aggregator from "@/Aggregator";
-import {resolve} from "@/graph/Cache";
+import Cache, {resolve} from "@/graph/Cache";
 import Filter from "@/graph/Filter";
 import {deriveAssociations, mapNode, pathAnalysis} from "@/graph/Analysis";
 import {intersectLists, subtractLists, unifyLists} from "@/graph/SetOperations";
