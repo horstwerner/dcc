@@ -1,5 +1,5 @@
 import P from 'prop-types';
-import {get, omit, pick} from 'lodash';
+import {get, omit, pick, without} from 'lodash';
 import Component from '@symb/Component';
 import ComponentFactory from "@symb/ComponentFactory";
 import Cache from './graph/Cache';
@@ -9,13 +9,13 @@ import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
 import {getAppCss, getConfig, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT, TRANSITION_DURATION} from "@/Config";
-import {createContext, fillIn, fit, isDataEqual, relSpatial} from "@symb/util";
+import {createContext, fillIn, fit, isDataEqual} from "@symb/util";
 import {breadCrumbHoverIcon, createPreprocessedCardNode, hoverCardMenu} from "@/components/Generators";
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 import {calcMaxChildren, ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 
-import {CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
+import { CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
 import {fetchSubGraph, getCardDescriptors, getClientConfig, getData, getDictionary, getToolDescriptors} from "@/Data";
 import {createFilterControl, updatedToolControl} from "@/Tools";
 import {TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODES} from "@/graph/TypeDictionary";
@@ -30,6 +30,7 @@ const HOVER_MENU = 'hover-menu';
 const TOOL_HEIGHT = 10;
 const BREADCRUMB_LANE_HEIGHT = 120;
 const SCROLLBAR_HEIGHT = 30;
+const PINNED_ROOT_CARD = 'rootcard';
 
 const hoverIconKey = (key) => `breadcrumbhover-${key}`;
 
@@ -56,6 +57,8 @@ class App extends Component {
       currentViewOptions: {},
       optionControls: [],
       breadCrumbCards: [],
+      pinnedCards: [],
+      pinnedWidth: 0,
       focusData: null,
       focusCard: null,
       hoverCard: null,
@@ -81,6 +84,7 @@ class App extends Component {
           getToolDescriptors(this.onError)]))
         .then(() => {
           Cache.validateNodes();
+          const {mainWidth, breadCrumbHeight} = this.state;
           if (!this.state.error) {
             const startData = new GraphNode(TYPE_AGGREGATOR, Cache.createUri());
             Cache.getEntityTypes().forEach(entityType => {
@@ -88,20 +92,25 @@ class App extends Component {
             })
             const startTemplate = TemplateRegistry.getTemplate(getConfig('startTemplate'));
             const startNode = createPreprocessedCardNode(startData, null, startTemplate, null);
+            const focusCard = this.createFocusCard(startNode, startTemplate, null);
+            const { pinned, pinnedWidth } = this.calcPinnedCardPositions([this.toPinnedCard(focusCard, PINNED_ROOT_CARD)], mainWidth, breadCrumbHeight);
+
             this.setState({
               focusData: null,
               waiting: false,
+              pinned,
+              pinnedWidth,
               dataLoaded: true
             });
-
-            this.setFocusCard(this.createFocusCard(startNode, startTemplate, null), null);
+            this.setFocusCard(focusCard, null);
           }
         });
     this.handleNodeClick = this.handleNodeClick.bind(this);
-    this.handleHoverCardStash = this.handleHoverCardStash.bind(this);
     this.handleHoverCardPin = this.handleHoverCardPin.bind(this);
+    this.handleBreadCrumbClick = this.handleBreadCrumbClick.bind(this);
+    this.handleHoverCardToFocus = this.handleHoverCardToFocus.bind(this);
     this.handleHoverCardClose = this.handleHoverCardClose.bind(this);
-    this.handleFocusCardStash = this.handleFocusCardStash.bind(this);
+    // this.handleFocusCardStash = this.handleFocusCardStash.bind(this);
     this.handleToolToggle = this.handleToolToggle.bind(this);
     this.handleViewSelect = this.handleViewSelect.bind(this);
     this.removeToolFilter = this.removeToolFilter.bind(this);
@@ -141,15 +150,6 @@ class App extends Component {
   }
 
 
-  getFocusPlane() {
-    return this.childByKey[FOCUS];
-  }
-
-
-  getBreadcrumbLane() {
-    return this.childByKey[BREADCRUMBS];
-  }
-
   handleKeyDown(event) {
     if (event.key === 'f' && (event.ctrlKey || event.altKey)) {
       event.preventDefault();
@@ -173,34 +173,61 @@ class App extends Component {
     this.getChild(SIDEBAR).clearSearch();
   }
 
-  handleHoverCardStash() {
+  handleHoverCardPin() {
     const { hoverCard } = this.state;
-    this.moveCardToBreadcrumbs(  {...hoverCard,  hover: false, onClick: this.handleNodeClick, clickMode: CLICK_NORMAL}, {});
+    this.moveCardToPinned(this.toPinnedCard(hoverCard, hoverCard.key));
   }
 
-  handleFocusCardStash() {
+  handleFocusCardPin() {
     const { focusCard } = this.state;
     const hoverCard = {...focusCard, key: this.createChildKey()};
     this.setState({ hoverCard });
-    this.moveCardToBreadcrumbs(  {...hoverCard, onClick: this.handleNodeClick, clickMode: CLICK_NORMAL}, {});
+    this.moveCardToPinned({...hoverCard, onClick: this.handleNodeClick, clickMode: CLICK_OPAQUE}, {});
+  }
+
+  moveCardToPinned(card) {
+    const { mainWidth, breadCrumbHeight, breadCrumbCards } = this.state;
+    const newPinned = [...this.state.pinned, card];
+    const {pinned, pinnedWidth} = this.calcPinnedCardPositions(newPinned, mainWidth, breadCrumbHeight);
+    const movedBreadCrumbs  = this.calcBreadCrumbChildren(breadCrumbCards, breadCrumbHeight, mainWidth, pinnedWidth);
+    this.setState({hoverCard: null, pinned: newPinned});
+    this.transitionToState({ pinned, pinnedWidth, breadCrumbCards: movedBreadCrumbs })
+        .onEndCall(() => {
+          pinned.find(pinCard=> pinCard.key === card.key).style.zIndex = 0;
+          this.renderStateChange();
+        });
+  }
+
+  removePin(card) {
+    const { mainWidth, breadCrumbHeight, breadCrumbCards } = this.state;
+    const newPinned = without(this.state.pinned, card);
+    const {pinned, pinnedWidth} = this.calcPinnedCardPositions(newPinned, mainWidth, breadCrumbHeight);
+    const movedBreadCrumbs  = this.calcBreadCrumbChildren(breadCrumbCards, breadCrumbHeight, mainWidth, pinnedWidth);
+    this.transitionToState({pinned, pinnedWidth, breadCrumbCards: movedBreadCrumbs});
   }
 
   handleHoverCardClose() {
     this.setState({hoverCard: null});
   }
 
-
-  handleHoverCardPin() {
-    const { hoverCard } = this.state;
+  handleHoverCardToFocus() {
+    const { hoverCard, breadCrumbCards } = this.state;
 
     const newFocusCard = {...hoverCard,  hover: false, onClick: this.handleNodeClick, clickMode: CLICK_TRANSPARENT};
 
-    this.moveCardToFocus(newFocusCard);
+    this.moveCardToFocus(newFocusCard, breadCrumbCards);
   }
 
+  handleBreadCrumbClick({component}) {
+    const { key } = component;
+    const { breadCrumbCards } = this.state;
+    const clickedBreadCrumb = breadCrumbCards.find(card => card.key === key);
+    const remainingBreadcrumbs = without(breadCrumbCards, clickedBreadCrumb);
+    const focusCard = this.breadCrumbToFocusCard(clickedBreadCrumb);
+    this.moveCardToFocus(focusCard, remainingBreadcrumbs);
+  }
 
   handleNodeClick({event, component}) {
-
     if (event.button === 0) {
       this.cloneNodeToFocus(component);
     } else if (component.key !== this.state.focusCard.key) {
@@ -212,7 +239,7 @@ class App extends Component {
 
   createCloneCard(component, clickMode, onClick, onAvailable) {
     const { data, template, options} = component.innerProps;
-    let spatial = component.getRelativeSpatial(this.getFocusPlane());
+    let spatial = component.getRelativeSpatial(this);
     const cloneTemplate = TemplateRegistry.getTemplate(template.getDetailTemplateId());
 
     if (cloneTemplate !== template) {
@@ -247,21 +274,23 @@ class App extends Component {
           }
       }
     }
-    this.setState({hoverCard: result, allowInteractions: false});
     onAvailable(result);
   }
 
   cloneNodeToFocus(component) {
 
-    this.createCloneCard(component, CLICK_TRANSPARENT, this.handleNodeClick, this.moveCardToFocus);
+    const { breadCrumbCards } = this.state;
 
+    this.createCloneCard(component, CLICK_TRANSPARENT, this.handleNodeClick, (cloneCard) => {
+      this.moveCardToFocus(cloneCard, breadCrumbCards)
+    });
   }
 
 
   cloneNodeToHover(component) {
     const { mainWidth, focusHeight, breadCrumbHeight } = this.state;
 
-    this.createCloneCard(component, CLICK_OPAQUE, this.handleHoverCardPin, clone => {
+    this.createCloneCard(component, CLICK_OPAQUE, this.handleHoverCardToFocus, clone => {
 
       const newSpatial = this.calcHoverCardSpatial({
         template: clone.template,
@@ -269,6 +298,7 @@ class App extends Component {
         focusHeight,
         breadCrumbHeight
       });
+      this.setState({hoverCard: clone, allowInteractions: false});
       this.transitionToState({hoverCard: {...clone, spatial: newSpatial}}).onEndCall(() => {
             this.setState({allowInteractions: true});
           }
@@ -276,100 +306,98 @@ class App extends Component {
     });
   }
 
+  moveCardToFocus(newFocusCard, remainingBreadcrumbCards) {
+    const { focusCard, pinned, breadCrumbHeight, mainWidth, pinnedWidth } = this.state;
+    const existingPinned = pinned.find(card => isDataEqual(focusCard.data, card.data));
+    const breadCrumbCards = existingPinned ?
+        remainingBreadcrumbCards :
+        [...remainingBreadcrumbCards, this.toBreadCrumbCard(focusCard)];
 
-  moveCardToFocus(newFocusCard) {
-    const { focusCard } = this.state;
-    const targetState = this.createStateForFocus(newFocusCard, newFocusCard.data);
-    const endState = {focusCard: {...targetState.focusCard, style: {zIndex: 0}}};
     this.removeModals();
-    this.moveCardToBreadcrumbs(focusCard, targetState, endState);
+    this.setState({allowInteractions: false, focusCard: newFocusCard, hoverCard: null, breadCrumbCards});
+    const targetState = {...this.createStateForFocus(newFocusCard, newFocusCard.data),
+      breadCrumbCards: this.calcBreadCrumbChildren(breadCrumbCards, breadCrumbHeight, mainWidth, pinnedWidth)};
+    this.transitionToState(targetState).onEndCall(() => this.setState({allowInteractions: true}));
   }
 
-
-  moveCardToBreadcrumbs(card, targetState, endState) {
-    const { breadCrumbCards, breadCrumbHeight } = this.state;
-    const focusPlane = this.getFocusPlane();
-
-    // old card will be transformed into breadcrumb card. For the time of transition, it is the hoverCard
-    const { breadCrumbCard, nextChildPos, targetScrollPos, adoptCard, updateCard } = this.turnIntoBreadCrumbCard(card);
-    // noinspection JSUnresolvedVariable
-    const newHoverCard = {
-      ...breadCrumbCard,
-      style: {zIndex: 1},
-      spatial: relSpatial(breadCrumbCard.spatial, -(targetScrollPos || this.getBreadcrumbLane().dom.scrollLeft), -breadCrumbHeight)
-    };
-
-    targetState = {
-      ...targetState,
-      allowInteractions: false,
-      hoverCard: newHoverCard,
-      nextChildPos
-    };
-
-    const tween = this.transitionToState(targetState).onEndCall(() => {
-      const newState = { ...(endState || {}), allowInteractions: true, hoverCard: null};
-      if (adoptCard) {
-        const instance = focusPlane.childByKey[card.key];
-        if (!instance) return;
-        this.getBreadcrumbLane().adoptChild( instance );
-        // instance.setSpatial(breadCrumbCard.spatial);
-        newState.breadCrumbCards = [...breadCrumbCards, breadCrumbCard];
-      } else  if (updateCard) {
-        updateCard.options = card.options;
-      }
-      this.setState(newState);
+  calcPinnedCardPositions(pinned, mainWidth, breadCrumbHeight) {
+    let cursor = mainWidth - MARGIN;
+    let pinnedWidth = MARGIN;
+    const newPinned = pinned.map(card => {
+      const nativeSize = card.template.getSize();
+      const cardScale =  (breadCrumbHeight - SCROLLBAR_HEIGHT) / nativeSize.height;
+      const cardW = nativeSize.width * cardScale;
+      const cardH = nativeSize.height * cardScale;
+      const spatial = {x: cursor - cardW, y: 0.5 * (breadCrumbHeight - cardH), scale: cardScale};
+      cursor -= (cardW + MARGIN);
+      pinnedWidth += (cardW + MARGIN);
+      return {...card, spatial};
     });
-    if (targetScrollPos) {
-      this.getBreadcrumbLane().scrollToPos(targetScrollPos, tween);
-    }
+
+    return {pinned: newPinned, pinnedWidth};
   }
 
+  calcBreadCrumbChildren( breadCrumbs, breadCrumbHeight, mainWidth, pinnedWidth) {
+
+    const newBreadCrumbs = [];
+
+    let cursor = mainWidth - pinnedWidth;
+
+    let scaleFactor = 1;
+    let breadIdx = breadCrumbs.length - 1;
+    while (cursor > 0 && breadIdx >= 0){
+      const card = {...breadCrumbs[breadIdx]};
+      const nativeSize = card.template.getSize();
+      const cardScale =  (breadCrumbHeight - SCROLLBAR_HEIGHT) / nativeSize.height * scaleFactor;
+      const cardW = nativeSize.width * cardScale;
+      const cardH = nativeSize.height * cardScale;
+      card.spatial = {x: cursor - cardW, y: 0.5 * (breadCrumbHeight - cardH), scale: cardScale};
+      cursor -= (cardW + MARGIN * scaleFactor);
+      newBreadCrumbs.unshift(card);
+      if (cursor < 0.5 * mainWidth) {
+        scaleFactor *= 0.86;
+      }
+      breadIdx--;
+    }
+
+    return newBreadCrumbs;
+  }
 
   /**
    * calculate descriptor for a new breadcrumb card from a current focus card
    * @param sourceCard
-   * @return {{targetScrollPos: position breadcrumb lane needs to scroll to, null if no scrolling required,
-   * breadCrumbCard: new card descriptor to be appended to breadcrumb cards if it,
-   * nextChildPos: position for the next breadcrumb,
-   * adoptCard: boolean, is false if such a breadcrumb already exists}}
+   * @return breadCrumbCard
    */
-  turnIntoBreadCrumbCard(sourceCard) {
-    const { nextChildPos, breadCrumbHeight, mainWidth, breadCrumbCards} = this.state;
-    const existing = breadCrumbCards.find(card =>
-        card.template === sourceCard.template && isDataEqual(card.data, sourceCard.data));
-
-    const breadCrumbChanges = {
+  toBreadCrumbCard(sourceCard) {
+    return {...sourceCard,
       clickMode: CLICK_OPAQUE,
+      onClick: this.handleBreadCrumbClick,
       onMouseEnter: () => this.handleBreadcrumbEnter(sourceCard.key),
       onMouseLeave: () => this.handleBreadcrumbLeave(sourceCard.key),
       style: {zIndex: 0}
-    }
+    };
+  }
 
-    const breadcrumbNativeSize = sourceCard.template.getSize();
-
-    if (existing) {
-      const pos = existing.spatial.x;
-      const rightBorder = pos + existing.spatial.scale * breadcrumbNativeSize.width;
-      return {
-        breadCrumbCard: {...sourceCard, ...breadCrumbChanges, spatial: existing.spatial, },
-        nextChildPos,
-        targetScrollPos:  rightBorder > mainWidth ? rightBorder - mainWidth : null,
-        updateCard: existing,
-        adoptCard: false
-      };
-    }
-
-    const newBreadcrumbScale =  (breadCrumbHeight - SCROLLBAR_HEIGHT) / breadcrumbNativeSize.height;
-    const newBreadcrumbSpatial = {x: nextChildPos, y: 7, scale: newBreadcrumbScale};
-    const newBreadCrumbCard = {...sourceCard, ...breadCrumbChanges, spatial: newBreadcrumbSpatial};
-    const newNextChildPos = nextChildPos + newBreadcrumbScale * breadcrumbNativeSize.width + MARGIN;
-
+  breadCrumbToFocusCard(card) {
     return {
-      nextChildPos: newNextChildPos,
-      breadCrumbCard: newBreadCrumbCard,
-      targetScrollPos:  newNextChildPos > mainWidth ? newNextChildPos - mainWidth : null,
-      adoptCard: true
+      ...card,
+      onClick: this.handleNodeClick,
+      clickMode: CLICK_TRANSPARENT,
+      onMouseEnter: null,
+      onMouseLeave: null,
+      style: {zIndex: 1}
     }
+  }
+
+  toPinnedCard(sourceCard, key) {
+    return {
+      ...sourceCard,
+      key: key || this.createChildKey(),
+      clickMode: CLICK_OPAQUE,
+      onClick: this.handleNodeClick,
+      onMouseEnter: () => this.handleBreadcrumbEnter(sourceCard.key),
+      onMouseLeave: () => this.handleBreadcrumbLeave(sourceCard.key)
+    };
   }
 
   handleBreadcrumbEnter(key) {
@@ -586,9 +614,8 @@ class App extends Component {
     });
   }
 
-
   handleViewSelect(viewId) {
-    const {focusData, currentFilters, mainWidth, focusHeight} = this.state;
+    const {focusData, currentFilters, mainWidth, focusHeight, breadCrumbHeight} = this.state;
     const template = TemplateRegistry.getTemplate(viewId);
 
     if (template.aggregate && !focusData.get(TYPE_NODES)) {
@@ -602,10 +629,9 @@ class App extends Component {
     const currentViewOptions = template.getDefaultOptions();
 
     const focusCard = this.createFocusCard(data, template, currentViewOptions);
-    focusCard.spatial = this.calcFocusCardSpatial({focusCard, mainWidth, focusHeight});
+    focusCard.spatial = this.calcFocusCardSpatial({focusCard, breadCrumbHeight, mainWidth, focusHeight});
     this.transitionToState({ focusCard, currentViewOptions: template.getDefaultOptions() });
   }
-
 
   handleOptionSelect(key, value) {
     const {currentViewOptions, focusCard} = this.state;
@@ -617,25 +643,22 @@ class App extends Component {
     })
   }
 
-
-  calcFocusCardSpatial({focusCard, mainWidth, focusHeight}) {
+  calcFocusCardSpatial({focusCard, mainWidth, breadCrumbHeight, focusHeight}) {
     const { width, height } = focusCard.template.getSize();
     return fit(mainWidth - 2 * MARGIN, focusHeight - MARGIN - TOOL_HEIGHT, width,
-        height, MARGIN,  MARGIN, 2);
+        height, MARGIN,  MARGIN + breadCrumbHeight, 2);
   }
-
 
   calcHoverCardSpatial({template, mainWidth, focusHeight}) {
     const { width, height } = template.getSize();
     return fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, width, height, MARGIN,MARGIN,2);
   }
 
-
   handleSearchResultClick(node) {
 
     const {hoverCard} = this.state;
     if (hoverCard && hoverCard.data === node) {
-      this.handleHoverCardPin();
+      this.handleHoverCardToFocus();
       return;
     }
 
@@ -644,12 +667,11 @@ class App extends Component {
 
     const spatial = this.calcHoverCardSpatial({template, mainWidth, focusHeight, breadCrumbHeight});
     const newHoverCard = Card_({key: this.createChildKey(), data:node, hover: true, template, spatial, clickMode: CLICK_OPAQUE,
-      onClick: this.handleHoverCardPin,
+      onClick: this.handleHoverCardToFocus,
       style: {zIndex: 2}})._Card
 
     this.setState({hoverCard: newHoverCard, allowInteractions: true});
   }
-
 
   recalcLayout({toolControls, windowWidth, windowHeight, focusCard, hoverCard}) {
 
@@ -661,7 +683,7 @@ class App extends Component {
     const mainHeight = windowHeight;
     const {mainWidth, sideBarWidth} = this.calcMainLayout(windowWidth, windowHeight);
 
-    const layoutState = { breadCrumbHeight, toolbarHeight, focusHeight, mainWidth, mainHeight, sideBarWidth };
+    const layoutState = { breadCrumbWidth: mainWidth, breadCrumbHeight, toolbarHeight, focusHeight, mainWidth, mainHeight, sideBarWidth };
 
     if (hoverCard) {
       layoutState.hoverCard = {...hoverCard,
@@ -670,7 +692,7 @@ class App extends Component {
 
     if (focusCard) {
       layoutState.focusCard = {...focusCard,
-        spatial: this.calcFocusCardSpatial({focusCard, mainWidth, focusHeight})
+        spatial: this.calcFocusCardSpatial({focusCard, mainWidth, breadCrumbHeight, focusHeight})
       };
     }
 
@@ -682,30 +704,37 @@ class App extends Component {
     return {mainWidth: windowWidth - sideBarWidth, sideBarWidth};
   }
 
-
   onResize(width, height) {
-    this.dom.style.width = `${width}px`;
-    this.dom.style.height = `${height}px`;
-    const { hoverCard, focusCard} = this.state;
-    const windowWidth = width;
-    const windowHeight = height;
-    const {mainWidth} = this.calcMainLayout(width, height);
-    const toolControls = calcMaxChildren(mainWidth, this.state.toolControls);
-    const activeTools = pick(this.state.activeTools, toolControls.map(control => control.key));
+      this.dom.style.width = `${width}px`;
+      this.dom.style.height = `${height}px`;
+      const { hoverCard, focusCard} = this.state;
+      const windowWidth = width;
+      const windowHeight = height;
+      const {mainWidth} = this.calcMainLayout(width, height);
+      const toolControls = calcMaxChildren(mainWidth, this.state.toolControls);
+      const activeTools = pick(this.state.activeTools, toolControls.map(control => control.key));
 
-    const newLayoutState = this.recalcLayout(
-        {toolControls, windowWidth, windowHeight, hoverCard, focusCard});
+      const newLayoutState = this.recalcLayout(
+          {toolControls, windowWidth, windowHeight, hoverCard, focusCard});
+      const { breadCrumbHeight } = newLayoutState;
+      if (this.state.pinned) {
+        const {pinned, pinnedWidth} = this.calcPinnedCardPositions(this.state.pinned, mainWidth, breadCrumbHeight);
+        newLayoutState.pinned = pinned;
+        newLayoutState.pinnedWidth = pinnedWidth;
+        console.log(`consuming pinnedWidth: ${pinnedWidth}`);
+        newLayoutState.breadCrumbCards = this.calcBreadCrumbChildren(this.state.breadCrumbCards, newLayoutState.breadCrumbHeight, newLayoutState.mainWidth, pinnedWidth);
+      }
 
-    this.setState({windowWidth, windowHeight, toolControls, activeTools, ...newLayoutState});
-    this.renderStateChange();
+      this.setState({windowWidth, windowHeight, toolControls, activeTools, ...newLayoutState});
+      this.renderStateChange();
   }
-
 
   createChildDescriptors(props) {
 
-    const { dataLoaded, focusCard, tools, activeTools, views, error, mainWidth, focusHeight, sideBarWidth, breadCrumbCards, nextChildPos,
-      hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions,
-      breadCrumbHoverIcon } = this.state;
+    const { dataLoaded, focusCard, tools, activeTools, views, error, mainWidth, focusHeight, sideBarWidth, breadCrumbCards, pinned,
+      nextChildPos,
+      hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions}
+        = this.state;
 
     // const backgroundColor = (map && map.backColor) || '#ffffff';
     if (error) {
@@ -720,20 +749,27 @@ class App extends Component {
       hoverChildren.push(hoverCard);
       if (allowInteractions) {
         hoverChildren.push(hoverCardMenu(HOVER_MENU, hoverCard.spatial.y, menuRight, this.handleHoverCardClose,
-            this.handleHoverCardStash));
+            this.handleHoverCardPin));
       }
     }
+
+    const pinButtons = pinned.slice(1).map(card =>
+        Div_({key: `${card.key}-pin`, className: getAppCss().pin,
+          onClick: () => {this.removePin(card)},
+          spatial: {x: card.spatial.x, y: card.spatial.y - 6, scale: 1}})._Div);
 
     return [
       BreadcrumbLane_({
         key: BREADCRUMBS,
         spatial: {x: 0, y: 0, scale: 1},
         size:  {width: mainWidth, height: breadCrumbHeight},
-        children: [...breadCrumbCards, breadCrumbHoverIcon],
         canvasWidth: nextChildPos,
         onClick: this.removeModals,
         onScroll: this.removeBreadCrumbHoverMenu
       })._BreadcrumbLane,
+      ...breadCrumbCards,
+      ...pinned,
+      ...pinButtons,
       ToolPanel_({
         key: 'tools',
         size: { width: mainWidth, height: toolbarHeight},
@@ -745,9 +781,10 @@ class App extends Component {
         className: getAppCss().focus,
         spatial: {x: 0, y: breadCrumbHeight, scale: 1},
         size: {width: mainWidth, height: focusHeight},
-        children: [focusCard, ...hoverChildren],
         onClick: this.removeModals
       })._Div,
+      focusCard,
+      ...hoverChildren,
       Sidebar_({size: {width: sideBarWidth, height: windowHeight},
         menuTop: breadCrumbHeight,
         logoUrl: getConfig('logoUrl'),
