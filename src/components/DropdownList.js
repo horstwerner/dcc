@@ -8,6 +8,7 @@ import {Image_} from "@symb/Image";
 const ROW_HEIGHT = 20;
 const ARROW_WIDTH = 20;
 const DEFAULT_LABEL_WIDTH = 70;
+const GRACE_PERIOD = 150;
 
 const DROPDOWN = 'dropdown';
 
@@ -33,17 +34,35 @@ class DropdownList extends Component {
     this.handleMouseEnter = this.handleMouseEnter.bind(this);
     this.handleMouseLeave = this.handleMouseLeave.bind(this);
     this.dom.onmouseleave = this.handleMouseLeave;
+    this.collapseTimeout = null;
+    this.mouseInControl = false;
   }
 
   handleMouseEnter() {
+    if (this.mouseInControl) return;
+    this.mouseInControl = true;
     if (!this.state.isOpen) {
+      if (this.collapseTimeout) {
+        clearTimeout(this.collapseTimeout);
+        this.collapseTimeout = null;
+      }
+      if (this.transitionTween && this.transitionTween.isRunning()) {
+        this.transitionTween.finish();
+      }
       this.transitionToState({isOpen: true});
     }
   }
 
   handleMouseLeave() {
+    if (!this.mouseInControl) return;
+    this.mouseInControl = false;
     if (this.state.isOpen) {
-      this.transitionToState({isOpen: false});
+      this.collapseTimeout = setTimeout(() => {
+        this.collapseTimeout = null;
+        if (!this.mouseInControl) {
+          this.transitionToState({isOpen: false})
+        }
+      }, GRACE_PERIOD);
     }
   }
 

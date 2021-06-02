@@ -364,7 +364,8 @@ export default class Component {
 
   transitionToState(partialState) {
     if (this.transitionTween) {
-      this.transitionTween.onEndCall(() => this.setState(partialState));
+      this.transitionTween.onEndCall(() => {
+         this.transitionToState(partialState)});
       return;
     }
     const transitionTween = new Tween(TRANSITION_DURATION).onEndCall(() => {this.transitionTween = null;});
