@@ -1,5 +1,5 @@
 <?xml version="1.0" standalone="no"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
-    <circle cx="50" cy="25" r="20" fill="black" />
-    <path d="M42 25h16l-6 70h-4z" fill="black" />
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140">
+    <path d="M62 45h16l-6 70h-4z" fill="#404040" />
+    <circle cx="70" cy="45" r="20" fill="#404040" />
 </svg>

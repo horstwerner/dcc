@@ -1,7 +1,6 @@
 import P from 'prop-types';
 import Component from "@symb/Component";
 import ComponentFactory from "@symb/ComponentFactory";
-import {Div_} from "@symb/Div";
 import {CANVAS_WIDTH, getBreadCrumbCss} from "@/Config";
 import Tween from "@/arrangement/Tween";
 
@@ -28,15 +27,7 @@ class BreadcrumbLane extends Component {
   }
 
   createChildDescriptors(props) {
-
-    const { children, canvasWidth } = props;
-    const canvas =  Div_(
-        { key:'workbook-canvas',
-          className: getBreadCrumbCss().canvas,
-          style: {width: canvasWidth, height: 1}}
-    )._Div
-
-    return [canvas, ...children];
+    return null;
   }
 
 

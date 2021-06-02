@@ -23,3 +23,22 @@
   font-size: 14px;
   color: #8c8c81;
 }
+
+.pin {
+  position: absolute;
+  background-image: url("public/Pin.svg");
+  background-size: cover;
+  width: 24px;
+  height: 24px;
+    cursor: pointer;
+  z-index: 1;
+}
+
+.pin:hover {
+  background-image: url("public/CloseButton.svg");
+  opacity: 0.6;
+}
+
+.pin:active {
+  opacity: 0.7;
+}
