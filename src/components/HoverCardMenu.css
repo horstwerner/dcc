@@ -21,6 +21,7 @@
   opacity: 0.5;
   margin-right: 6px;
   cursor: pointer;
+  overflow: visible;
 }
 .icon:hover,
 .iconAbsolute:hover {

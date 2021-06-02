@@ -8,9 +8,9 @@ import {Div_} from '@symb/Div';
 import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
-import {getAppCss, getConfig, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT, TRANSITION_DURATION} from "@/Config";
+import {getAppCss, getConfig, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
 import {createContext, fillIn, fit, isDataEqual} from "@symb/util";
-import {breadCrumbHoverIcon, createPreprocessedCardNode, hoverCardMenu} from "@/components/Generators";
+import {createPreprocessedCardNode, focusCardMenu, hoverCardMenu} from "@/components/Generators";
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 import {calcMaxChildren, ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
@@ -31,8 +31,6 @@ const TOOL_HEIGHT = 10;
 const BREADCRUMB_LANE_HEIGHT = 120;
 const SCROLLBAR_HEIGHT = 30;
 const PINNED_ROOT_CARD = 'rootcard';
-
-const hoverIconKey = (key) => `breadcrumbhover-${key}`;
 
 class App extends Component {
 
@@ -110,7 +108,7 @@ class App extends Component {
     this.handleBreadCrumbClick = this.handleBreadCrumbClick.bind(this);
     this.handleHoverCardToFocus = this.handleHoverCardToFocus.bind(this);
     this.handleHoverCardClose = this.handleHoverCardClose.bind(this);
-    // this.handleFocusCardStash = this.handleFocusCardStash.bind(this);
+    this.handleFocusCardPin = this.handleFocusCardPin.bind(this);
     this.handleToolToggle = this.handleToolToggle.bind(this);
     this.handleViewSelect = this.handleViewSelect.bind(this);
     this.removeToolFilter = this.removeToolFilter.bind(this);
@@ -120,7 +118,6 @@ class App extends Component {
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleSearchResultClick = this.handleSearchResultClick.bind(this);
     this.onError = this.onError.bind(this);
-    this.removeBreadCrumbHoverMenu = this.removeBreadCrumbHoverMenu.bind(this);
     this.moveCardToFocus = this.moveCardToFocus.bind(this);
     this.removeModals = this.removeModals.bind(this);
 
@@ -179,6 +176,7 @@ class App extends Component {
   }
 
   handleFocusCardPin() {
+    debugger
     const { focusCard } = this.state;
     const hoverCard = {...focusCard, key: this.createChildKey()};
     this.setState({ hoverCard });
@@ -298,6 +296,7 @@ class App extends Component {
         focusHeight,
         breadCrumbHeight
       });
+      clone.hover = true;
       this.setState({hoverCard: clone, allowInteractions: false});
       this.transitionToState({hoverCard: {...clone, spatial: newSpatial}}).onEndCall(() => {
             this.setState({allowInteractions: true});
@@ -372,8 +371,6 @@ class App extends Component {
     return {...sourceCard,
       clickMode: CLICK_OPAQUE,
       onClick: this.handleBreadCrumbClick,
-      onMouseEnter: () => this.handleBreadcrumbEnter(sourceCard.key),
-      onMouseLeave: () => this.handleBreadcrumbLeave(sourceCard.key),
       style: {zIndex: 0}
     };
   }
@@ -395,91 +392,8 @@ class App extends Component {
       key: key || this.createChildKey(),
       clickMode: CLICK_OPAQUE,
       onClick: this.handleNodeClick,
-      onMouseEnter: () => this.handleBreadcrumbEnter(sourceCard.key),
-      onMouseLeave: () => this.handleBreadcrumbLeave(sourceCard.key)
+      hover: false
     };
-  }
-
-  handleBreadcrumbEnter(key) {
-    this.hoverBreadCrumbKey = key;
-    if (this.transitionTween) {
-      setTimeout(() => {
-        if (this.hoverBreadCrumbKey === key) {
-          this.handleBreadcrumbEnter(key);
-        }}, TRANSITION_DURATION);
-      return;
-    }
-    if (this.state.breadCrumbHoverIcon && this.state.breadCrumbHoverIcon.key === hoverIconKey(key)) return;
-    this.addBreadcrumbHoverMenu(key);
-  }
-
-  handleHoverEnter(key) {
-    this.hoverMenuKey = key;
-  }
-
-  handleHoverLeave(key) {
-    if (this.hoverMenuKey !== key) return;
-    this.hoverMenuKey = null;
-    setTimeout(() => {
-      if (this.hoverBreadCrumbKey === null && this.state.breadCrumbHoverIcon) {
-        this.setState({breadCrumbHoverIcon: null});
-      }
-    }, 150);
-
-  }
-
-  handleBreadcrumbLeave(key) {
-    if (this.transitionTween) {
-      this.hoverBreadCrumbKey = null;
-      this.transitionTween.onEndCall(() => {
-        if (this.hoverBreadCrumbKey === null) {
-          this.setState({breadCrumbHoverIcon: null});
-        }
-      });
-      return;
-    }
-    if (key === this.hoverBreadCrumbKey) {
-      this.hoverBreadCrumbKey = null;
-      setTimeout(() => {
-        if (this.hoverBreadCrumbKey == null && this.hoverMenuKey == null && this.state.breadCrumbHoverIcon) {
-          this.setState({breadCrumbHoverIcon: null});
-        }
-      }, TRANSITION_DURATION);
-    }
-  }
-
-  removeBreadCrumb(key) {
-    const { breadCrumbCards } = this.state;
-    const index  = breadCrumbCards.findIndex(card =>
-        card.key === key);
-    let pos = breadCrumbCards[index].spatial.x;
-    if (index === breadCrumbCards.length - 1) {
-      this.setState({breadCrumbCards: breadCrumbCards.slice(0, index), breadCrumbHoverIcon: null, nextChildPos: pos});
-      return;
-    }
-    for (let i = index + 1; i < breadCrumbCards.length; i++) {
-      breadCrumbCards[i].spatial = {...breadCrumbCards[i].spatial, x: pos};
-      pos += breadCrumbCards[i].spatial.scale *  breadCrumbCards[i].template.getSize().width + MARGIN;
-    }
-    breadCrumbCards.splice(index, 1);
-    this.transitionToState({breadCrumbCards, breadCrumbHoverIcon: null, nextChildPos: pos})
-  }
-
-  addBreadcrumbHoverMenu(key) {
-    const { breadCrumbCards } = this.state;
-    const card = breadCrumbCards.find(card =>
-        card.key === key);
-    if (!card) return;
-    const { template } = card;
-    const top = card.spatial.y;
-    const scaledWidth = template.getSize().width * card.spatial.scale;
-    const right = card.spatial.x + scaledWidth;
-    const icon = breadCrumbHoverIcon(hoverIconKey(card.key), top, right, () => this.removeBreadCrumb(key), () => this.handleHoverEnter(key), () => this.handleHoverLeave(key));
-    this.setState({breadCrumbHoverIcon: icon});
-  }
-
-  removeBreadCrumbHoverMenu() {
-    this.setState({breadCrumbHoverIcon: null})
   }
 
   createFocusCard(data, template, options) {
@@ -649,9 +563,9 @@ class App extends Component {
         height, MARGIN,  MARGIN + breadCrumbHeight, 2);
   }
 
-  calcHoverCardSpatial({template, mainWidth, focusHeight}) {
+  calcHoverCardSpatial({template, mainWidth, focusHeight, breadCrumbHeight}) {
     const { width, height } = template.getSize();
-    return fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, width, height, MARGIN,MARGIN,2);
+    return fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, width, height, MARGIN,MARGIN + breadCrumbHeight + 6,2);
   }
 
   handleSearchResultClick(node) {
@@ -732,7 +646,6 @@ class App extends Component {
   createChildDescriptors(props) {
 
     const { dataLoaded, focusCard, tools, activeTools, views, error, mainWidth, focusHeight, sideBarWidth, breadCrumbCards, pinned,
-      nextChildPos,
       hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions}
         = this.state;
 
@@ -751,21 +664,22 @@ class App extends Component {
         hoverChildren.push(hoverCardMenu(HOVER_MENU, hoverCard.spatial.y, menuRight, this.handleHoverCardClose,
             this.handleHoverCardPin));
       }
+    } else if (focusCard && allowInteractions && !pinned.find(card => isDataEqual(card.data, focusCard.data))) {
+      const menuRight = focusCard.template.getSize().width * focusCard.spatial.scale + focusCard.spatial.x;
+      hoverChildren.push(focusCardMenu(HOVER_MENU, focusCard.spatial.y, menuRight, this.handleFocusCardPin));
     }
 
     const pinButtons = pinned.slice(1).map(card =>
         Div_({key: `${card.key}-pin`, className: getAppCss().pin,
           onClick: () => {this.removePin(card)},
-          spatial: {x: card.spatial.x, y: card.spatial.y - 6, scale: 1}})._Div);
+          spatial: {x: card.spatial.x, y: card.spatial.y - 10, scale: 1}})._Div);
 
     return [
       BreadcrumbLane_({
         key: BREADCRUMBS,
         spatial: {x: 0, y: 0, scale: 1},
         size:  {width: mainWidth, height: breadCrumbHeight},
-        canvasWidth: nextChildPos,
         onClick: this.removeModals,
-        onScroll: this.removeBreadCrumbHoverMenu
       })._BreadcrumbLane,
       ...breadCrumbCards,
       ...pinned,

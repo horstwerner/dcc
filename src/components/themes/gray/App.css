@@ -30,13 +30,13 @@
   background-size: cover;
   width: 24px;
   height: 24px;
-  opacity: 0.5;
-  cursor: pointer;
+    cursor: pointer;
   z-index: 1;
 }
 
 .pin:hover {
   background-image: url("public/CloseButton.svg");
+  opacity: 0.6;
 }
 
 .pin:active {
