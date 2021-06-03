@@ -28,8 +28,7 @@ const SIDEBAR = 'sidebar';
 const FOCUS = 'focus';
 const HOVER_MENU = 'hover-menu';
 const TOOL_HEIGHT = 10;
-const BREADCRUMB_LANE_HEIGHT = 120;
-const SCROLLBAR_HEIGHT = 30;
+const BREADCRUMB_LANE_HEIGHT = 104;
 const PINNED_ROOT_CARD = 'rootcard';
 
 class App extends Component {
@@ -324,7 +323,7 @@ class App extends Component {
     let pinnedWidth = MARGIN;
     const newPinned = pinned.map(card => {
       const nativeSize = card.template.getSize();
-      const cardScale =  (breadCrumbHeight - SCROLLBAR_HEIGHT) / nativeSize.height;
+      const cardScale =  (breadCrumbHeight - 2 * MARGIN) / nativeSize.height;
       const cardW = nativeSize.width * cardScale;
       const cardH = nativeSize.height * cardScale;
       const spatial = {x: cursor - cardW, y: 0.5 * (breadCrumbHeight - cardH), scale: cardScale};
@@ -347,7 +346,7 @@ class App extends Component {
     while (cursor > 0 && breadIdx >= 0){
       const card = {...breadCrumbs[breadIdx]};
       const nativeSize = card.template.getSize();
-      const cardScale =  (breadCrumbHeight - SCROLLBAR_HEIGHT) / nativeSize.height * scaleFactor;
+      const cardScale =  (breadCrumbHeight - 2 * MARGIN) / nativeSize.height * scaleFactor;
       const cardW = nativeSize.width * cardScale;
       const cardH = nativeSize.height * cardScale;
       card.spatial = {x: cursor - cardW, y: 0.5 * (breadCrumbHeight - cardH), scale: cardScale};
@@ -459,7 +458,7 @@ class App extends Component {
 
   setToolFilter(tool, selectedId, value) {
 
-    const {currentFilters} = this.state;
+    const {currentFilters} = this.state;``
 
     if (tool.type !== 'filter') {
       throw new Error(`Can't use filter for tool ${tool.id} of type ${tool.type}. Use tool of type filter instead.`);
@@ -666,7 +665,7 @@ class App extends Component {
       }
     } else if (focusCard && allowInteractions && !pinned.find(card => isDataEqual(card.data, focusCard.data))) {
       const menuRight = focusCard.template.getSize().width * focusCard.spatial.scale + focusCard.spatial.x;
-      hoverChildren.push(focusCardMenu(HOVER_MENU, focusCard.spatial.y, menuRight, this.handleFocusCardPin));
+      hoverChildren.push(focusCardMenu(`pin${focusCard.key}`, focusCard.spatial.y, menuRight, this.handleFocusCardPin));
     }
 
     const pinButtons = pinned.slice(1).map(card =>

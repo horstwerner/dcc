@@ -13,7 +13,7 @@ export const createFilterControl = function createFilterControl (tool, data, onF
     switch (tool.display) {
       case 'radio-buttons': {
         const {id, values, width, label} = tool;
-        const reset = {id: FILTER_RESET, name: 'All', onSelect: () => onFilterRemove(tool.id)};
+        const reset = {id: FILTER_RESET, name: 'All', onSelect: () => onFilterRemove(tool.id, FILTER_RESET)};
         const options = values.map(value => ({id: value, name: value, onSelect: () => onFilterSet(tool, value, value)}));
         options.push(reset);
         toolControl = RadioButtons_({key: id, size: {width, height: FILTER_HEIGHT}, label, options, selectedId: FILTER_RESET })._RadioButtons;

@@ -100,14 +100,16 @@ class Sidebar extends Component {
     const toolHeight = tools.length > 0 ? calcMenuHeight(tools) + 25 + 8 : 0;
 
     const optionControls = createOptionControls(options, onOptionSelect, currentViewOptions, optionsWidth, 9, menuTop + Math.max(PANEL_HEIGHT + MARGIN, viewHeight + toolHeight));
+    const searchY = 104 - MARGIN - 28;
 
     return[
-      Div_({key: LOGO_BOX, className: css.logoBox, spatial: {x: 0, y: 0.5 * MARGIN, scale: 1}, style: {justifyContent: getConfig('logoAlign')}},
+      Div_({key: LOGO_BOX, className: css.logoBox, spatial: {x: 0, y: MARGIN, scale: 1}, style: {justifyContent: getConfig('logoAlign')}},
             logo(logoUrl, logoLink))._Div,
-      Div_({key: SEARCH_FIELD, className: css.searchField, spatial: {x: 16, y: MARGIN + LOGO_SIZE, scale: 1},
+      Div_({key: SEARCH_FIELD, className: css.searchField, spatial: {x: 16, y: searchY, scale: 1},
         children: [
             Div_({key: SEARCH_INPUT, className: css.searchInput, tabIndex : 1, contentEditable: true, onKeyUp: this.handleSearchKeyUp, onKeyDown: this.handleSearchKeyDown})._Div,
-            Image_({key: 'searchButton', className:css.searchButton, source:`public/SearchButton.svg`, onClick: this.handleSearch})._Image]})._Div,
+            ]})._Div,
+      Image_({key: 'searchButton', spatial: {x: 16+182, y: searchY, scale: 1}, className:css.searchButton, source:`public/SearchButton.svg`, onClick: this.handleSearch})._Image,
       MenuPanel_({
         key: MENU_PANEL,
         size: { width:  MENU_WIDTH },
@@ -118,7 +120,7 @@ class Sidebar extends Component {
         spatial: {x: 0, y: menuTop, scale: 1}
       })._MenuPanel,
         ...optionControls,
-      (currentSearchResults && SuggestList_({key: 'suggestList', size: {width: MENU_WIDTH}, spatial: {x: 9, y: 80, scale: 1}, onSearchResultClick, resultGroups: currentSearchResults})._SuggestList)
+      (currentSearchResults && SuggestList_({key: 'suggestList', size: {width: MENU_WIDTH - 16}, spatial: {x: 9, y: searchY + 40, scale: 1}, onSearchResultClick, resultGroups: currentSearchResults})._SuggestList)
     ];
   }
 
