@@ -1,5 +1,7 @@
 <?xml version="1.0" standalone="no"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140">
-    <path d="M62 45h16l-6 70h-4z" fill="#404040" />
-    <circle cx="70" cy="45" r="20" fill="#404040" />
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180">
+    <rect x="70" y="46" width="40" height="10" rx="5"/>
+    <path d="M 75 55 h30 l 7 31 h -44 z" fill="0"/>
+    <rect x="60" y="84" width="60" height="10" rx="5"/>
+    <path d="M 85 94 v20 h10 v-20z" fill="0"/>
 </svg>

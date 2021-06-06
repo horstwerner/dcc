@@ -175,7 +175,6 @@ class App extends Component {
   }
 
   handleFocusCardPin() {
-    debugger
     const { focusCard } = this.state;
     const hoverCard = {...focusCard, key: this.createChildKey()};
     this.setState({ hoverCard });
@@ -671,7 +670,7 @@ class App extends Component {
     const pinButtons = pinned.slice(1).map(card =>
         Div_({key: `${card.key}-pin`, className: getAppCss().pin,
           onClick: () => {this.removePin(card)},
-          spatial: {x: card.spatial.x, y: card.spatial.y - 10, scale: 1}})._Div);
+          spatial: {x: card.spatial.x + card.spatial.scale * card.template.getSize().width - 20, y: card.spatial.y - 11, scale: 1}})._Div);
 
     return [
       BreadcrumbLane_({
@@ -705,7 +704,7 @@ class App extends Component {
         key: SIDEBAR,
         spatial: {x: mainWidth, y: 0, scale: 1},
         views: views.map(view => ({id: view.id, name: view.name || view.id, selected: view.id === focusCard.template.id})),
-        tools: tools && tools.map(tool => ({id: tool.id, name: tool.name, selected: activeTools[tool.id]})),
+        tools: tools && tools.map(tool => ({id: tool.id, name: tool.name, selected: !!activeTools[tool.id]})),
         options: get(focusCard, ['template', 'descriptor', 'options']) || {},
         currentViewOptions,
         onOptionSelect: this.handleOptionSelect,
