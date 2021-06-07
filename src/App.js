@@ -9,16 +9,16 @@ import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
 import {getAppCss, getConfig, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
-import {createContext, fillIn, fit, isDataEqual} from "@symb/util";
+import {createContext, fillIn, fit, getCommonType, isDataEqual} from "@symb/util";
 import {createPreprocessedCardNode, focusCardMenu, hoverCardMenu} from "@/components/Generators";
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 import {calcMaxChildren, ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 
-import { CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
+import {CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
 import {fetchSubGraph, getCardDescriptors, getClientConfig, getData, getDictionary, getToolDescriptors} from "@/Data";
 import {createFilterControl, updatedToolControl} from "@/Tools";
-import {TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODES} from "@/graph/TypeDictionary";
+import TypeDictionary, {TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/TypeDictionary";
 import {SYNTH_NODE_MAP, SYNTH_NODE_RETRIEVE} from "@/templates/Template";
 import {mapNode} from "@/graph/Analysis";
 
@@ -161,7 +161,7 @@ class App extends Component {
         this.removeModals();
       }
     } else if (event.key === 'f' && (event.ctrlKey || event.altKey)) {
-      this.getChild(SIDEBAR).focusSearchBox();
+      this.getChild(SIDEBAR).focusearchBox();
     }
   }
 
@@ -417,11 +417,11 @@ class App extends Component {
 
     const { template } = focusCard;
     const { aggregate } = template;
-    let nodeTypeUri = 'core:start';
+    let nodeTypeUri = null;
     if (data && data.getTypeUri() === TYPE_AGGREGATOR ) {
       const subNodes = data.get(TYPE_NODES);
       if (subNodes && subNodes.length > 0) {
-        nodeTypeUri = subNodes[0].getTypeUri();
+        nodeTypeUri = getCommonType(data).uri;
       }
     } else if (data){
       nodeTypeUri = data.getTypeUri();
@@ -444,7 +444,7 @@ class App extends Component {
       focusCard.options = currentViewOptions;
     }
     const {windowWidth, windowHeight} = this.state;
-    return { views, tools, activeTools, toolControls, filters: {}, focusData: data,
+    return { views, tools, activeTools, toolControls, filters: {}, focusData: data, nodeTypeUri,
       currentViewOptions,
       ...this.recalcLayout({ toolControls, windowWidth, windowHeight, focusCard })};
   }
@@ -633,7 +633,6 @@ class App extends Component {
         const {pinned, pinnedWidth} = this.calcPinnedCardPositions(this.state.pinned, mainWidth, breadCrumbHeight);
         newLayoutState.pinned = pinned;
         newLayoutState.pinnedWidth = pinnedWidth;
-        console.log(`consuming pinnedWidth: ${pinnedWidth}`);
         newLayoutState.breadCrumbCards = this.calcBreadCrumbChildren(this.state.breadCrumbCards, newLayoutState.breadCrumbHeight, newLayoutState.mainWidth, pinnedWidth);
       }
 
@@ -643,7 +642,8 @@ class App extends Component {
 
   createChildDescriptors(props) {
 
-    const { dataLoaded, focusCard, tools, activeTools, views, error, mainWidth, focusHeight, sideBarWidth, breadCrumbCards, pinned,
+    const { dataLoaded, focusCard, focusData, nodeTypeUri, tools, activeTools, views, error, mainWidth, focusHeight,
+      sideBarWidth, breadCrumbCards, pinned,
       hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions}
         = this.state;
 
@@ -672,6 +672,9 @@ class App extends Component {
           onClick: () => {this.removePin(card)},
           spatial: {x: card.spatial.x + card.spatial.scale * card.template.getSize().width - 20, y: card.spatial.y - 11, scale: 1}})._Div);
 
+
+    const focusInfo = nodeTypeUri && `${TypeDictionary.getType(nodeTypeUri).name} ${focusData.type.uri === TYPE_AGGREGATOR ? `(${focusData.get(TYPE_NODE_COUNT)})` : ''}`;
+
     return [
       BreadcrumbLane_({
         key: BREADCRUMBS,
@@ -697,11 +700,12 @@ class App extends Component {
       })._Div,
       focusCard,
       ...hoverChildren,
-      Sidebar_({size: {width: sideBarWidth, height: windowHeight},
+      Sidebar_({key: SIDEBAR,
+        size: {width: sideBarWidth, height: windowHeight},
         menuTop: breadCrumbHeight,
         logoUrl: getConfig('logoUrl'),
         logoLink: getConfig('logoLink'),
-        key: SIDEBAR,
+        focusInfo,
         spatial: {x: mainWidth, y: 0, scale: 1},
         views: views.map(view => ({id: view.id, name: view.name || view.id, selected: view.id === focusCard.template.id})),
         tools: tools && tools.map(tool => ({id: tool.id, name: tool.name, selected: !!activeTools[tool.id]})),

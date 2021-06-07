@@ -93,7 +93,7 @@ class Sidebar extends Component {
   createChildDescriptors(props) {
 
     const { menuTop, size, views, tools, onViewClick, onToolToggle, options, currentViewOptions, onOptionSelect,
-      onSearchResultClick, logoUrl, logoLink} = props;
+      onSearchResultClick, focusInfo, logoUrl, logoLink} = props;
     const { currentSearchResults } = this.state;
     const optionsWidth = MENU_WIDTH - 16;
 
@@ -102,6 +102,7 @@ class Sidebar extends Component {
 
     const viewMenu = Menu_({key: "views", title: 'Views',  entries: views, onEntryClick: onViewClick})._Menu;
     const toolMenu = (tools.length > 0 && Menu_({key: "tools", color: 'gray', title: 'Filters',  entries: tools, onEntryClick: onToolToggle})._Menu);
+    const focusHeader = focusInfo && (Div_({className: css.focusHeader}, focusInfo)._Div);
 
     return[
       Div_({key: LOGO_BOX, className: css.logoBox, spatial: {x: 0, y: MARGIN, scale: 1}, style: {justifyContent: getConfig('logoAlign')}},
@@ -114,7 +115,7 @@ class Sidebar extends Component {
       MenuPanel_({
         key: MENU_PANEL,
         size: { width:  MENU_WIDTH },
-        children:[viewMenu, ...optionMenus],
+        children:[focusHeader, viewMenu, ...optionMenus],
         spatial: {x: 0, y: menuTop, scale: 1}
       })._MenuPanel,
       MenuPanel_({
@@ -122,7 +123,7 @@ class Sidebar extends Component {
         size: { width:  MENU_WIDTH },
         color: 'gray',
         children:[toolMenu],
-        spatial: {x: 0, y: size.height - calcPanelHeight(tools), scale: 1}
+        spatial: {x: 0, y: size.height - calcPanelHeight(tools) - 4, scale: 1}
       })._MenuPanel,
       (currentSearchResults && SuggestList_({key: 'suggestList', size: {width: MENU_WIDTH - 16},
         spatial: {x: 9, y: searchY + 40, scale: 1}, onSearchResultClick, resultGroups: currentSearchResults})._SuggestList)
