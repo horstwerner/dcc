@@ -1,4 +1,4 @@
-import { pick } from 'lodash';
+import {pick} from 'lodash';
 import {TYPE_NAME} from "@/graph/TypeDictionary";
 import cssBreadCrumbDefault from "@/components/themes/default/BreadcrumbLane.css";
 import cssBreadCrumbGray from "@/components/themes/gray/BreadcrumbLane.css";
@@ -25,13 +25,13 @@ if (DEBUG_MODE) {
   }
 }
 
-export const MENU_WIDTH = 224;
-export const MARGIN = 16;
+export const MARGIN = 12;
 export const TRANSITION_DURATION = 350;
 export const HOVER_MENU_DELAY = 700;
 
 export const SIDEBAR_PERCENT = 0.2;
 export const SIDEBAR_MAX = 250;
+export const MENU_WIDTH = SIDEBAR_MAX - 0.5 * MARGIN;
 export const CANVAS_WIDTH = 1980 - SIDEBAR_MAX - 10;
 export const MAX_CARD_HEIGHT = 1000;
 

@@ -1,8 +1,8 @@
-import {RadioButtons_, VERTICAL} from "@/components/RadioButtons";
-import {MARGIN} from "@/Config";
+import {RadioButtons_} from "@/components/RadioButtons";
 import {getValueRange} from "@/graph/GroupedSet";
 import {DropdownList_} from "@/components/DropdownList";
 import {TYPE_NODES} from "@/graph/TypeDictionary";
+import {Menu_} from "@/components/Menu";
 
 const FILTER_RESET = 'core:filterReset';
 export const FILTER_HEIGHT = 20;
@@ -13,7 +13,7 @@ export const createFilterControl = function createFilterControl (tool, data, onF
     switch (tool.display) {
       case 'radio-buttons': {
         const {id, values, width, label} = tool;
-        const reset = {id: FILTER_RESET, name: 'All', onSelect: () => onFilterRemove(tool.id)};
+        const reset = {id: FILTER_RESET, name: 'All', onSelect: () => onFilterRemove(tool.id, FILTER_RESET)};
         const options = values.map(value => ({id: value, name: value, onSelect: () => onFilterSet(tool, value, value)}));
         options.push(reset);
         toolControl = RadioButtons_({key: id, size: {width, height: FILTER_HEIGHT}, label, options, selectedId: FILTER_RESET })._RadioButtons;
@@ -53,32 +53,24 @@ export const updatedToolControl = function updatedToolControl(tool, control, sel
   return updatedControl;
 }
 
-const createOptionControl = function createOptionControl (key, option, onOptionSet, width, spatial, selected) {
+const createOptionControl = function createOptionControl (key, option, onOptionSet, selected, spatial) {
 
   const {selection, caption} = option;
 
-  let optionControl;
   switch (option.display) {
     case 'radio-buttons': {
-      const options = selection.map(({value, label}) => ({id: value, name: label, onSelect: () => onOptionSet(key, value)}));
-      const height = 25 * options.length + 36;
-      optionControl = RadioButtons_({key, orientation: VERTICAL, size: {width, height}, label: caption,
-        options, spatial, selectedId: selected })._RadioButtons;
-      break;
+      const entries = selection.map(({value, label}) => ({id: value, name: label, selected: (value === selected)}));
+      return Menu_({key, title: caption,
+        entries, spatial, onEntryClick: (value) => onOptionSet(key, value) })._Menu;
     }
     default:
       throw new Error(`Unknown tool display ${option.display}`);
   }
-  return optionControl;
 };
 
 
-export const createOptionControls = function createOptionControls(options, onOptionSet, currentSelections, width, x, y) {
-  let yCursor = y;
-  return Object.keys(options).map(key => {
-    const spatial = {x, y: yCursor, scale: 1 };
-    const control = createOptionControl(key, options[key], onOptionSet, width, spatial, currentSelections[key]);
-    yCursor += control.size.height + MARGIN;
-    return control;
-  });
+export const  createOptionControls = function createOptionControls(options, onOptionSet, currentSelections) {
+  return Object.keys(options).map(key =>
+      createOptionControl(key, options[key], onOptionSet, currentSelections[key])
+  );
 }

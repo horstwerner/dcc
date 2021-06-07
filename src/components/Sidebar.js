@@ -4,21 +4,21 @@ import Cache from '@/graph/Cache';
 import Component from "@symb/Component";
 import ComponentFactory from "@symb/ComponentFactory";
 import {getConfig, MARGIN, MENU_WIDTH} from "@/Config";
-import {MenuPanel_} from "@/components/MenuPanel";
+import {calcPanelHeight, MenuPanel_} from "@/components/MenuPanel";
 import {Div_} from "@symb/Div";
 import {Image_} from "@symb/Image";
 import {createOptionControls} from "@/Tools";
 import {SuggestList_} from "@/components/SuggestList";
-import {calcMenuHeight} from "@/components/Menu";
+import {Menu_} from "@/components/Menu";
 import {Link_} from "@/components/Link";
 
 const SIDEBAR = 'sidebar';
 const MENU_PANEL = 'menu-panel';
+const TOOL_PANEL = 'tool-panel';
 const LOGO_BOX = 'logo-box';
 const LOGO = 'logo';
 const SEARCH_FIELD = 'searchField';
 const SEARCH_INPUT = 'searchInput';
-const PANEL_HEIGHT = 300;
 const LOGO_SIZE = 40;
 
 const logo = function (logoUrl, logoLink) {
@@ -92,33 +92,41 @@ class Sidebar extends Component {
 
   createChildDescriptors(props) {
 
-    const { menuTop, views, tools, onViewClick, onToolToggle, options, currentViewOptions, onOptionSelect, onSearchResultClick, logoUrl, logoLink} = props;
+    const { menuTop, size, views, tools, onViewClick, onToolToggle, options, currentViewOptions, onOptionSelect,
+      onSearchResultClick, focusInfo, logoUrl, logoLink} = props;
     const { currentSearchResults } = this.state;
     const optionsWidth = MENU_WIDTH - 16;
 
-    const viewHeight = calcMenuHeight(views) + 25 + 2 * 8;
-    const toolHeight = tools.length > 0 ? calcMenuHeight(tools) + 25 + 8 : 0;
+    const optionMenus = createOptionControls(options, onOptionSelect, currentViewOptions, optionsWidth);
+    const searchY = 104 - MARGIN - 28;
 
-    const optionControls = createOptionControls(options, onOptionSelect, currentViewOptions, optionsWidth, 9, menuTop + Math.max(PANEL_HEIGHT + MARGIN, viewHeight + toolHeight));
+    const viewMenu = Menu_({key: "views", title: 'Views',  entries: views, onEntryClick: onViewClick})._Menu;
+    const toolMenu = (tools.length > 0 && Menu_({key: "tools", color: 'gray', title: 'Filters',  entries: tools, onEntryClick: onToolToggle})._Menu);
+    const focusHeader = focusInfo && (Div_({className: css.focusHeader}, focusInfo)._Div);
 
     return[
-      Div_({key: LOGO_BOX, className: css.logoBox, spatial: {x: 0, y: 0.5 * MARGIN, scale: 1}, style: {justifyContent: getConfig('logoAlign')}},
+      Div_({key: LOGO_BOX, className: css.logoBox, spatial: {x: 0, y: MARGIN, scale: 1}, style: {justifyContent: getConfig('logoAlign')}},
             logo(logoUrl, logoLink))._Div,
-      Div_({key: SEARCH_FIELD, className: css.searchField, spatial: {x: 16, y: MARGIN + LOGO_SIZE, scale: 1},
+      Div_({key: SEARCH_FIELD, className: css.searchField, spatial: {x: 16, y: searchY, scale: 1},
         children: [
             Div_({key: SEARCH_INPUT, className: css.searchInput, tabIndex : 1, contentEditable: true, onKeyUp: this.handleSearchKeyUp, onKeyDown: this.handleSearchKeyDown})._Div,
-            Image_({key: 'searchButton', className:css.searchButton, source:`public/SearchButton.svg`, onClick: this.handleSearch})._Image]})._Div,
+            ]})._Div,
+      Image_({key: 'searchButton', spatial: {x: 16+182, y: searchY, scale: 1}, className:css.searchButton, source:`public/SearchButton.svg`, onClick: this.handleSearch})._Image,
       MenuPanel_({
         key: MENU_PANEL,
         size: { width:  MENU_WIDTH },
-        views,
-        tools,
-        onViewClick,
-        onToolToggle,
+        children:[focusHeader, viewMenu, ...optionMenus],
         spatial: {x: 0, y: menuTop, scale: 1}
       })._MenuPanel,
-        ...optionControls,
-      (currentSearchResults && SuggestList_({key: 'suggestList', size: {width: MENU_WIDTH}, spatial: {x: 9, y: 80, scale: 1}, onSearchResultClick, resultGroups: currentSearchResults})._SuggestList)
+      MenuPanel_({
+        key: TOOL_PANEL,
+        size: { width:  MENU_WIDTH },
+        color: 'gray',
+        children:[toolMenu],
+        spatial: {x: 0, y: size.height - calcPanelHeight(tools) - 4, scale: 1}
+      })._MenuPanel,
+      (currentSearchResults && SuggestList_({key: 'suggestList', size: {width: MENU_WIDTH - 16},
+        spatial: {x: 9, y: searchY + 40, scale: 1}, onSearchResultClick, resultGroups: currentSearchResults})._SuggestList)
     ];
   }
 

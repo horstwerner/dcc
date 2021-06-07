@@ -9,16 +9,16 @@ import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
 import {getAppCss, getConfig, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
-import {createContext, fillIn, fit, isDataEqual} from "@symb/util";
+import {createContext, fillIn, fit, getCommonType, isDataEqual} from "@symb/util";
 import {createPreprocessedCardNode, focusCardMenu, hoverCardMenu} from "@/components/Generators";
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 import {calcMaxChildren, ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 
-import { CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
+import {CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
 import {fetchSubGraph, getCardDescriptors, getClientConfig, getData, getDictionary, getToolDescriptors} from "@/Data";
 import {createFilterControl, updatedToolControl} from "@/Tools";
-import {TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODES} from "@/graph/TypeDictionary";
+import TypeDictionary, {TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/TypeDictionary";
 import {SYNTH_NODE_MAP, SYNTH_NODE_RETRIEVE} from "@/templates/Template";
 import {mapNode} from "@/graph/Analysis";
 
@@ -28,8 +28,7 @@ const SIDEBAR = 'sidebar';
 const FOCUS = 'focus';
 const HOVER_MENU = 'hover-menu';
 const TOOL_HEIGHT = 10;
-const BREADCRUMB_LANE_HEIGHT = 120;
-const SCROLLBAR_HEIGHT = 30;
+const BREADCRUMB_LANE_HEIGHT = 104;
 const PINNED_ROOT_CARD = 'rootcard';
 
 class App extends Component {
@@ -176,7 +175,6 @@ class App extends Component {
   }
 
   handleFocusCardPin() {
-    debugger
     const { focusCard } = this.state;
     const hoverCard = {...focusCard, key: this.createChildKey()};
     this.setState({ hoverCard });
@@ -324,7 +322,7 @@ class App extends Component {
     let pinnedWidth = MARGIN;
     const newPinned = pinned.map(card => {
       const nativeSize = card.template.getSize();
-      const cardScale =  (breadCrumbHeight - SCROLLBAR_HEIGHT) / nativeSize.height;
+      const cardScale =  (breadCrumbHeight - 2 * MARGIN) / nativeSize.height;
       const cardW = nativeSize.width * cardScale;
       const cardH = nativeSize.height * cardScale;
       const spatial = {x: cursor - cardW, y: 0.5 * (breadCrumbHeight - cardH), scale: cardScale};
@@ -347,7 +345,7 @@ class App extends Component {
     while (cursor > 0 && breadIdx >= 0){
       const card = {...breadCrumbs[breadIdx]};
       const nativeSize = card.template.getSize();
-      const cardScale =  (breadCrumbHeight - SCROLLBAR_HEIGHT) / nativeSize.height * scaleFactor;
+      const cardScale =  (breadCrumbHeight - 2 * MARGIN) / nativeSize.height * scaleFactor;
       const cardW = nativeSize.width * cardScale;
       const cardH = nativeSize.height * cardScale;
       card.spatial = {x: cursor - cardW, y: 0.5 * (breadCrumbHeight - cardH), scale: cardScale};
@@ -419,11 +417,11 @@ class App extends Component {
 
     const { template } = focusCard;
     const { aggregate } = template;
-    let nodeTypeUri = 'core:start';
+    let nodeTypeUri = null;
     if (data && data.getTypeUri() === TYPE_AGGREGATOR ) {
       const subNodes = data.get(TYPE_NODES);
       if (subNodes && subNodes.length > 0) {
-        nodeTypeUri = subNodes[0].getTypeUri();
+        nodeTypeUri = getCommonType(data).uri;
       }
     } else if (data){
       nodeTypeUri = data.getTypeUri();
@@ -446,7 +444,7 @@ class App extends Component {
       focusCard.options = currentViewOptions;
     }
     const {windowWidth, windowHeight} = this.state;
-    return { views, tools, activeTools, toolControls, filters: {}, focusData: data,
+    return { views, tools, activeTools, toolControls, filters: {}, focusData: data, nodeTypeUri,
       currentViewOptions,
       ...this.recalcLayout({ toolControls, windowWidth, windowHeight, focusCard })};
   }
@@ -635,7 +633,6 @@ class App extends Component {
         const {pinned, pinnedWidth} = this.calcPinnedCardPositions(this.state.pinned, mainWidth, breadCrumbHeight);
         newLayoutState.pinned = pinned;
         newLayoutState.pinnedWidth = pinnedWidth;
-        console.log(`consuming pinnedWidth: ${pinnedWidth}`);
         newLayoutState.breadCrumbCards = this.calcBreadCrumbChildren(this.state.breadCrumbCards, newLayoutState.breadCrumbHeight, newLayoutState.mainWidth, pinnedWidth);
       }
 
@@ -645,7 +642,8 @@ class App extends Component {
 
   createChildDescriptors(props) {
 
-    const { dataLoaded, focusCard, tools, activeTools, views, error, mainWidth, focusHeight, sideBarWidth, breadCrumbCards, pinned,
+    const { dataLoaded, focusCard, focusData, nodeTypeUri, tools, activeTools, views, error, mainWidth, focusHeight,
+      sideBarWidth, breadCrumbCards, pinned,
       hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions}
         = this.state;
 
@@ -666,13 +664,16 @@ class App extends Component {
       }
     } else if (focusCard && allowInteractions && !pinned.find(card => isDataEqual(card.data, focusCard.data))) {
       const menuRight = focusCard.template.getSize().width * focusCard.spatial.scale + focusCard.spatial.x;
-      hoverChildren.push(focusCardMenu(HOVER_MENU, focusCard.spatial.y, menuRight, this.handleFocusCardPin));
+      hoverChildren.push(focusCardMenu(`pin${focusCard.key}`, focusCard.spatial.y, menuRight, this.handleFocusCardPin));
     }
 
     const pinButtons = pinned.slice(1).map(card =>
         Div_({key: `${card.key}-pin`, className: getAppCss().pin,
           onClick: () => {this.removePin(card)},
-          spatial: {x: card.spatial.x, y: card.spatial.y - 10, scale: 1}})._Div);
+          spatial: {x: card.spatial.x + card.spatial.scale * card.template.getSize().width - 20, y: card.spatial.y - 11, scale: 1}})._Div);
+
+
+    const focusInfo = nodeTypeUri && `${TypeDictionary.getType(nodeTypeUri).name} ${focusData.type.uri === TYPE_AGGREGATOR ? `(${focusData.get(TYPE_NODE_COUNT)})` : ''}`;
 
     return [
       BreadcrumbLane_({
@@ -699,14 +700,15 @@ class App extends Component {
       })._Div,
       focusCard,
       ...hoverChildren,
-      Sidebar_({size: {width: sideBarWidth, height: windowHeight},
+      Sidebar_({key: SIDEBAR,
+        size: {width: sideBarWidth, height: windowHeight},
         menuTop: breadCrumbHeight,
         logoUrl: getConfig('logoUrl'),
         logoLink: getConfig('logoLink'),
-        key: SIDEBAR,
+        focusInfo,
         spatial: {x: mainWidth, y: 0, scale: 1},
         views: views.map(view => ({id: view.id, name: view.name || view.id, selected: view.id === focusCard.template.id})),
-        tools: tools && tools.map(tool => ({id: tool.id, name: tool.name, selected: activeTools[tool.id]})),
+        tools: tools && tools.map(tool => ({id: tool.id, name: tool.name, selected: !!activeTools[tool.id]})),
         options: get(focusCard, ['template', 'descriptor', 'options']) || {},
         currentViewOptions,
         onOptionSelect: this.handleOptionSelect,
