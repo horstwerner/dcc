@@ -642,7 +642,7 @@ class App extends Component {
 
   createChildDescriptors(props) {
 
-    const { dataLoaded, focusCard, focusData, nodeTypeUri, tools, activeTools, views, error, mainWidth, focusHeight,
+    const { dataLoaded, focusCard, nodeTypeUri, tools, activeTools, views, error, mainWidth, focusHeight,
       sideBarWidth, breadCrumbCards, pinned,
       hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions}
         = this.state;
@@ -673,7 +673,7 @@ class App extends Component {
           spatial: {x: card.spatial.x + card.spatial.scale * card.template.getSize().width - 20, y: card.spatial.y - 11, scale: 1}})._Div);
 
 
-    const focusInfo = nodeTypeUri && `${TypeDictionary.getType(nodeTypeUri).name} ${focusData.type.uri === TYPE_AGGREGATOR ? `(${focusData.get(TYPE_NODE_COUNT)})` : ''}`;
+    const focusInfo = nodeTypeUri && `${TypeDictionary.getType(nodeTypeUri).name} ${focusCard.data.type.uri === TYPE_AGGREGATOR ? `(${focusCard.data.get(TYPE_NODE_COUNT)})` : ''}`;
 
     return [
       BreadcrumbLane_({
