@@ -161,7 +161,7 @@ class App extends Component {
         this.removeModals();
       }
     } else if (event.key === 'f' && (event.ctrlKey || event.altKey)) {
-      this.getChild(SIDEBAR).focusearchBox();
+      this.getChild(SIDEBAR).focusSearchBox();
     }
   }
 
@@ -457,7 +457,7 @@ class App extends Component {
 
   setToolFilter(tool, selectedId, value) {
 
-    const {currentFilters} = this.state;``
+    const {currentFilters} = this.state;
 
     if (tool.type !== 'filter') {
       throw new Error(`Can't use filter for tool ${tool.id} of type ${tool.type}. Use tool of type filter instead.`);

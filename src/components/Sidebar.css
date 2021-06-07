@@ -45,7 +45,6 @@
 .searchInput:focus {
     border: solid 2px #A0A0A0;
     padding-right: 32px;
-    /*border-right: 32px solid #808080;*/
     outline: none;
 }
 
