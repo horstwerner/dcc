@@ -14,7 +14,7 @@ import TypeDictionary, {
 import {BLANK_NODE_URI} from "@/components/Constants";
 
 export function getTransformString(x, y, scale) {
-  return `translate(${x}px, ${y}px) scale(${scale})`;
+  return `translate(${Math.round(x)}px, ${Math.round(y)}px) scale(${scale})`;
 }
 
 export const fit = function fit(parentWidth, parentHeight, childWidth, childHeight, xOffset, yOffset, maxScale) {
