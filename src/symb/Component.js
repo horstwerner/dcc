@@ -271,11 +271,11 @@ export default class Component {
 
   setSize({width, height}) {
     if (width != null) {
-      this.dom.style.width = `${width}px`;
+      this.dom.style.width = `${Math.round(width)}px`;
       this.size.width = width;
     }
     if (height != null) {
-      this.dom.style.height = `${height}px`;
+      this.dom.style.height = `${Math.round(height)}px`;
       this.size.height = height;
     }
     this.size = {width, height};
@@ -364,7 +364,8 @@ export default class Component {
 
   transitionToState(partialState) {
     if (this.transitionTween) {
-      this.transitionTween.onEndCall(() => this.setState(partialState));
+      this.transitionTween.onEndCall(() => {
+         this.transitionToState(partialState)});
       return;
     }
     const transitionTween = new Tween(TRANSITION_DURATION).onEndCall(() => {this.transitionTween = null;});

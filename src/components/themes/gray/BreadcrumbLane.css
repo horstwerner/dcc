@@ -1,7 +1,7 @@
 .lane {
     position: absolute;
     overflow-y: hidden;
-    overflow-x: scroll;
+    overflow-x: hidden;
     background-color: #F5F5F3;
     border-top: solid 1px #d9d9d9;
     box-sizing: border-box;

@@ -5,8 +5,13 @@ window.onload = () => {
   const root = document.getElementById('root');
   const app = Factory.create(App_({key:"root", title:"Hallo Welt"})._App, null, root);
   document.body.style.overflow = 'hidden';
+  let pendingResize = null;
   document.body.onresize = () => {
-    app.onResize(window.innerWidth, window.innerHeight);
+    if (pendingResize) {
+      clearTimeout(pendingResize);
+    }
+
+    pendingResize = setTimeout( ()=> {app.onResize(window.innerWidth, window.innerHeight); pendingResize = null}, 20);
   };
 };
 

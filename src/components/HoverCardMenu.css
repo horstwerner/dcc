@@ -18,15 +18,16 @@
   cursor: pointer;
 }
 .icon {
-  opacity: 0.5;
+  opacity: 0.3;
   margin-right: 6px;
   cursor: pointer;
+  overflow: visible;
 }
 .icon:hover,
 .iconAbsolute:hover {
-  opacity: 0.8!important;
+  opacity: 0.7!important;
 }
 .icon:active,
 .iconAbsolute:active{
-  opacity: 0.9!important;
+  opacity: 0.8!important;
 }

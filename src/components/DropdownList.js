@@ -8,6 +8,7 @@ import {Image_} from "@symb/Image";
 const ROW_HEIGHT = 20;
 const ARROW_WIDTH = 20;
 const DEFAULT_LABEL_WIDTH = 70;
+const GRACE_PERIOD = 250;
 
 const DROPDOWN = 'dropdown';
 
@@ -32,18 +33,55 @@ class DropdownList extends Component {
     }
     this.handleMouseEnter = this.handleMouseEnter.bind(this);
     this.handleMouseLeave = this.handleMouseLeave.bind(this);
+    this.openList = this.openList.bind(this);
     this.dom.onmouseleave = this.handleMouseLeave;
+    this.collapseTimeout = null;
+    this.expandTimeout = null;
+    this.mouseInControl = false;
   }
 
   handleMouseEnter() {
+    if (this.mouseInControl) return;
+    this.mouseInControl = true;
     if (!this.state.isOpen) {
-      this.transitionToState({isOpen: true});
+      if (this.collapseTimeout) {
+        clearTimeout(this.collapseTimeout);
+        this.collapseTimeout = null;
+      }
+      this.expandTimeout = setTimeout( () => {
+        this.expandTimeout = null;
+        if (!this.mouseInControl) return;
+        this.openList();
+      }, GRACE_PERIOD
+      );
     }
   }
 
+  openList() {
+    this.mouseInControl = true;
+    if (this.transitionTween && this.transitionTween.isRunning()) {
+      this.transitionTween.finish();
+    }
+    this.transitionToState({isOpen: true});
+  }
+
   handleMouseLeave() {
+    if (!this.mouseInControl) return;
+    this.mouseInControl = false;
     if (this.state.isOpen) {
-      this.transitionToState({isOpen: false});
+      if (this.expandTimeout) {
+        clearTimeout(this.expandTimeout);
+        this.expandTimeout = null;
+      }
+      this.collapseTimeout = setTimeout(() => {
+        this.collapseTimeout = null;
+        if (!this.mouseInControl) {
+          if (this.transitionTween && this.transitionTween.isRunning()) {
+            this.transitionTween.finish();
+          }
+          this.transitionToState({isOpen: false})
+        }
+      }, GRACE_PERIOD);
     }
   }
 
@@ -85,7 +123,7 @@ class DropdownList extends Component {
 
     return [Div_({key: 'label', className: css.label, size: {width: labelW, height: 20}}, label)._Div,
       listContainer,
-      Image_({key: 'arrow', className: css.triangle, spatial:{x: width - ARROW_WIDTH, y: 0, scale: 1}, size: {width: ARROW_WIDTH, height: ROW_HEIGHT}, source: 'images/DropTriangle.svg', onClick: this.handleMouseEnter })._Image
+      Image_({key: 'arrow', className: css.triangle, spatial:{x: width - ARROW_WIDTH, y: 0, scale: 1}, size: {width: ARROW_WIDTH, height: ROW_HEIGHT}, source: 'images/DropTriangle.svg', onClick: this.openList })._Image
     ];
 
   }

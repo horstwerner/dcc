@@ -3,11 +3,18 @@ import Cache, {resolve, resolveAttribute} from "@/graph/Cache";
 
 import GraphNode from "@/graph/GraphNode";
 import Filter from "@/graph/Filter";
-import {TYPE_AGGREGATOR, TYPE_CONTEXT, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/TypeDictionary";
+import TypeDictionary, {
+  TYPE_AGGREGATOR,
+  TYPE_CONTEXT,
+  TYPE_NAME,
+  TYPE_NODE_COUNT,
+  TYPE_NODES,
+  TYPE_THING
+} from "@/graph/TypeDictionary";
 import {BLANK_NODE_URI} from "@/components/Constants";
 
 export function getTransformString(x, y, scale) {
-  return `translate(${x}px, ${y}px) scale(${scale})`;
+  return `translate(${Math.round(x)}px, ${Math.round(y)}px) scale(${scale})`;
 }
 
 export const fit = function fit(parentWidth, parentHeight, childWidth, childHeight, xOffset, yOffset, maxScale) {
@@ -211,7 +218,42 @@ export function getNodeArray(inputSelector, source, data) {
   const filter = inputSelector ? Filter.fromDescriptor(inputSelector) : null;
   const unfiltered = getUnfilteredNodeArray(source, data);
   return filter ? unfiltered.filter(filter.matches) : unfiltered;
+}
 
+export function getCommonType(aggregator) {
+  const nodes = aggregator.get(TYPE_NODES);
+  const types = {};
+  if (!nodes) {
+    return null;
+  }
+  nodes.forEach(node => {
+    types[node.getTypeUri()] = node.type;
+  });
+
+  let typeList = Object.keys(types);
+
+  while (typeList.length > 1) {
+    for (let i = 0; i < typeList.length; i++) {
+      for (let j = 0; j < typeList.length; j++) {
+        if (i === j) continue;
+        if (types[typeList[i]].isOfType(typeList[j])) {
+          delete types[typeList[i]];
+          break;
+        }
+      }
+    }
+    typeList = Object.keys(types);
+    if (typeList.length > 1) {
+      typeList.forEach(typeUri => {
+        if (typeUri !== TYPE_THING) {
+          const superType = types[typeUri].superType || TypeDictionary.getType(TYPE_THING);
+          types[superType.uri] = superType;
+        }
+      });
+      typeList = Object.keys(types);
+    }
+  }
+  return types[typeList[0]];
 }
 
 export const createContext = () => new GraphNode(TYPE_CONTEXT, BLANK_NODE_URI);

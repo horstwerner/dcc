@@ -16,7 +16,7 @@
   font-weight: bold;
   color: #99babf;
   text-transform: uppercase;
-  letter-spacing: 3px;
+  letter-spacing: 1px;
   margin-bottom: 5px;
   height: 20px;
 }
@@ -34,7 +34,7 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  padding: 3px 2px 0 10px;
+  padding: 5px 2px 0 10px;
   height: 22px;
   cursor: pointer;
 }

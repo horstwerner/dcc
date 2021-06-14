@@ -274,17 +274,20 @@ export const hoverCardMenu = function hoverCardMenu(key, top, right, onClose, on
   const width = iconSize;
   const height = iconSize;
   const children = [
-    onStash && Image_({key: 'stashbutton', className: hoverMenuCss.icon, width, height, source: 'public/Dock.svg', onClick: onStash})._Image,
-    onClose && Image_({key: 'closebutton', className: hoverMenuCss.icon, width, height, source: 'public/CloseButton.svg', onClick: onClose})._Image,
+    onStash && Image_({key: 'stashButton', className: hoverMenuCss.icon, width, height, source: 'public/PinButton.svg', onClick: onStash})._Image,
+    onClose && Image_({key: 'closeButton', className: hoverMenuCss.icon, width, height, source: 'public/CloseButton.svg', onClick: onClose})._Image,
   ].filter(Boolean);
   const totalWidth = children.length * iconSize + (children.length - 1) * iconMargin;
 
   return Div_({key, className: hoverMenuCss.menu, children, style: {width: totalWidth, height}, spatial: {x: right - totalWidth - iconMargin, y: top -0.7 * iconSize, scale: 1}})._Div
 }
 
-export const breadCrumbHoverIcon = function breadCrumbHoverIcon(key, top, right, onClose, onMouseEnter, onMouseLeave) {
+export const focusCardMenu = function focusCardMenu(key, top, right, onPin) {
+
   const width = iconSize;
   const height = iconSize;
-  return Image_({key, spatial: {x: right - iconSize + 4, y: top - 4, scale: 1},
-    className: hoverMenuCss.iconAbsolute, width, height, source: 'public/CloseButton.svg', onClick: onClose, onMouseEnter, onMouseLeave})._Image;
+  const children =
+    Image_({key: 'stashbutton', className: hoverMenuCss.icon, width, height, source: 'public/PinButton.svg', onClick: onPin})._Image;
+
+  return Div_({key, className: hoverMenuCss.menu, children, style: {width: iconSize, height}, spatial: {x: right - iconSize - iconMargin, y: top -0.7 * iconSize, scale: 1}})._Div
 }

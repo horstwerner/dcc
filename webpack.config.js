@@ -30,7 +30,7 @@ module.exports = function(webpackEnv) {
           test: /\.css$/,
           use: [
               'style-loader',
-            {loader: 'css-loader', options: {sourceMap: true, modules:true}}
+            {loader: 'css-loader', options: {sourceMap: true, modules:true, url: false}}
           ],
         }
       ]
