@@ -1,6 +1,7 @@
 import {get} from 'lodash';
 import Template from './Template';
 import TypeDictionary, {TYPE_THING} from "@/graph/TypeDictionary";
+import {DEBUG_MODE} from "@/Config";
 
 export const DEFAULT_VIEW_NAME = 'default';
 
@@ -42,7 +43,9 @@ class TemplateRegistry {
 
   registerTemplate(descriptor) {
     const { id, appliesTo } = descriptor;
-    console.log(`registered template '${descriptor.id}'`);
+    if (DEBUG_MODE) {
+      console.log(`registered template '${descriptor.id}'`);
+    }
     const template = new Template(descriptor);
     if (Array.isArray(appliesTo)) {
       appliesTo.forEach(type => this.registerTemplateForType(type, template));
