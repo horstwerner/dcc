@@ -8,7 +8,7 @@ import {Div_} from '@symb/Div';
 import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
-import {getAppCss, getConfig, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
+import {DEBUG_MODE, getAppCss, getConfig, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
 import {createContext, fillIn, fit, getCommonType, isDataEqual} from "@symb/util";
 import {createPreprocessedCardNode, focusCardMenu, hoverCardMenu} from "@/components/Generators";
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
@@ -80,7 +80,9 @@ class App extends Component {
           getCardDescriptors(this.onError),
           getToolDescriptors(this.onError)]))
         .then(() => {
-          Cache.validateNodes();
+          if (DEBUG_MODE) {
+            Cache.validateNodes();
+          }
           const {mainWidth, breadCrumbHeight} = this.state;
           if (!this.state.error) {
             const startData = new GraphNode(TYPE_AGGREGATOR, Cache.createUri());
@@ -187,8 +189,7 @@ class App extends Component {
     const {pinned, pinnedWidth} = this.calcPinnedCardPositions(newPinned, mainWidth, breadCrumbHeight);
     const movedBreadCrumbs  = this.calcBreadCrumbChildren(breadCrumbCards, breadCrumbHeight, mainWidth, pinnedWidth);
     this.setState({hoverCard: null, pinned: newPinned});
-    this.transitionToState({ pinned, pinnedWidth, breadCrumbCards: movedBreadCrumbs })
-        .onEndCall(() => {
+    this.transitionToState({ pinned, pinnedWidth, breadCrumbCards: movedBreadCrumbs }, () => {
           pinned.find(pinCard=> pinCard.key === card.key).style.zIndex = 0;
           this.renderStateChange();
         });
@@ -296,7 +297,7 @@ class App extends Component {
       });
       clone.hover = true;
       this.setState({hoverCard: clone, allowInteractions: false});
-      this.transitionToState({hoverCard: {...clone, spatial: newSpatial}}).onEndCall(() => {
+      this.transitionToState({hoverCard: {...clone, spatial: newSpatial}},() => {
             this.setState({allowInteractions: true});
           }
       );
@@ -314,7 +315,7 @@ class App extends Component {
     this.setState({allowInteractions: false, focusCard: newFocusCard, hoverCard: null, breadCrumbCards});
     const targetState = {...this.createStateForFocus(newFocusCard, newFocusCard.data),
       breadCrumbCards: this.calcBreadCrumbChildren(breadCrumbCards, breadCrumbHeight, mainWidth, pinnedWidth)};
-    this.transitionToState(targetState).onEndCall(() => this.setState({allowInteractions: true}));
+    this.transitionToState(targetState, () => this.setState({allowInteractions: true}));
   }
 
   calcPinnedCardPositions(pinned, mainWidth, breadCrumbHeight) {
@@ -409,7 +410,7 @@ class App extends Component {
 
 
   createStateForFocus(focusCard, data) {
-    if (GraphNode.isGraphNode(data)) {
+    if (DEBUG_MODE && GraphNode.isGraphNode(data)) {
       console.log(`----------------------------------------------------------`);
       console.log(`focus data is ${data.getSummary()}`);
       console.log(`\nTemplate is ${focusCard.template.id}`);

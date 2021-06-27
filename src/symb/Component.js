@@ -362,13 +362,17 @@ export default class Component {
     this.dom.style.height = `${height}px`;
   }
 
-  transitionToState(partialState) {
+  transitionToState(partialState, callback) {
     if (this.transitionTween) {
       this.transitionTween.onEndCall(() => {
-         this.transitionToState(partialState)});
+         this.transitionToState(partialState, callback)});
       return;
     }
-    const transitionTween = new Tween(TRANSITION_DURATION).onEndCall(() => {this.transitionTween = null;});
+    const transitionTween = new Tween(TRANSITION_DURATION).onEndCall(() =>
+      {this.transitionTween = null;
+        if (callback) {
+          callback();
+        }});
     if (this.updateScheduled) {
       this.onStateRendered = () => {
         this.transitionTween = transitionTween;
@@ -381,7 +385,6 @@ export default class Component {
       this.setState(partialState);
       transitionTween.start();
     }
-    return transitionTween;
   }
 
   setState(partialState) {
@@ -417,6 +420,7 @@ export default class Component {
       })
     }
     this.dom.remove();
+    this.dom = null;
   }
 
 };
