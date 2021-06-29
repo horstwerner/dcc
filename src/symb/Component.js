@@ -270,6 +270,7 @@ export default class Component {
   }
 
   setSize({width, height}) {
+    if (!this.dom) return;
     if (width != null) {
       this.dom.style.width = `${Math.round(width)}px`;
       this.size.width = width;
@@ -323,6 +324,7 @@ export default class Component {
   }
 
   setSpatial({x, y, scale}) {
+    if (!this.dom) return;
     this.dom.style.transform = getTransformString(x, y, scale);
     this.spatial = {x, y, scale};
   }
@@ -336,6 +338,7 @@ export default class Component {
   }
 
   setAlpha(alpha) {
+    if (!this.dom) return;
     this.alpha = alpha;
     this.dom.style.opacity = this.alpha;
   }
