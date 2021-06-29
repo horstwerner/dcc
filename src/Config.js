@@ -12,7 +12,7 @@ import cssAppDefault from "@/components/themes/default/App.css";
 import cssAppGray from "@/components/themes/gray/App.css";
 
 
-export const DEBUG_MODE = false;
+export const DEBUG_MODE = true;
 export const OFFLINE_MODE = false;
 export const THEME_DEFAULT = 'default';
 export const THEME_GRAY = 'gray';

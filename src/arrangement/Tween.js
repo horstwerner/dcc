@@ -90,7 +90,6 @@ class Phase {
   };
 
   interpolate(uneasedTau) {
-    this.frames++;
     const tau = uneasedTau >= 1 ? 1 : Math.max(0, this.easing(uneasedTau));
     for (let i = 0; i < this.particles.length; i++) {
       const p = this.particles[i];
@@ -133,7 +132,6 @@ export default class Tween {
   interpolate(time) {
     if (this.stopped) return;
     window.requestAnimationFrame(this.interpolate);
-    this.frames++;
     for (let i = 0; i < this.phases.length; i++) {
       const phase = this.phases[i];
       const tau = Math.min((time - this.startTime - phase.delay) / phase.duration, 1);
@@ -226,7 +224,6 @@ export default class Tween {
     this.started = true;
     // noinspection JSUnresolvedVariable
     this.startTime = performance.now();
-    this.frames = 0;
 
     for (let i = 0; i < this.phases.length; i++) {
       this.phases[i].status = STATUS_ACTIVE;
