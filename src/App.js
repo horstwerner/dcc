@@ -445,7 +445,7 @@ class App extends Component {
       focusCard.options = currentViewOptions;
     }
     const {windowWidth, windowHeight} = this.state;
-    return { views, tools, activeTools, toolControls, filters: {}, focusData: data, nodeTypeUri,
+    return { views, tools, activeTools, toolControls, currentFilters: [], focusData: data, nodeTypeUri,
       currentViewOptions,
       ...this.recalcLayout({ toolControls, windowWidth, windowHeight, focusCard })};
   }
