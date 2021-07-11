@@ -108,7 +108,11 @@ export const getClientConfig = function (onError) {
 }
 
 export const getClientConfigFromDB = function (onError) {
-  return fetch('/api/config')
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const configUrl = urlParams.has('configUrl') ? urlParams.get(`configUrl`) : '/api/config';
+
+  return fetch(configUrl)
       .then(handleResponse)
       .then(result => {
         setConfig(result.data)})
