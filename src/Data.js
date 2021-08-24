@@ -108,10 +108,14 @@ export const getClientConfig = function (onError) {
 }
 
 export const getClientConfigFromDB = function (onError) {
-  return fetch('/api/config')
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const configUrl = urlParams.has('configUrl') ? urlParams.get(`configUrl`) : '/api/config';
+
+  return fetch(configUrl)
       .then(handleResponse)
       .then(result => {
-        setConfig(result.data)})
+        setConfig(result.data);})
       .catch(error => {
         console.log(error.stack);
         onError(error.message);
@@ -161,7 +165,7 @@ export const getData = function (onError) {
   return OFFLINE_MODE ? getDataOffline(onError) : getDataFromDB(onError);
 }
 
-export const fetchSubGraph = function getGraph(queryUrl, entryPointType, entryPointUri, onError) {
+export const fetchSubGraph = function fetchSubGraph(queryUrl, entryPointType, entryPointUri, onError) {
   return fetch(queryUrl, {})
       .then(handleResponse)
       .then(res => {
@@ -188,7 +192,24 @@ export const getDataFromDB = function(onError) {
    */
   const result = [];
   if (getGraph) {
-    result.push(fetchSubGraph(`/api/graph`,null, null, onError));
+    const graphParams = (typeof getGraph === 'object') ? getGraph : {};
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.forEach((value, key) => {
+      if (key.startsWith('graph-')) {
+        graphParams[key.substr('graph-'.length)] = value;
+      }
+    });
+
+    let queryUrl;
+    const graphParamKeys = Object.keys(graphParams);
+    if (graphParamKeys.length > 0) {
+      const queryParts = graphParamKeys.map(key => `${key}=${encodeURIComponent(graphParams[key])}`);
+      queryUrl = `/api/graph?${queryParts.join('&')}`;
+    } else {
+      queryUrl = '/api/graph';
+    }
+
+    result.push(fetchSubGraph(queryUrl,null, null, onError));
   }
 
   if (getTables) {

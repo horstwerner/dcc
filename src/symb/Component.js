@@ -414,7 +414,7 @@ export default class Component {
     }
   }
 
-  destroy() {
+  clearChildren() {
     if (this.childByKey) {
       Object.keys(this.childByKey).forEach(key => {
         if (this.childByKey[key].destroy) {
@@ -422,6 +422,11 @@ export default class Component {
         }
       })
     }
+    this.childByKey = {};
+  }
+
+  destroy() {
+    this.clearChildren();
     this.dom.remove();
     this.dom = null;
   }

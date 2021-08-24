@@ -32,6 +32,8 @@ export default class GraphNode {
     }
     this.uri = uri;
     this.properties = {};
+    // these associations are pointing back - and belong - to another graph node, which points to this
+    this.inverseAssociations = {};
     if (originalNode) {
       if (typeUri !== TYPE_CONTEXTUAL_NODE) {
         throw new Error(`reference to original Node ${originalNode.uri} only allowed for ${TYPE_CONTEXTUAL_NODE}`);
@@ -219,8 +221,18 @@ export default class GraphNode {
    * private, lower level, one-directional addition of association
    * @param associationTypeUri
    * @param graphNode
+   * @param isInverse keep track of this being an inverse association
    */
-  addAssociatedNode(associationTypeUri, graphNode) {
+    addAssociatedNode(associationTypeUri, graphNode, isInverse) {
+
+    if (isInverse) {
+      let inverseTypeList = this.inverseAssociations[associationTypeUri];
+      if (!inverseTypeList) {
+        inverseTypeList = [];
+        this.inverseAssociations[associationTypeUri] = inverseTypeList;
+      }
+      inverseTypeList.push(graphNode);
+    }
 
     const property = this.properties[associationTypeUri];
     if (property === undefined) {
@@ -233,6 +245,7 @@ export default class GraphNode {
       }
       return;
     }
+
     if (GraphNode.isGraphNode(property)) {
       if (property === graphNode) return; //already exists
       let newArray = [];
@@ -244,29 +257,120 @@ export default class GraphNode {
     throw new Error("Unexpected type of associated object (" + this.uri + "->" + associationTypeUri + ")");
   };
 
+  isInverseAssociation(type, graphNode) {
+    return this.inverseAssociations[type] && this.inverseAssociations[type].includes(graphNode);
+  }
+
+  removeLocalInverseAssociation(type, graphNode) {
+    if (!this.isInverseAssociation(type, graphNode)) {
+      console.warn(`Attempt to remove not-inverse association ${type}->${graphNode.getDisplayName()}`);
+      return;
+    }
+    this.removeAssociation(type, graphNode);
+    const inverse = this.inverseAssociations[type];
+    const index = inverse.indexOf(graphNode);
+
+    inverse.splice(index, 1);
+  }
+
+  removeAssociation (type, graphNode) {
+    const associated = this.properties[type];
+    if (associated === graphNode) {
+      this.properties[type] = null;
+      return;
+    }
+    else if (Array.isArray(associated)) {
+      const index = associated.indexOf(graphNode);
+      if (index > -1) {
+        associated.splice(index, 1);
+        return;
+      }
+    }
+    throw new Error(`attempt to remove non-existing association`);
+  }
+
+  removeRemoteInverseAssociations() {
+    Object.keys(this.properties).forEach(propUri => {
+      const type = TypeDictionary.getType(propUri);
+      const prop = this.properties[propUri];
+      if (type.isAssociation && !this.isInverseAssociation(type, prop)) {
+        const inverseTypeUri = type.getInverseType(this.getTypeUri());
+        (Array.isArray(prop) ? prop : [prop]).forEach(targetNode => targetNode.removeLocalInverseAssociation(inverseTypeUri, this));
+      }
+    });
+  }
+
+  removeRemoteAssociations() {
+    const processed = {};
+    Object.values(this.inverseAssociations).forEach(associated => {
+      (Array.isArray(associated) ? associated : [associated])
+          .forEach(targetNode => {
+            if(!processed[targetNode.getUniqueKey()]) {
+              targetNode.removeAssociationsTo(this);
+              processed[targetNode.getUniqueKey()] = true;
+            }
+          })
+    });
+  }
+
+  removeAssociationsTo(node) {
+      Object.keys(this.properties).forEach(propUri => {
+        const propType = TypeDictionary.getType(propUri);
+        if (propType.isAssociation) {
+          const associated = this.properties[propType];
+          if (associated === node || (Array.isArray(associated) && associated.contains(node))) {
+            this.removeAssociation(propType, node);
+          }
+        }
+      });
+  }
+
+  clearOwnProperties() {
+    // remove inverse associations which this object has created in other nodes
+    this.removeRemoteInverseAssociations();
+    this.clearProperties();
+
+    //restore inverse associations coming from other nodes
+    Object.keys(this.inverseAssociations).forEach(assoTypeUri => {
+      const associated = this.inverseAssociations[assoTypeUri];
+      (Array.isArray(associated) ? associated : [associated])
+          .forEach(targetNode => this.addAssociatedNode(assoTypeUri, targetNode, false));
+          // isInverse only false because already in inverse association list
+    });
+  }
+
+  destroy() {
+    // remove inverses resulting from associations this has to other nodes
+    node.removeRemoteInverseAssociations();
+    // remove direct associations other nodes have to this
+    node.removeRemoteAssociations();
+    // TODO: handle contextual nodes pointing to this
+  }
+
+
   /**
    * creates bidirectional association
-   * @param associationtype
+   * @param associationType
    * @param {String | object} target
    * @param {String?} targetTypeUri
    */
-  addAssociation(associationtype, target, targetTypeUri) {
+  addAssociation(associationType, target, targetTypeUri) {
 
     if (!target) return ;
 
-    const nodeType = targetTypeUri || (!associationtype.isAssociation && associationtype.uri);
+    const nodeType = targetTypeUri || (!associationType.isAssociation && associationType.uri);
 
-    const inverseTypeUri = associationtype.getInverseType(this.getTypeUri());
+    const inverseTypeUri = associationType.getInverseType(this.getTypeUri());
 
     if (typeof target === 'string') {
       const targetNode = Cache.getNode(nodeType, target);
-      this.addAssociatedNode(associationtype.uri, targetNode);
-      targetNode.addAssociatedNode(inverseTypeUri, this);
+      this.addAssociatedNode(associationType.uri, targetNode, false);
+      targetNode.addAssociatedNode(inverseTypeUri, this, true);
       return this;
     }
     else if (typeof target === 'object' && GraphNode.isGraphNode(target)) {
-      this.addAssociatedNode(associationtype.uri, target);
-      target.addAssociatedNode(inverseTypeUri, this);
+      this.addAssociatedNode(associationType.uri, target, false);
+      target.addAssociatedNode(inverseTypeUri, this, true);
       return this;
     }
 
@@ -275,18 +379,18 @@ export default class GraphNode {
         let element = target[i];
         if (typeof element === 'string') {
           const targetNode = Cache.getNode(nodeType, element);
-          this.addAssociatedNode(associationtype.uri, targetNode);
-          targetNode.addAssociatedNode(inverseTypeUri, this);
+          this.addAssociatedNode(associationType.uri, targetNode, false);
+          targetNode.addAssociatedNode(inverseTypeUri, this, true);
         }
         else if (GraphNode.isGraphNode(element)) {
-          this.addAssociatedNode(associationtype.uri, element);
-          element.addAssociatedNode(inverseTypeUri, this);
+          this.addAssociatedNode(associationType.uri, element, false);
+          element.addAssociatedNode(inverseTypeUri, this, true);
         }
       }
       return this;
     }
 
-    throw new Error("Unexpected type of associated object (" + this.uri + "->" + associationtype + ")");
+    throw new Error("Unexpected type of associated object (" + this.uri + "->" + associationType + ")");
   };
 
   hasDirectAssociation(association, targetnode) {

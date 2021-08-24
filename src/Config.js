@@ -11,8 +11,9 @@ import cssRadioButtonsGray from "@/components/themes/gray/RadioButtons.css";
 import cssAppDefault from "@/components/themes/default/App.css";
 import cssAppGray from "@/components/themes/gray/App.css";
 
+const urlParams = new URLSearchParams(window.location.search);
 
-export const DEBUG_MODE = true;
+export const DEBUG_MODE = urlParams.has('debug') ? !!urlParams.get(`debug`) : false;
 export const OFFLINE_MODE = false;
 export const THEME_DEFAULT = 'default';
 export const THEME_GRAY = 'gray';

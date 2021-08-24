@@ -1,4 +1,6 @@
 const express = require('express');
+const enableWs = require('express-ws')
+
 const app = express();
 const API_PORT = 3001;
 const bodyParser = require('body-parser');
@@ -10,6 +12,8 @@ const nodeArray = [];
 
 const fs = require('fs');
 const path = require('path');
+
+const wsInstance = enableWs(app);
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
@@ -160,3 +164,50 @@ app.get('/', function (req, res) {
 app.listen(API_PORT, function(){
   console.log('Development Control Center mock backend is running');
 });
+
+app.ws('/updates', (ws) => {
+  ws.on('message', () => {
+    ws.send(`ack`);
+  })
+
+  ws.on('close', () => {
+    console.log('WebSocket was closed')
+  })
+
+  ws.isAlive = true;
+  console.log(`WebSocket connected`);
+
+  ws.on('pong', () => {
+    console.log('pong');
+    ws.isAlive = true;
+  });
+
+  console.log(`Websocket opened`);
+  const updated = {id: "TQC-10363",
+    "core:name": "A Changed Ticket Name",
+    "jira:status": "in progress",
+    "jira:storypoints": 6,
+    "jira:depends-on": "TQC-10354",
+    "jira:team": "Platform",
+    "jira:ticket-type": "Story",
+    "jira:feature": "Fuzzy data support",
+    "jira:sprint": "2020-07",
+    "jira:release": "1.3",
+    "core:url": "http://jira.com/TQC-10363"}
+
+  setTimeout(() => ws.send(JSON.stringify({update: [updated]})), 5000);
+});
+
+setInterval(() => {
+  wsInstance.getWss().clients.forEach((ws) => {
+
+    if (!ws.isAlive) return ws.terminate();
+
+    ws.isAlive = false;
+    console.log('ping');
+    ws.ping(null, false, true);
+  });
+}, 10000);
+
+
+
