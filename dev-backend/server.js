@@ -165,8 +165,6 @@ app.listen(API_PORT, function(){
   console.log('Development Control Center mock backend is running');
 });
 
-
-
 app.ws('/updates', (ws) => {
   ws.on('message', () => {
     ws.send(`ack`);
@@ -185,7 +183,19 @@ app.ws('/updates', (ws) => {
   });
 
   console.log(`Websocket opened`);
-  // setTimeout(() => ws.send(JSON.stringify({nodes: 'Hallo Hallo'})), 5000);
+  const updated = {id: "TQC-10363",
+    "core:name": "A Changed Ticket Name",
+    "jira:status": "in progress",
+    "jira:storypoints": 6,
+    "jira:depends-on": "TQC-10354",
+    "jira:team": "Platform",
+    "jira:ticket-type": "Story",
+    "jira:feature": "Fuzzy data support",
+    "jira:sprint": "2020-07",
+    "jira:release": "1.3",
+    "core:url": "http://jira.com/TQC-10363"}
+
+  setTimeout(() => ws.send(JSON.stringify({update: [updated]})), 5000);
 });
 
 setInterval(() => {

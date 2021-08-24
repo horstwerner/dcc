@@ -159,6 +159,9 @@ class App extends Component {
     const { update } = data;
     if (update) {
       Cache.updateNodes(update);
+      this.clearChildren();
+      this.update(this.innerProps);
+      this.renderStateChange();
     }
     // TODO: only activate when contextual node problem solved, see GraphNode.destroy()
     // if (remove) {

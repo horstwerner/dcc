@@ -364,12 +364,12 @@ export default class GraphNode {
 
     if (typeof target === 'string') {
       const targetNode = Cache.getNode(nodeType, target);
-      this.addAssociatedNode(associationType.uri, targetNode);
-      targetNode.addAssociatedNode(inverseTypeUri, this, false);
+      this.addAssociatedNode(associationType.uri, targetNode, false);
+      targetNode.addAssociatedNode(inverseTypeUri, this, true);
       return this;
     }
     else if (typeof target === 'object' && GraphNode.isGraphNode(target)) {
-      this.addAssociatedNode(associationType.uri, target);
+      this.addAssociatedNode(associationType.uri, target, false);
       target.addAssociatedNode(inverseTypeUri, this, true);
       return this;
     }
@@ -379,12 +379,12 @@ export default class GraphNode {
         let element = target[i];
         if (typeof element === 'string') {
           const targetNode = Cache.getNode(nodeType, element);
-          this.addAssociatedNode(associationType.uri, targetNode);
-          targetNode.addAssociatedNode(inverseTypeUri, this);
+          this.addAssociatedNode(associationType.uri, targetNode, false);
+          targetNode.addAssociatedNode(inverseTypeUri, this, true);
         }
         else if (GraphNode.isGraphNode(element)) {
-          this.addAssociatedNode(associationType.uri, element);
-          element.addAssociatedNode(inverseTypeUri, this);
+          this.addAssociatedNode(associationType.uri, element, false);
+          element.addAssociatedNode(inverseTypeUri, this, true);
         }
       }
       return this;
