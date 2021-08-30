@@ -1,7 +1,7 @@
 import P from 'prop-types';
 import Component from "@symb/Component";
 import ComponentFactory from "@symb/ComponentFactory";
-import {CANVAS_WIDTH, getBreadCrumbCss, MARGIN} from "@/Config";
+import {CANVAS_WIDTH, getBreadCrumbCss} from "@/Config";
 import {Div_} from "@symb/Div";
 
 const Lane = 'breadcrumb-lane';
@@ -23,7 +23,6 @@ class BreadcrumbLane extends Component {
 
   constructor(props, parent, domNode) {
     super({...props, className: getBreadCrumbCss().lane}, parent, domNode);
-    this.dom.onscroll = props.onScroll;
     this.dom.onclick = props.onClick;
   }
 
@@ -34,7 +33,7 @@ class BreadcrumbLane extends Component {
   createChildDescriptors(props) {
     const {size, pinnedWidth} = props;
     const {height, width} = size;
-    return Div_({className: getBreadCrumbCss().pinnedBackground, size: {width: pinnedWidth - 0.5 * MARGIN, height}, spatial: {x: width - pinnedWidth + 0.5 * MARGIN, y: 0, scale: 1}})._Div;
+    return Div_({className: getBreadCrumbCss().pinnedBackground, size: {width: pinnedWidth, height}, spatial: {x: width - pinnedWidth, y: 0, scale: 1}})._Div;
   }
 
 }

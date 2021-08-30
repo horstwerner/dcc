@@ -382,7 +382,7 @@ class App extends Component {
 
     const newBreadCrumbs = [];
 
-    let cursor = mainWidth - pinnedWidth;
+    let cursor = mainWidth - pinnedWidth - MARGIN;
 
     let scaleFactor = 1;
     let breadIdx = breadCrumbs.length - 1;
