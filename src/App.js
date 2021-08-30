@@ -62,6 +62,7 @@ class App extends Component {
       focusData: null,
       focusCard: null,
       hoverCard: null,
+      unfilteredSaved: false,
       allowInteractions: true,
       waiting: true,
       dataLoaded: false,
@@ -351,7 +352,7 @@ class App extends Component {
     const existingPinned = pinned.find(card => isDataEqual(focusCard.data, card.data));
     const breadCrumbCards = existingPinned ?
         remainingBreadcrumbCards :
-        [...remainingBreadcrumbCards, this.toBreadCrumbCard(focusCard)];
+        [...remainingBreadcrumbCards, this.toBreadCrumbCard(focusCard, false)];
 
     this.removeModals();
     this.setState({allowInteractions: false, focusCard: newFocusCard, hoverCard: null, breadCrumbCards});
@@ -388,7 +389,7 @@ class App extends Component {
     while (cursor > 0 && breadIdx >= 0){
       const card = {...breadCrumbs[breadIdx]};
       const nativeSize = card.template.getSize();
-      const cardScale =  (breadCrumbHeight - 2 * MARGIN) / nativeSize.height * scaleFactor;
+      const cardScale = (breadCrumbHeight - 2 * MARGIN) / nativeSize.height * scaleFactor;
       const cardW = nativeSize.width * cardScale;
       const cardH = nativeSize.height * cardScale;
       card.spatial = {x: cursor - cardW, y: 0.5 * (breadCrumbHeight - cardH), scale: cardScale};
@@ -406,13 +407,15 @@ class App extends Component {
   /**
    * calculate descriptor for a new breadcrumb card from a current focus card
    * @param sourceCard
+   * @param duplicate create new key (i.e. new card)
    * @return breadCrumbCard
    */
-  toBreadCrumbCard(sourceCard) {
+  toBreadCrumbCard(sourceCard, duplicate) {
     return {...sourceCard,
       clickMode: CLICK_OPAQUE,
       onClick: this.handleBreadCrumbClick,
-      style: {zIndex: 0}
+      style: {zIndex: 0},
+      key: duplicate ? this.createChildKey() : sourceCard.key
     };
   }
 
@@ -488,7 +491,7 @@ class App extends Component {
     }
     const {windowWidth, windowHeight} = this.state;
     return { views, tools, activeTools, toolControls, currentFilters: [], focusData: data, nodeTypeUri,
-      currentViewOptions,
+      currentViewOptions, unfilteredSaved: false,
       ...this.recalcLayout({ toolControls, windowWidth, windowHeight, focusCard })};
   }
 
@@ -530,12 +533,24 @@ class App extends Component {
 
 
   updateFilteredState(newFilters, toolId, selectedId) {
-    const { focusData, focusCard, activeTools, toolControls } = this.state;
+    const { focusData, focusCard, activeTools, toolControls, unfilteredSaved, breadCrumbCards, breadCrumbHeight, mainWidth, pinnedWidth } = this.state;
     const { } = this.state;
     const tool = activeTools[toolId];
     const newFocusCard = this.updatedFocusCard(focusCard, focusData, newFilters);
+    let newBreadCrumbCards = breadCrumbCards;
+    let newUnfilteredSaved = unfilteredSaved;
+    if (!unfilteredSaved) {
+      const newBreadcrumb = this.toBreadCrumbCard(focusCard, true);
+      this.setState({breadCrumbCards: [...breadCrumbCards, newBreadcrumb]});
+      newBreadCrumbCards = this.calcBreadCrumbChildren([...breadCrumbCards, newBreadcrumb], breadCrumbHeight, mainWidth, pinnedWidth);
+      newUnfilteredSaved = true;
+
+    }
+
     this.transitionToState({currentFilters: newFilters,
       toolControls: toolControls.map(control => (control.key !== toolId ? control : updatedToolControl(tool, control, selectedId, newFocusCard.data, this.setToolFilter, this.removeToolFilter))),
+      unfilteredSaved: newUnfilteredSaved,
+      breadCrumbCards: newBreadCrumbCards,
       focusCard: newFocusCard});
   }
 
@@ -686,7 +701,7 @@ class App extends Component {
   createChildDescriptors(props) {
 
     const { dataLoaded, focusCard, nodeTypeUri, tools, activeTools, views, error, mainWidth, focusHeight,
-      sideBarWidth, breadCrumbCards, pinned,
+      sideBarWidth, breadCrumbCards, pinned, pinnedWidth,
       hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions}
         = this.state;
 
@@ -721,6 +736,7 @@ class App extends Component {
     return [
       BreadcrumbLane_({
         key: BREADCRUMBS,
+        pinnedWidth,
         spatial: {x: 0, y: 0, scale: 1},
         size:  {width: mainWidth, height: breadCrumbHeight},
         onClick: this.removeModals,

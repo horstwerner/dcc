@@ -75,6 +75,9 @@ export const setConfig = function setConfig(config) {
   if (config.logoAlign) {
     configuration.logoAlign = alignMap[config.logoAlign] || 'center';
   }
+  if (config.title) {
+    document.title = config.title;
+  }
 }
 
 export const getConfigs = function getConfigs(parameterList) {

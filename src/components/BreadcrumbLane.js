@@ -1,8 +1,8 @@
 import P from 'prop-types';
 import Component from "@symb/Component";
 import ComponentFactory from "@symb/ComponentFactory";
-import {CANVAS_WIDTH, getBreadCrumbCss} from "@/Config";
-import Tween from "@/arrangement/Tween";
+import {CANVAS_WIDTH, getBreadCrumbCss, MARGIN} from "@/Config";
+import {Div_} from "@symb/Div";
 
 const Lane = 'breadcrumb-lane';
 
@@ -13,7 +13,12 @@ class BreadcrumbLane extends Component {
   static baseTag = 'div';
 
   static propTypes = {
-    size: P.shape({width: P.number.isRequired, height: P.number.isRequired, onScroll: P.func.isRequired, onClick: P.func}),
+    size: P.shape({
+      width: P.number.isRequired,
+      height: P.number.isRequired,
+      pinnedWidth: P.number.isRequired,
+      onClick: P.func
+    }),
   }
 
   constructor(props, parent, domNode) {
@@ -27,24 +32,11 @@ class BreadcrumbLane extends Component {
   }
 
   createChildDescriptors(props) {
-    return null;
+    const {size, pinnedWidth} = props;
+    const {height, width} = size;
+    return Div_({className: getBreadCrumbCss().pinnedBackground, size: {width: pinnedWidth - 0.5 * MARGIN, height}, spatial: {x: width - pinnedWidth + 0.5 * MARGIN, y: 0, scale: 1}})._Div;
   }
 
-
-  getScrollPos() {
-    return this.dom.scrollLeft;
-  }
-
-  scrollToPos(newScrollLeft, tween) {
-
-    const useTween = tween || new Tween(600);
-
-    useTween
-        .addInterpolation({left: this.dom.scrollLeft}, {left: newScrollLeft}, ({left}) => {this.dom.scrollLeft = left});
-    if (!tween) {
-      useTween.start();
-    }
-  }
 }
 
 ComponentFactory.registerType(BreadcrumbLane);
