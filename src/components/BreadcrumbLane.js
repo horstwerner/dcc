@@ -23,7 +23,7 @@ class BreadcrumbLane extends Component {
 
   constructor(props, parent, domNode) {
     super({...props, className: getBreadCrumbCss().lane}, parent, domNode);
-    this.dom.onclick = props.onClick;
+      this.dom.onclick = props.onClick;
   }
 
   getScale(width) {

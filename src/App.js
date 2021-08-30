@@ -1,5 +1,5 @@
 import P from 'prop-types';
-import {get, omit, pick, without} from 'lodash';
+import {get, omit, pick, without, isEmpty} from 'lodash';
 import Component from '@symb/Component';
 import ComponentFactory from "@symb/ComponentFactory";
 import Cache from './graph/Cache';
@@ -348,9 +348,10 @@ class App extends Component {
   }
 
   moveCardToFocus(newFocusCard, remainingBreadcrumbCards) {
-    const { focusCard, pinned, breadCrumbHeight, mainWidth, pinnedWidth } = this.state;
+    const { focusCard, pinned, breadCrumbHeight, mainWidth, pinnedWidth, unfilteredSaved, currentFilters } = this.state;
     const existingPinned = pinned.find(card => isDataEqual(focusCard.data, card.data));
-    const breadCrumbCards = existingPinned ?
+    const saved = unfilteredSaved && isEmpty(currentFilters);
+    const breadCrumbCards = (existingPinned || saved) ?
         remainingBreadcrumbCards :
         [...remainingBreadcrumbCards, this.toBreadCrumbCard(focusCard, false)];
 
@@ -544,7 +545,6 @@ class App extends Component {
       this.setState({breadCrumbCards: [...breadCrumbCards, newBreadcrumb]});
       newBreadCrumbCards = this.calcBreadCrumbChildren([...breadCrumbCards, newBreadcrumb], breadCrumbHeight, mainWidth, pinnedWidth);
       newUnfilteredSaved = true;
-
     }
 
     this.transitionToState({currentFilters: newFilters,
