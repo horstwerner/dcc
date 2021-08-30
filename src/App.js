@@ -21,6 +21,7 @@ import {createFilterControl, updatedToolControl} from "@/Tools";
 import TypeDictionary, {TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/TypeDictionary";
 import {SYNTH_NODE_MAP, SYNTH_NODE_RETRIEVE} from "@/templates/Template";
 import {mapNode} from "@/graph/Analysis";
+import {LoadingAnimation_} from "@/components/LoadingAnimation";
 
 const APP = 'app';
 const BREADCRUMBS = 'breadcrumbs';
@@ -42,6 +43,8 @@ class App extends Component {
   // noinspection DuplicatedCode
   constructor(props, parent, domNode) {
     super(props, parent, domNode);
+
+    this.loadingAnimation = LoadingAnimation_({})._LoadingAnimation;
 
     this.state = {
       nextChildPos: MARGIN,
@@ -83,7 +86,11 @@ class App extends Component {
           if (DEBUG_MODE) {
             Cache.validateNodes();
           }
-          const {mainWidth, breadCrumbHeight} = this.state;
+          const updateSocket = getConfig('updateWebSocket');
+          if (updateSocket) {
+              this.connectToUpdateSocket(updateSocket);
+          }
+          const { mainWidth, breadCrumbHeight } = this.state;
           if (!this.state.error) {
             const startData = new GraphNode(TYPE_AGGREGATOR, Cache.createUri());
             Cache.getEntityTypes().forEach(entityType => {
@@ -121,11 +128,46 @@ class App extends Component {
     this.onError = this.onError.bind(this);
     this.moveCardToFocus = this.moveCardToFocus.bind(this);
     this.removeModals = this.removeModals.bind(this);
+    this.onWSOpen = this.onWSOpen.bind(this);
+    this.onWSMessage = this.onWSMessage.bind(this);
+    this.onWSClose = this.onWSClose.bind(this);
 
     document.body.onkeyup = this.handleKeyUp;
     document.body.onkeydown = this.handleKeyDown;
     this.onResize(window.innerWidth, window.innerHeight);
   }
+
+  connectToUpdateSocket(url) {
+    this.ws = new WebSocket(url);
+    this.ws.onopen = this.onWSOpen;
+    this.ws.onclose = this.onWSClose;
+    this.ws.onmessage = this.onWSMessage;
+    this.ws.onerror = this.onError;
+  }
+
+  onWSOpen() {
+    console.log('Websocket connection established ');
+  };
+
+  onWSClose() {
+    console.log('Websocket connection closed');
+    this.ws = null;
+  };
+
+  onWSMessage(event) {
+    const data = JSON.parse(event.data);
+    const { update } = data;
+    if (update) {
+      Cache.updateNodes(update);
+      this.clearChildren();
+      this.update(this.innerProps);
+      this.renderStateChange();
+    }
+    // TODO: only activate when contextual node problem solved, see GraphNode.destroy()
+    // if (remove) {
+    //   Cache.removeNodes(remove);
+    // }
+  };
 
   updateDom(props, tween) {
     if (this.state.dataLoaded) {
@@ -653,7 +695,7 @@ class App extends Component {
       return Div_({}, `An error occurred: ${error}`)._Div;
     }
 
-    if (!dataLoaded) return null;
+    if (!dataLoaded) return this.loadingAnimation;
 
     const hoverChildren = [];
     if (hoverCard) {

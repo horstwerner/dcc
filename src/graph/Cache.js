@@ -16,7 +16,7 @@ class Cache {
 
   config;
   lookUpGlobal;
-  rootNode = {};
+  rootNode;
   entityTypes = [];
 
   constructor () {
@@ -137,6 +137,35 @@ class Cache {
       const node = this.getNode(type, id);
       this.importNodeData(node, rawNode);
     });
+  }
+
+  updateNodes(nodeArray) {
+    nodeArray.forEach(rawNode => {
+      const { id, type } = rawNode;
+      const node = this.getNodeByUri(id);
+      if (!node) {
+        this.importNodeData(this.getNode(type, id), rawNode);
+      } else {
+        node.clearOwnProperties();
+        this.importNodeData(node, rawNode);
+      }
+    });
+  }
+
+  removeNodes(idArray) {
+    idArray.forEach(id => {
+          const node = this.getNodeByUri(id);
+          if (node) {
+            node.destroy();
+            this.lookUpGlobal[id] = null;
+            const listByType = this.rootNode.get(node.getTypeUri());
+            const index = listByType.indexOf(node);
+            if (index !== -1) {
+              listByType.splice(index, 1);
+            }
+          }
+        }
+    )
   }
 
   importNodeTable(typeUri, headerRow, valueRows) {

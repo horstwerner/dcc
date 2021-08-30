@@ -1,0 +1,99 @@
+/* based on loading animation by Sahar Ali Raza: https://codepen.io/mrsahar/pen/pMxyrE */
+.outerFrame {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -100px;
+}
+
+
+.loadingBars {
+    position: relative;
+    left: -12px;
+    height: 50px;
+    width: 50px;
+}
+
+.loadingBars span {
+    display: block;
+    bottom: 10px;
+    width: 9px;
+    height: 15px;
+    background: rgba(0, 0, 0, 0.25);
+    position: absolute;
+    -webkit-animation: bars4 2s  infinite ease-in-out;
+    animation: bars4 2s  infinite ease-in-out;
+}
+
+.loadingBars span:nth-child(2) {
+    left: 11px;
+    -webkit-animation-delay: 0.2s;
+    animation-delay: 0.2s;
+}
+
+.loadingBars span:nth-child(3) {
+    left: 22px;
+    -webkit-animation-delay: 0.3s;
+    animation-delay: 0.3s;
+}
+
+.loadingBars span:nth-child(4) {
+    left: 33px;
+    -webkit-animation-delay: 0.4s;
+    animation-delay: 0.4s;
+}
+
+.loadingBars span:nth-child(5) {
+    left: 44px;
+    -webkit-animation-delay: 0.5s;
+    animation-delay: 0.5s;
+}
+
+@keyframes bars4 {
+    0% {
+        -webkit-transform: translateX(0px);
+        transform: translateX(0px);
+        background: rgba(0, 0, 0, 0.25);
+    }
+    25% {
+        -webkit-transform: translateX(0px);
+        transform: translateX(0px);
+        background: #000000;
+    }
+    50% {
+        -webkit-transform: translateX(15px);
+        transform: translateX(15px);
+        background: rgba(0, 0, 0, 0.25);
+    }
+    100% {
+        -webkit-transform: translateX(0px);
+        transform: translateX(0px);
+        background: rgba(0, 0, 0, 0.25);
+    }
+}
+@-webkit-keyframes bars4 {
+    0% {
+        -webkit-transform: translateX(0px);
+        transform: translateX(0px);
+        background: rgba(0, 0, 0, 0.25);
+    }
+    25% {
+        -webkit-transform: translateX(0px);
+        transform: translateX(0px);
+        background: #000000;
+    }
+    50% {
+        -webkit-transform: translateX(15px);
+        transform: translateX(15px);
+        background: rgba(0, 0, 0, 0.25);
+    }
+    100% {
+        -webkit-transform: translateX(0px);
+        transform: translateX(0px);
+        background: rgba(0, 0, 0, 0.25);
+    }
+}

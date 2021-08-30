@@ -10,7 +10,10 @@
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.19.0",
+    "bufferutil": "^4.0.3",
     "express": "^4.16.4",
-    "lodash": "^4.17.11"
+    "express-ws": "^5.0.2",
+    "lodash": "^4.17.11",
+    "utf-8-validate": "^5.0.5"
   }
 }
