@@ -16,7 +16,15 @@ import {calcMaxChildren, ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 
 import {CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
-import {fetchSubGraph, getCardDescriptors, getClientConfig, getData, getDictionary, getToolDescriptors} from "@/Data";
+import {
+  fetchSubGraph,
+  getCardDescriptors,
+  getClientConfig,
+  getData,
+  getDictionary,
+  getParameterizedUrl,
+  getToolDescriptors
+} from "@/Data";
 import {createFilterControl, updatedToolControl} from "@/Tools";
 import TypeDictionary, {TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/TypeDictionary";
 import {SYNTH_NODE_MAP, SYNTH_NODE_RETRIEVE} from "@/templates/Template";
@@ -139,7 +147,7 @@ class App extends Component {
   }
 
   connectToUpdateSocket(url) {
-    this.ws = new WebSocket(url);
+    this.ws = new WebSocket(getParameterizedUrl(url));
     this.ws.onopen = this.onWSOpen;
     this.ws.onclose = this.onWSClose;
     this.ws.onmessage = this.onWSMessage;

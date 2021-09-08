@@ -165,7 +165,7 @@ app.listen(API_PORT, function(){
   console.log('Development Control Center mock backend is running');
 });
 
-app.ws('/updates', (ws) => {
+app.ws('/updates', (ws, req) => {
   ws.on('message', () => {
     ws.send(`ack`);
   })
@@ -176,6 +176,7 @@ app.ws('/updates', (ws) => {
 
   ws.isAlive = true;
   console.log(`WebSocket connected`);
+  console.log(`url: ${req.url}`);
 
   ws.on('pong', () => {
     console.log('pong');
