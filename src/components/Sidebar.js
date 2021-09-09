@@ -109,7 +109,7 @@ class Sidebar extends Component {
     let highlightMenuControl;
     if (highlightMenu) {
       const {by, selectedId, nodes} = highlightMenu;
-      const highlightSize = {width: HIGHLIGHT_LIST_WIDTH, height: 240};
+      const highlightSize = {width: HIGHLIGHT_LIST_WIDTH, height: 260};
       const spatial = {x: - HIGHLIGHT_LIST_WIDTH - 4, y: searchY + 48, scale: 1}
 
       highlightMenuControl = highlightMenu && ValueRangeList_({nodes, dimension: by, onClick: onHighlightSelect, onClose: onHighlightClose, selectedId, listW: MENU_WIDTH, size: highlightSize, spatial})._ValueRangeList;

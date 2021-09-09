@@ -5,7 +5,7 @@ import {Path_} from "./Path";
 import {Card_} from "./Card";
 import {getAssociated} from "@/graph/Analysis";
 import {Svg_} from "@/components/Svg";
-import {createContext, fit, roundCorners} from "@symb/util";
+import {createContext, fit, inspectPathSegment, roundCorners} from "@symb/util";
 import P from "prop-types";
 import GraphNode from "@/graph/GraphNode";
 import ComponentFactory from "@symb/ComponentFactory";
@@ -14,15 +14,6 @@ import TemplateRegistry from "@/templates/TemplateRegistry";
 import {createPreprocessedCardNode} from "@/components/Generators";
 
 const LANE_BREAK_THRESHOLD = 8;
-
-const inspect = function inspect(associationName) {
-  const lastPos = associationName.length - 1;
-  if (associationName.charAt(lastPos) === '*') {
-    return {edgeType: associationName.substring(0, lastPos), recursive: true};
-  } else {
-    return {edgeType: associationName, recursive: false};
-  }
-}
 
 const bumpSuccessorDepth = function bumpSuccessorDepth(edgeList, depth, vizNodesByKey, touchedKeyMap) {
   if (!edgeList) return;
@@ -51,7 +42,7 @@ const traverseGraph = function traverseGraph(startNodes, scopeKeys, path) {
   while (nextNodeList.length !== 0 && curSegmentIdx < path.length) {
     depth++;
     let nextNodeMap = {};
-    const {edgeType, recursive} = inspect(path[curSegmentIdx]);
+    const {edgeType, recursive} = inspectPathSegment(path[curSegmentIdx]);
     nextNodeList.forEach(node => {
       const sourceKey = node.getUniqueKey();
       const sourceVizNode = vizNodesByKey[sourceKey];

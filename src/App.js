@@ -1,21 +1,21 @@
 import P from 'prop-types';
-import {get, omit, pick, without, isEmpty} from 'lodash';
+import {get, isEmpty, omit, pick, without} from 'lodash';
 import Component from '@symb/Component';
 import ComponentFactory from "@symb/ComponentFactory";
-import Cache, {traverse} from './graph/Cache';
+import Cache, {traverseWithRecursion} from './graph/Cache';
 import TemplateRegistry, {DEFAULT_VIEW_NAME} from './templates/TemplateRegistry';
 import {Div_} from '@symb/Div';
 import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
 import {DEBUG_MODE, getAppCss, getConfig, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
-import {createContext, fillIn, fit, getCommonType, isDataEqual} from "@symb/util";
+import {createContext, fillIn, fit, getCommonType, getNodeArray, isDataEqual} from "@symb/util";
 import {createPreprocessedCardNode, focusCardMenu, hoverCardMenu} from "@/components/Generators";
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 import {calcMaxChildren, ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 
-import {CLICK_OPAQUE, CLICK_TRANSPARENT, OPTION_HIGHLIGHT} from "@/components/Constants";
+import {CLICK_OPAQUE, CLICK_TRANSPARENT, LOG_LEVEL_PATHS, OPTION_HIGHLIGHT} from "@/components/Constants";
 import {
   fetchSubGraph,
   getCardDescriptors,
@@ -640,14 +640,26 @@ class App extends Component {
       if (value == null) {
         this.setState({highlightInfo: null, highlightMenu: null,  currentViewOptions: newViewOptions, focusCard: originalFocus });
       } else {
-        const rootNodes = focusCard.data.get(TYPE_NODES);
-        const nodes = option.dataPath ?
-            [...rootNodes, ...traverse(rootNodes, option.dataPath)] :
+        const {dataPath, inputSelector} = option;
+        const rootNodes = getNodeArray(inputSelector, TYPE_NODES, focusCard.data);
+        const nodes = dataPath ?
+            [...rootNodes, ...traverseWithRecursion(rootNodes, dataPath, LOG_LEVEL_PATHS, '')] :
             rootNodes;
 
+        let newHighlightInfo;
+        let newFocusCard;
+
+        if (!highlightInfo || highlightInfo.dimension !== value) {
+          newFocusCard = originalFocus;
+          newHighlightInfo = null;
+        } else {
+          newFocusCard = focusCard;
+          newHighlightInfo = highlightInfo;
+        }
+
         this.setState({highlightMenu: {by: value, selectedId: highlightInfo ? highlightInfo.selectedId : null, nodes},
-          focusCard: originalFocus,
-          highlightInfo: null, currentViewOptions: newViewOptions});
+          focusCard:  newFocusCard,
+          highlightInfo: newHighlightInfo, currentViewOptions: newViewOptions});
       }
     } else {
       this.setState({
