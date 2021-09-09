@@ -9,7 +9,7 @@ import {createContext, fit, roundCorners} from "@symb/util";
 import P from "prop-types";
 import GraphNode from "@/graph/GraphNode";
 import ComponentFactory from "@symb/ComponentFactory";
-import {CLICK_OPAQUE} from "@/components/Constants";
+import {CLICK_OPAQUE, DEFAULT_MUTE_COLOR} from "@/components/Constants";
 import TemplateRegistry from "@/templates/TemplateRegistry";
 import {createPreprocessedCardNode} from "@/components/Generators";
 
@@ -98,14 +98,16 @@ const traverseGraph = function traverseGraph(startNodes, scopeKeys, path) {
 
 const EDGE_COLOR = 'rgba(0,0,0,0.3)';
 
-const createSvgPath = function createSvgPath(points, dist) {
+const createSvgPath = function createSvgPath(line, dist) {
+
+  const {points, color} = line;
 
   const d = roundCorners(points, dist, false)
   // const segments = [`M${points[0].x} ${points[0].y}`];
   // for (let idx = 1; idx < points.length; idx++) {
   //   segments.push(`L${points[idx].x} ${points[idx].y}`);
   // }
-  return Path_({d, style: {fill: 'none', stroke: EDGE_COLOR, strokeWidth: 2}})._Path;
+  return Path_({d, style: {fill: 'none', stroke: color, strokeWidth: 2}})._Path;
 }
 
 const GRAPH_VIZ = 'graph-viz';
@@ -123,12 +125,14 @@ class GraphViz extends Component {
     w: P.number.isRequired,
     h: P.number.isRequired,
     nodeAspectRatio: P.number,
-    viewName: P.string
+    viewName: P.string,
+    muteColor: P.string,
+    edgeColor: P.string
   }
 
   createChildDescriptors(props) {
 
-    const {startNodes, scope, w, h, nodeAspectRatio, path, viewName, onNodeClick} = props;
+    const {startNodes, scope, w, h, nodeAspectRatio, path, viewName, onNodeClick, highlightCondition, muteColor, edgeColor} = props;
 
     if (!startNodes) return null;
 
@@ -219,36 +223,46 @@ class GraphViz extends Component {
     // ####################### C R E A T E   E D G E S #################################################
     vizNodes.forEach(vizNode => {
       if (!vizNode.outEdges) return;
+      const startMuted = highlightCondition && (!highlightCondition.matches(vizNode.graphNode));
       vizNode.outEdges.forEach(({targetKey}) => {
         const targetNode = vizNodesByKey[targetKey];
+        const targetMuted = highlightCondition && (!highlightCondition.matches(targetNode.graphNode));
+        let points;
         if (targetNode.pos.x > vizNode.pos.x) { // forward edge
-          lines.push([vizNode.pos,
+          points = [vizNode.pos,
             {x: vizNode.terminals[1], y: vizNode.pos.y},
             {x: targetNode.terminals[0], y: targetNode.pos.y},
             targetNode.pos
-          ]);
+          ];
         } else { // backward edge
           const dySrc = (Math.sign(targetNode.pos.y - vizNode.pos.y) || -4) * 0.28 * childH
           const dyTrg = Math.abs(targetNode.pos.y - vizNode.pos.y) < 0.6 * childH ? dySrc : -dySrc;
-          lines.push([vizNode.pos,
+          points = [vizNode.pos,
             {x: vizNode.terminals[1], y: vizNode.pos.y},
             {x: vizNode.terminals[1], y: vizNode.pos.y + dySrc},
             {x: targetNode.terminals[0], y: targetNode.pos.y + dyTrg},
             {x: targetNode.terminals[0] , y: targetNode.pos.y},
             targetNode.pos
-          ]);
+          ];
         }
+        const color = (startMuted || targetMuted) ? muteColor || DEFAULT_MUTE_COLOR : edgeColor || EDGE_COLOR;
+        lines.push({points, color});
       });
     });
 
     const roundDist = 0.07 * childW;
     const children = [];
-    children.push(Svg_({style:{pointerEvents: 'none'}, width: w, height: h, children: lines.map(line => createSvgPath(line, roundDist))})._Svg);
+    children.push(Svg_({style:{pointerEvents: 'none'}, width: w, height: h, children: lines.map(line => {
+        return createSvgPath(line, roundDist);
+      })
+    })._Svg);
 
     vizNodes.forEach(vizNode => {
       const cardNode = createPreprocessedCardNode(vizNode.graphNode, createContext(), vizNode.template, null);
       const {spatial, template} = vizNode;
-      children.push(Card_({key: cardNode.getUniqueKey(), data: cardNode, template, onClick: onNodeClick, clickMode: CLICK_OPAQUE, spatial})._Card)
+      const deEmphasized = highlightCondition && !highlightCondition.matches(cardNode);
+      const deEmphasizeColor = deEmphasized && (muteColor || DEFAULT_MUTE_COLOR);
+      children.push(Card_({key: cardNode.getUniqueKey(), data: cardNode, template, onClick: onNodeClick, clickMode: CLICK_OPAQUE, spatial, deEmphasizeColor})._Card)
     });
 
     return children;

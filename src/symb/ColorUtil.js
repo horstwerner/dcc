@@ -10,10 +10,16 @@ export class Color {
 
   toString() {
     if (this.alpha === 1) {
-      return 'rgb(' + this.red + ',' + this.green + ',' + this.blue + ')';
+      return `rgb(${this.red},${this.green},${this.blue})`;
     }
-    return 'rgba(' + this.red + ',' + this.green + ',' + this.blue + ',' + this.alpha + ')';
+    return `rgba(${this.red},${this.green},${this.blue},${this.alpha})`;
   };
+
+  grayScaled()  {
+    const avg = Math.round((this.red + this.green + this.blue) / 3);
+    return new Color(avg, avg, avg, this.alpha);
+  }
+
 }
 
   /**
@@ -58,8 +64,7 @@ export class Color {
   };
 
   /**
-   *
-   * @param {Color} c1 color object having red, green, blue and alpha attributes
+   *   * @param {Color} c1 color object having red, green, blue and alpha attributes
    * @param {Color} c2 color object having red, green, blue and alpha attributes
    * @param tau 0 -> c1, 1 -> c2
    * @return {string} a color string
@@ -71,9 +76,10 @@ export class Color {
         ',' + interp(c1.alpha, c2.alpha, tau) + ')';
   };
 
-  export const overlay = function overlay(basecolor, topcolor) {
-    const c1 = splitColor(basecolor);
-    const c2 = splitColor(topcolor);
+  export const overlay = function overlay(baseColor, topColor, grayScaled) {
+    let c1 = splitColor(baseColor);
+    if (grayScaled) c1 = c1.grayScaled();
+    const c2 = splitColor(topColor);
 
     const alpha1 = 1 - c2.alpha;
 

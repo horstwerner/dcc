@@ -3,6 +3,7 @@ import {getValueRange} from "@/graph/GroupedSet";
 import {DropdownList_} from "@/components/DropdownList";
 import {TYPE_NODES} from "@/graph/TypeDictionary";
 import {Menu_} from "@/components/Menu";
+import {OPTION_HIGHLIGHT} from "@/components/Constants";
 
 const FILTER_RESET = 'core:filterReset';
 export const FILTER_HEIGHT = 20;
@@ -53,9 +54,9 @@ export const updatedToolControl = function updatedToolControl(tool, control, sel
   return updatedControl;
 }
 
-const createOptionControl = function createOptionControl (key, option, onOptionSet, selected, spatial) {
+const  createOptionControl = function createOptionControl (key, option, onOptionSet, selected, spatial) {
 
-  const {selection, caption} = option;
+  const { selection, caption } = option;
 
   switch (option.display) {
     case 'radio-buttons': {
@@ -63,11 +64,15 @@ const createOptionControl = function createOptionControl (key, option, onOptionS
       return Menu_({key, title: caption,
         entries, spatial, onEntryClick: (value) => onOptionSet(key, value) })._Menu;
     }
+    case OPTION_HIGHLIGHT: {
+      const entries = [{value: null, label: "None"}, ...selection].map(({value, label}) => ({id: value, name: label, selected: (value === selected)}));
+      return Menu_({key, title: caption,
+        entries, spatial, onEntryClick: (value) => onOptionSet(key, value) })._Menu;
+    }
     default:
       throw new Error(`Unknown tool display ${option.display}`);
   }
 };
-
 
 export const  createOptionControls = function createOptionControls(options, onOptionSet, currentSelections) {
   return Object.keys(options).map(key =>

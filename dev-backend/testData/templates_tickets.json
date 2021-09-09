@@ -414,6 +414,16 @@
             {"label":  "Compact", "value": "Compact"}, {"label": "Full", "value": "Default"}
           ],
           "defaultValue": "Compact"
+        },
+        "highlight": {
+          "caption": "Highlight",
+          "display": "highlight",
+          "dataPath": "jira:is-prerequisite-for[jira:ticket]*",
+          "selection": [
+            {"label": "By Release", "value":  "jira:release"},
+            {"label": "By Feature", "value":  "jira:feature"},
+            {"label": "By Team", "value":  "jira:team"}
+          ]
         }
       },
       "clickable": true,
@@ -428,6 +438,7 @@
         {
           "key": "graph",
           "type": "chart",
+          "muteColor": "#EAEAEA",
           "source": "core:subNodes",
           "inputSelector": {"jira:release": "=1.2"},
           "bounded": false,
@@ -463,6 +474,18 @@
           }}
       }
       ],
+      "options": {
+        "highlight": {
+          "caption": "Highlight",
+          "display": "highlight",
+          "dataPath": "jira:is-prerequisite-for[jira:ticket]*",
+          "selection": [
+            {"label": "By Release", "value":  "jira:release"},
+            {"label": "By Feature", "value":  "jira:feature"},
+            {"label": "By Team", "value":  "jira:team"}
+          ]
+        }
+      },
       "elements": [
         {
           "key": "title",
