@@ -257,3 +257,12 @@ export function getCommonType(aggregator) {
 }
 
 export const createContext = () => new GraphNode(TYPE_CONTEXT, BLANK_NODE_URI);
+
+export const inspectPathSegment = function inspect(associationName) {
+  const lastPos = associationName.length - 1;
+  if (associationName.charAt(lastPos) === '*') {
+    return {edgeType: associationName.substring(0, lastPos), recursive: true};
+  } else {
+    return {edgeType: associationName, recursive: false};
+  }
+}

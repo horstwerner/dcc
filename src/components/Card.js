@@ -5,6 +5,7 @@ import ComponentFactory from "@symb/ComponentFactory";
 import Template from "@/templates/Template";
 import {Background} from "@/components/Generators";
 import {CLICK_DISABLED, CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
+import {overlay} from "@symb/ColorUtil";
 
 const CARD = 'card';
 
@@ -78,10 +79,11 @@ class Card extends Component {
    */
   createChildDescriptors(props) {
 
-    const { data, template, onClick, clickMode, options } = props;
+    const { data, template, onClick, clickMode, options, highlightCondition, deEmphasizeColor } = props;
 
     const { background } = template.descriptor;
-    const color = template.getCardColor(data);
+    const templateColor = template.getCardColor(data);
+    const color = deEmphasizeColor ?  overlay(templateColor, deEmphasizeColor, true) : templateColor;
     const hasBackground = background.type !== 'transparent';
     const childrenClickable = clickMode === CLICK_TRANSPARENT || (clickMode === CLICK_NORMAL && !template.isClickable());
 
@@ -90,12 +92,17 @@ class Card extends Component {
       children.push(Background(background, color));
     }
     template.getElementsForOptions(options).forEach(element => {
-      let childDescriptor = template.createElementInstance(element, data, childrenClickable ? onClick : null);
+      let childDescriptor = template.createElementInstance(element, data, highlightCondition, childrenClickable ? onClick : null);
       if (childDescriptor) {
         if (!childrenClickable) {
           childDescriptor.style = {...(childDescriptor.style || {}), pointerEvents: 'none'};
         } else {
           childDescriptor.style = {...(childDescriptor.style || {}), pointerEvents: ''};
+        }
+        if (deEmphasizeColor) {
+          childDescriptor.alpha = 0.4;
+        } else {
+          childDescriptor.alpha = 1;
         }
         children.push(childDescriptor);
       }

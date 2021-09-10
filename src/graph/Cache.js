@@ -8,7 +8,7 @@ import TypeDictionary, {
 } from './TypeDictionary';
 import GraphNode from './GraphNode';
 import {LOG_LEVEL_PATHS, LOG_LEVEL_RESULTS} from "@/components/Constants";
-import {describeSource} from "@symb/util";
+import {describeSource, inspectPathSegment} from "@symb/util";
 
 class Cache {
 
@@ -250,6 +250,59 @@ export const traverse = function(source, path, logLevel, indent) {
           }
         }
     );
+    if (logLevel === LOG_LEVEL_PATHS) {
+      console.log(`${spaces}${step}: ${describeSource(Array.from(nextSet), spaces)}`);
+    }
+    curSet = nextSet;
+  }
+  if (logLevel === LOG_LEVEL_RESULTS) {
+    console.log(describeSource(Array.from(curSet), spaces));
+  }
+  return curSet;
+};
+
+export const traverseWithRecursion = function traverseWithRecursion(source, path, logLevel, indent) {
+  const spaces = `    ${indent || ''}`;
+  if (logLevel === LOG_LEVEL_PATHS) {
+    console.log (`${indent || ''}resolving with potential recursion ${path}:`);
+  }
+  const steps = path.split('/');
+  let curSet = new Set(Array.isArray(source) ? source : [source]);
+
+  for (let i = 0; i < steps.length; i++) {
+    const step = steps[i];
+    let nextSet = new Set();
+    let toTraverse = curSet;
+
+    const { edgeType, recursive } = inspectPathSegment(step);
+    let finished = false;
+    while (!finished) {
+      const newNodes = new Set();
+      toTraverse.forEach(node => {
+            const related = getSegmentData(node, edgeType);
+            if (related != null) {
+              if (Array.isArray(related)) {
+                for (let j = 0; j < related.length; j++) {
+                  if (!nextSet.has(related[j])) {
+                    nextSet.add(related[j]);
+                    newNodes.add(related[j]);
+                  }
+                }
+              }
+              else if (GraphNode.isGraphNode(related) || i === steps.length - 1) {
+                if (!nextSet.has(related)) {
+                  nextSet.add(related);
+                  newNodes.add(related);
+                }
+              } else {
+                console.log(`warning: attributes not allowed in traversal paths: ${step}\n result will be empty`);
+              }
+            }
+          }
+      );
+      toTraverse = newNodes;
+      finished = (!recursive || toTraverse.size === 0);
+    }
     if (logLevel === LOG_LEVEL_PATHS) {
       console.log(`${spaces}${step}: ${describeSource(Array.from(nextSet), spaces)}`);
     }
