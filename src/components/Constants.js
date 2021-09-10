@@ -8,4 +8,4 @@ export const LOG_LEVEL_RESULTS = 'results';
 export const LOG_LEVEL_PATHS = 'paths';
 
 export const OPTION_HIGHLIGHT = 'highlight';
-export const DEFAULT_MUTE_COLOR= '#E0E0E0';
+export const DEFAULT_MUTE_COLOR= '#EAEAEA';
