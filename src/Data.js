@@ -183,6 +183,24 @@ export const fetchSubGraph = function fetchSubGraph(queryUrl, entryPointType, en
   });
 }
 
+export const getParameterizedUrl = function getParameterizedUrl(baseUrl) {
+  const graphParams = (typeof getGraph === 'object') ? getGraph : {};
+  const urlParams = new URLSearchParams(window.location.search);
+  urlParams.forEach((value, key) => {
+    if (key.startsWith('graph-')) {
+      graphParams[key.substr('graph-'.length)] = value;
+    }
+  });
+
+  const graphParamKeys = Object.keys(graphParams);
+  if (graphParamKeys.length > 0) {
+    const queryParts = graphParamKeys.map(key => `${key}=${encodeURIComponent(graphParams[key])}`);
+    return `${baseUrl}?${queryParts.join('&')}`;
+  } else {
+    return baseUrl;
+  }
+}
+
 export const getDataFromDB = function(onError) {
 
   const {getTables, getGraph} = getConfigs(['getTables', 'getGraph']);
@@ -192,23 +210,7 @@ export const getDataFromDB = function(onError) {
    */
   const result = [];
   if (getGraph) {
-    const graphParams = (typeof getGraph === 'object') ? getGraph : {};
-    const urlParams = new URLSearchParams(window.location.search);
-    urlParams.forEach((value, key) => {
-      if (key.startsWith('graph-')) {
-        graphParams[key.substr('graph-'.length)] = value;
-      }
-    });
-
-    let queryUrl;
-    const graphParamKeys = Object.keys(graphParams);
-    if (graphParamKeys.length > 0) {
-      const queryParts = graphParamKeys.map(key => `${key}=${encodeURIComponent(graphParams[key])}`);
-      queryUrl = `/api/graph?${queryParts.join('&')}`;
-    } else {
-      queryUrl = '/api/graph';
-    }
-
+    const queryUrl = getParameterizedUrl('/api/graph');
     result.push(fetchSubGraph(queryUrl,null, null, onError));
   }
 
