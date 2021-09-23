@@ -235,7 +235,7 @@ export default class GraphNode {
     }
 
     const property = this.properties[associationTypeUri];
-    if (property === undefined) {
+    if (property == null) {
       this.properties[associationTypeUri] = graphNode;
       return;
     }
@@ -254,7 +254,7 @@ export default class GraphNode {
       this.properties[associationTypeUri] = newArray;
       return;
     }
-    throw new Error("Unexpected type of associated object (" + this.uri + "->" + associationTypeUri + ")");
+    throw new Error(`Unexpected type of existing association (${this.uri})->${associationTypeUri}: ${typeof property}, expected GraphNode, Array or null`);
   };
 
   isInverseAssociation(type, graphNode) {
@@ -293,9 +293,12 @@ export default class GraphNode {
     Object.keys(this.properties).forEach(propUri => {
       const type = TypeDictionary.getType(propUri);
       const prop = this.properties[propUri];
-      if (type.isAssociation && !this.isInverseAssociation(type, prop)) {
+      if (type.isAssociation) {
         const inverseTypeUri = type.getInverseType(this.getTypeUri());
-        (Array.isArray(prop) ? prop : [prop]).forEach(targetNode => targetNode.removeLocalInverseAssociation(inverseTypeUri, this));
+        (Array.isArray(prop) ? prop : [prop]).forEach(targetNode => {
+          if (!this.isInverseAssociation(type.uri, targetNode)) {
+            targetNode.removeLocalInverseAssociation(inverseTypeUri, this);}
+        });
       }
     });
   }
@@ -390,7 +393,7 @@ export default class GraphNode {
       return this;
     }
 
-    throw new Error("Unexpected type of associated object (" + this.uri + "->" + associationType + ")");
+    throw new Error(`Unexpected type of associated object (${this.uri}->${associationType}): ${typeof target}`);
   };
 
   hasDirectAssociation(association, targetnode) {

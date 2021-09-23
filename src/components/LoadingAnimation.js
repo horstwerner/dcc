@@ -13,7 +13,7 @@ export default class LoadingAnimation extends Component {
 
   createChildDescriptors(props) {
     return [
-        Div_({style: {width: 200, textAlign: 'center'}}, 'Data is being loaded'),
+        Div_({style: {width: 200, textAlign: 'center'}}, 'Data is being loaded')._Div,
         Div_({className: css.loadingBars},[
       Span_({})._Span,
       Span_({})._Span,
