@@ -206,11 +206,11 @@ export const isDataEqual = function isDataEqual(nodeA, nodeB) {
   }
 }
 
-export function getUnfilteredNodeArray(source, data) {
+export function getUnfilteredNodeArray(source, data, logLevel) {
   if (!source || source === 'this') {
     return nodeArray(data);
   } else {
-    return nodeArray(resolve(data, source));
+    return nodeArray(resolve(data, source, logLevel));
   }
 }
 
