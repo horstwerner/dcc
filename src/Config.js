@@ -64,11 +64,14 @@ const alignMap = {
   center: 'center'
 }
 
+export const PATH_SEPARATOR = 'pathSeparator';
+
 const configuration = {
   displayNameAttribute : TYPE_NAME,
   theme: THEME_DEFAULT,
   logoUrl: 'public/DCCLogo.svg',
-  logoAlign: 'flex-end'
+  logoAlign: 'flex-end',
+  [PATH_SEPARATOR]: '/'
 };
 
 export const setConfig = function setConfig(config) {

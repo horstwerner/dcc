@@ -5,13 +5,15 @@ import {Path_} from "./Path";
 import {Card_} from "./Card";
 import {getAssociated} from "@/graph/Analysis";
 import {Svg_} from "@/components/Svg";
-import {createContext, fit, inspectPathSegment, roundCorners} from "@symb/util";
+import {createContext, fit, roundCorners} from "@symb/util";
 import P from "prop-types";
 import GraphNode from "@/graph/GraphNode";
 import ComponentFactory from "@symb/ComponentFactory";
 import {CLICK_OPAQUE, DEFAULT_MUTE_COLOR} from "@/components/Constants";
 import TemplateRegistry from "@/templates/TemplateRegistry";
 import {createPreprocessedCardNode} from "@/components/Generators";
+import PathParser from "@symb/PathParser";
+import {traverse} from "@/graph/Cache";
 
 const LANE_BREAK_THRESHOLD = 8;
 
@@ -32,24 +34,23 @@ const bumpSuccessorDepth = function bumpSuccessorDepth(edgeList, depth, vizNodes
 const traverseGraph = function traverseGraph(startNodes, scopeKeys, path) {
   const vizNodesByKey = {};
 
+  const segments = new PathParser(path).getSegments();
   startNodes.forEach(node => {vizNodesByKey[node.getUniqueKey()] = {graphNode: node, depth: 0, inEdges: [], outEdges: []}});
 
   let curSegmentIdx = 0;
-  let depth = 0;
 
   let nextNodeList = startNodes;
   let accumulatedNextNodeMap = {};
-  while (nextNodeList.length !== 0 && curSegmentIdx < path.length) {
-    depth++;
+  while (nextNodeList.length !== 0 && curSegmentIdx < segments.length) {
     let nextNodeMap = {};
-    const {edgeType, recursive} = inspectPathSegment(path[curSegmentIdx]);
-    nextNodeList.forEach(node => {
+    const {edgeType, multiStep, recursive} = segments[curSegmentIdx];
+    for (let node of nextNodeList) {
       const sourceKey = node.getUniqueKey();
       const sourceVizNode = vizNodesByKey[sourceKey];
-      const associated = getAssociated(node, edgeType);
-      associated.forEach(targetNode => {
+      const associated = multiStep ? Array.from(traverse(node, edgeType)) : getAssociated(node, edgeType);
+      for (let targetNode of associated) {
         const targetKey = targetNode.getUniqueKey();
-        if (scopeKeys && !scopeKeys[targetKey]) return;
+        if (scopeKeys && !scopeKeys[targetKey]) continue;
 
         let targetVizNode = vizNodesByKey[targetKey];
         if (!targetVizNode) {
@@ -70,8 +71,8 @@ const traverseGraph = function traverseGraph(startNodes, scopeKeys, path) {
                 {[sourceKey]: true, [targetKey]: true});
           }
         }
-      });
-    });
+      }
+    }
     if (recursive) {
       // only move on to next path segment if recursion exhausted, then use all recursively found nodes
       if (isEmpty(nextNodeMap)) {
@@ -133,7 +134,7 @@ class GraphViz extends Component {
       scope.forEach(node => scopeKeys[node.getUniqueKey()] = true);
     }
 
-    const vizNodesByKey = traverseGraph(startNodes, scopeKeys, path.split('/'));
+    const vizNodesByKey = traverseGraph(startNodes, scopeKeys, path);
     const depth = Math.max(...Object.values(vizNodesByKey).map(node => node.depth));
 
     let lanes = [];

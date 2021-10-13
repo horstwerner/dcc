@@ -9,6 +9,7 @@ import TypeDictionary, {
 import GraphNode from './GraphNode';
 import {LOG_LEVEL_PATHS, LOG_LEVEL_RESULTS} from "@/components/Constants";
 import {describeSource, inspectPathSegment} from "@symb/util";
+import {getConfig, PATH_SEPARATOR} from "@/Config";
 
 class Cache {
 
@@ -227,7 +228,7 @@ export const traverse = function(source, path, logLevel, indent) {
   if (logLevel === LOG_LEVEL_PATHS) {
     console.log (`${indent || ''}resolving ${path}:`);
   }
-  const steps = path.split('/');
+  const steps = path.split(getConfig(PATH_SEPARATOR));
   let curSet = new Set(Array.isArray(source) ? source : [source]);
 
   for (let i = 0; i < steps.length; i++) {
@@ -266,7 +267,7 @@ export const traverseWithRecursion = function traverseWithRecursion(source, path
   if (logLevel === LOG_LEVEL_PATHS) {
     console.log (`${indent || ''}resolving with potential recursion ${path}:`);
   }
-  const steps = path.split('/');
+  const steps = path.split(getConfig(PATH_SEPARATOR));
   let curSet = new Set(Array.isArray(source) ? source : [source]);
 
   for (let i = 0; i < steps.length; i++) {
@@ -316,7 +317,7 @@ export const traverseWithRecursion = function traverseWithRecursion(source, path
 
 export const resolve = function (node, path, logLevel, indent) {
   if (path === 'this') return node;
-  if (path.includes('/')) {
+  if (path.includes(getConfig(PATH_SEPARATOR))) {
     return Array.from(traverse(node, path, logLevel, indent));
   }
   return resolveProperty(node, path, logLevel, indent);
@@ -350,8 +351,8 @@ export const resolveProperty = function (node, path, logLevel, indent) {
   if (logLevel === LOG_LEVEL_PATHS) {
     console.log (`${spaces}resolving ${path}:`);
   }
-  if (Array.isArray(path) || path.includes('/')) {
-    const segments = Array.isArray(path) ? path : path.split('/');
+  if (Array.isArray(path) || path.includes(getConfig(PATH_SEPARATOR))) {
+    const segments = Array.isArray(path) ? path : path.split(getConfig(PATH_SEPARATOR));
     let current = node;
     for (let segIdx = 0; segIdx < segments.length; segIdx++) {
       if (!current) break;
