@@ -1,4 +1,3 @@
-import GraphNode from "@/graph/GraphNode";
 import {nodeArray} from "@symb/util";
 
 export const unifyLists = function unifyLists(lists) {
@@ -8,7 +7,7 @@ export const unifyLists = function unifyLists(lists) {
   const unifiedMap = {};
   for (let list of lists) {
     if (!list) continue;
-    for (let node of (GraphNode.isGraphNode(list) ? [list] : list)) {
+    for (let node of nodeArray(list)) {
       const nodeKey = node.getUniqueKey();
       const existing = unifiedMap[nodeKey];
       if (existing) {
@@ -31,10 +30,8 @@ export const intersectLists = function intersectLists(lists) {
   for (let list of lists) {
     if (!list) continue;
     const map = {};
-    if (list) {
-      for (let node of nodeArray(list)) {
-        map[node.getUniqueKey()] = node;
-      }
+    for (let node of nodeArray(list)) {
+      map[node.getUniqueKey()] = node;
     }
     maps.push(map);
   }
