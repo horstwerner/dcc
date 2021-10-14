@@ -39,6 +39,7 @@ const Chart = function Chart({data, descriptor, onClick, highlightCondition}) {
       throw new Error(`Overlay (${overlay}) only allowed for node sets. ${source} is not a node set`);
     }
     let overlayData = resolveProperty(data, overlay, null, null);
+
     if (!Array.isArray((overlayData))) {
       if (GraphNode.isGraphNode(overlayData)) {
         overlayData = overlayData.get(TYPE_NODES);

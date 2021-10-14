@@ -6,7 +6,7 @@ import TypeDictionary, {
   TYPE_CONTEXTUAL_NODE, TYPE_NAME,
   TYPE_THING, TYPE_TYPE, TYPE_URI
 } from './TypeDictionary';
-import {getConfig} from "@/Config";
+import {getConfig, PATH_SEPARATOR} from "@/Config";
 
 // noinspection JSUnusedGlobalSymbols
 export default class GraphNode {
@@ -407,20 +407,23 @@ export default class GraphNode {
   };
 
   hasAssociationPathTo(path, targetnode) {
-    if (path.includes('/')) {
+    const separator = getConfig(PATH_SEPARATOR);
+    const sepIndex = path.indexOf(separator)
+    if (sepIndex > -1) {
       //separate first segment of path from rest
-      const parts = path.split(/\/(.+)/);
-      const direct = this.properties[parts[0]];
+      const part0 = path.substring(0, sepIndex);
+      const part1 = path.substring(sepIndex + separator.length);
+      const direct = this.properties[part0];
       if (!direct) return false;
       if (typeof direct === 'object' && direct.constructor === Array) {
         for (let i = 0; i < direct.length; i++) {
           let node = direct[i];
-          if (node.hasAssociationPathTo(parts[1], targetnode)) return true;
+          if (node.hasAssociationPathTo(part1, targetnode)) return true;
         }
         return false
       }
       else if (GraphNode.isGraphNode(direct)) {
-        return direct.hasAssociationPathTo(parts[1], targetnode);
+        return direct.hasAssociationPathTo(part1, targetnode);
       }
     }
     else {
