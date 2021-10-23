@@ -6,7 +6,7 @@ import TypeDictionary, {
   TYPE_CONTEXTUAL_NODE, TYPE_NAME,
   TYPE_THING, TYPE_TYPE, TYPE_URI
 } from './TypeDictionary';
-import {getConfig} from "@/Config";
+import {getConfig, PATH_SEPARATOR} from "@/Config";
 
 // noinspection JSUnusedGlobalSymbols
 export default class GraphNode {
@@ -235,7 +235,7 @@ export default class GraphNode {
     }
 
     const property = this.properties[associationTypeUri];
-    if (property === undefined) {
+    if (property == null) {
       this.properties[associationTypeUri] = graphNode;
       return;
     }
@@ -254,7 +254,7 @@ export default class GraphNode {
       this.properties[associationTypeUri] = newArray;
       return;
     }
-    throw new Error("Unexpected type of associated object (" + this.uri + "->" + associationTypeUri + ")");
+    throw new Error(`Unexpected type of existing association (${this.uri})->${associationTypeUri}: ${typeof property}, expected GraphNode, Array or null`);
   };
 
   isInverseAssociation(type, graphNode) {
@@ -293,9 +293,12 @@ export default class GraphNode {
     Object.keys(this.properties).forEach(propUri => {
       const type = TypeDictionary.getType(propUri);
       const prop = this.properties[propUri];
-      if (type.isAssociation && !this.isInverseAssociation(type, prop)) {
+      if (type.isAssociation) {
         const inverseTypeUri = type.getInverseType(this.getTypeUri());
-        (Array.isArray(prop) ? prop : [prop]).forEach(targetNode => targetNode.removeLocalInverseAssociation(inverseTypeUri, this));
+        (Array.isArray(prop) ? prop : [prop]).forEach(targetNode => {
+          if (!this.isInverseAssociation(type.uri, targetNode)) {
+            targetNode.removeLocalInverseAssociation(inverseTypeUri, this);}
+        });
       }
     });
   }
@@ -390,7 +393,7 @@ export default class GraphNode {
       return this;
     }
 
-    throw new Error("Unexpected type of associated object (" + this.uri + "->" + associationType + ")");
+    throw new Error(`Unexpected type of associated object (${this.uri}->${associationType}): ${typeof target}`);
   };
 
   hasDirectAssociation(association, targetnode) {
@@ -404,20 +407,23 @@ export default class GraphNode {
   };
 
   hasAssociationPathTo(path, targetnode) {
-    if (path.includes('/')) {
+    const separator = getConfig(PATH_SEPARATOR);
+    const sepIndex = path.indexOf(separator)
+    if (sepIndex > -1) {
       //separate first segment of path from rest
-      const parts = path.split(/\/(.+)/);
-      const direct = this.properties[parts[0]];
+      const part0 = path.substring(0, sepIndex);
+      const part1 = path.substring(sepIndex + separator.length);
+      const direct = this.properties[part0];
       if (!direct) return false;
       if (typeof direct === 'object' && direct.constructor === Array) {
         for (let i = 0; i < direct.length; i++) {
           let node = direct[i];
-          if (node.hasAssociationPathTo(parts[1], targetnode)) return true;
+          if (node.hasAssociationPathTo(part1, targetnode)) return true;
         }
         return false
       }
       else if (GraphNode.isGraphNode(direct)) {
-        return direct.hasAssociationPathTo(parts[1], targetnode);
+        return direct.hasAssociationPathTo(part1, targetnode);
       }
     }
     else {

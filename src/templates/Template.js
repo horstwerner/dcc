@@ -22,7 +22,7 @@ import {
   UNIFY,
   FIRST_FOUND, CREATE_NODE
 } from "@/graph/Preprocessors";
-import {LOG_LEVEL_PATHS, LOG_LEVEL_RESULTS} from "@/components/Constants";
+import {LOG_LEVEL_PATHS, LOG_LEVEL_RESULTS, OPTION_HIGHLIGHT} from "@/components/Constants";
 
 export const SYNTH_NODE_MAP = 'map';
 export const SYNTH_NODE_RETRIEVE = 'retrieve';
@@ -132,7 +132,7 @@ export default class Template {
 
   getDefaultOptions() {
     return this.descriptor.options ?
-        mapValues(this.descriptor.options, (option) => option.defaultValue) :
+        mapValues(this.descriptor.options, (option) => (option.display === OPTION_HIGHLIGHT ? null : option.defaultValue)) :
         {};
   }
 
@@ -148,7 +148,7 @@ export default class Template {
     return this.descriptor.type;
   }
 
-  createElementInstance(descriptor, data, onClick) {
+  createElementInstance(descriptor, data, highlightCondition, onClick) {
     const elementClass = elementClassByType[descriptor.type];
     if (!elementClass) {
       console.log(`Unsupported element type ${descriptor.type} ignored`);
@@ -156,7 +156,7 @@ export default class Template {
     if (descriptor.condition && !Filter.fromDescriptor(descriptor.condition).matches(data) ) {
       return null;
     }
-    return elementClass.create({descriptor, data, onClick});
+    return elementClass.create({descriptor, data, highlightCondition, onClick});
   }
 
   getCardColor(node) {

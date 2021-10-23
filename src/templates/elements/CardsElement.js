@@ -20,11 +20,12 @@ export default class CardsElement extends TemplateElement {
     viewName: P.string,
     arrangement: P.shape({type: P.oneOf[GRID], lod: P.string, padding: P.number}),
     template: P.string,
-    options: P.object
+    options: P.object,
+    muteColor: P.string
   }
 
-  static create({descriptor, data, onClick}) {
-    return ChildSet(data, data.get(TYPE_CONTEXT), descriptor, false,  onClick, CLICK_NORMAL);
+  static create({descriptor, data, highlightCondition, onClick}) {
+    return ChildSet(data, data.get(TYPE_CONTEXT), descriptor, false,  onClick, CLICK_NORMAL, highlightCondition);
   }
 
 

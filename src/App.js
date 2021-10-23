@@ -1,21 +1,21 @@
 import P from 'prop-types';
-import {get, omit, pick, without, isEmpty} from 'lodash';
+import {get, isEmpty, omit, pick, without} from 'lodash';
 import Component from '@symb/Component';
 import ComponentFactory from "@symb/ComponentFactory";
-import Cache from './graph/Cache';
+import Cache, {traverseWithRecursion} from './graph/Cache';
 import TemplateRegistry, {DEFAULT_VIEW_NAME} from './templates/TemplateRegistry';
 import {Div_} from '@symb/Div';
 import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
 import {DEBUG_MODE, getAppCss, getConfig, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
-import {createContext, fillIn, fit, getCommonType, isDataEqual} from "@symb/util";
+import {createContext, fillIn, fit, getCommonType, getNodeArray, isDataEqual} from "@symb/util";
 import {createPreprocessedCardNode, focusCardMenu, hoverCardMenu} from "@/components/Generators";
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 import {calcMaxChildren, ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 
-import {CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
+import {CLICK_OPAQUE, CLICK_TRANSPARENT, LOG_LEVEL_PATHS, OPTION_HIGHLIGHT} from "@/components/Constants";
 import {
   fetchSubGraph,
   getCardDescriptors,
@@ -127,6 +127,7 @@ class App extends Component {
     this.handleHoverCardClose = this.handleHoverCardClose.bind(this);
     this.handleFocusCardPin = this.handleFocusCardPin.bind(this);
     this.handleToolToggle = this.handleToolToggle.bind(this);
+    this.handleHighlightListClose = this.handleHighlightListClose.bind(this);
     this.handleViewSelect = this.handleViewSelect.bind(this);
     this.removeToolFilter = this.removeToolFilter.bind(this);
     this.setToolFilter = this.setToolFilter.bind(this);
@@ -140,6 +141,7 @@ class App extends Component {
     this.onWSOpen = this.onWSOpen.bind(this);
     this.onWSMessage = this.onWSMessage.bind(this);
     this.onWSClose = this.onWSClose.bind(this);
+    this.setHighlightCondition = this.setHighlightCondition.bind(this);
 
     document.body.onkeyup = this.handleKeyUp;
     document.body.onkeydown = this.handleKeyDown;
@@ -424,6 +426,7 @@ class App extends Component {
       clickMode: CLICK_OPAQUE,
       onClick: this.handleBreadCrumbClick,
       style: {zIndex: 0},
+      highlightCondition: null,
       key: duplicate ? this.createChildKey() : sourceCard.key
     };
   }
@@ -500,6 +503,7 @@ class App extends Component {
     }
     const {windowWidth, windowHeight} = this.state;
     return { views, tools, activeTools, toolControls, currentFilters: [], focusData: data, nodeTypeUri,
+      highlightInfo: null, highlightMenu: null,
       currentViewOptions, unfilteredSaved: false,
       ...this.recalcLayout({ toolControls, windowWidth, windowHeight, focusCard })};
   }
@@ -540,6 +544,9 @@ class App extends Component {
     return  {...focusCard, data};
   }
 
+  focusCardWithHighlight(focusCard, highlightCondition) {
+    return {...focusCard, highlightCondition};
+  }
 
   updateFilteredState(newFilters, toolId, selectedId) {
     const { focusData, focusCard, activeTools, toolControls, unfilteredSaved, breadCrumbCards, breadCrumbHeight, mainWidth, pinnedWidth } = this.state;
@@ -608,17 +615,58 @@ class App extends Component {
 
     const focusCard = this.createFocusCard(data, template, currentViewOptions);
     focusCard.spatial = this.calcFocusCardSpatial({focusCard, breadCrumbHeight, mainWidth, focusHeight});
-    this.transitionToState({ focusCard, currentViewOptions: template.getDefaultOptions() });
+    this.transitionToState({ focusCard, currentViewOptions: template.getDefaultOptions(), highlightMenu: null, highlightInfo: null });
+  }
+
+  setHighlightCondition({by, selectedId, selectedValue}) {
+    const { highlightMenu, focusCard } = this.state;
+    const matchComparator = GraphNode.isGraphNode(selectedValue) ? COMPARISON_HAS_ASSOCIATED : COMPARISON_EQUAL;
+    const highlightInfo = {dimension: by, selectedId, condition: new Filter(by, matchComparator, selectedValue)};
+    this.setState({highlightInfo, highlightMenu: {...highlightMenu, selectedId}, focusCard: this.focusCardWithHighlight(focusCard, highlightInfo.condition)});
+  }
+
+  handleHighlightListClose() {
+    this.setState({highlightMenu: null});
   }
 
   handleOptionSelect(key, value) {
-    const {currentViewOptions, focusCard} = this.state;
+    const {currentViewOptions, focusCard, highlightInfo} = this.state;
     const newViewOptions = {...currentViewOptions, [key]: value};
 
-    this.setState({
-      currentViewOptions: newViewOptions,
-      focusCard: {...focusCard, options: newViewOptions}
-    })
+    const option = get(focusCard, ['template', 'descriptor', 'options'])[key];
+
+    if (option.display === OPTION_HIGHLIGHT) {
+      const originalFocus = omit(focusCard, ['highlightCondition']);
+      if (value == null) {
+        this.setState({highlightInfo: null, highlightMenu: null,  currentViewOptions: newViewOptions, focusCard: originalFocus });
+      } else {
+        const {dataPath, inputSelector} = option;
+        const rootNodes = getNodeArray(inputSelector, TYPE_NODES, focusCard.data);
+        const nodes = dataPath ?
+            [...rootNodes, ...traverseWithRecursion(rootNodes, dataPath, LOG_LEVEL_PATHS, '')] :
+            rootNodes;
+
+        let newHighlightInfo;
+        let newFocusCard;
+
+        if (!highlightInfo || highlightInfo.dimension !== value) {
+          newFocusCard = originalFocus;
+          newHighlightInfo = null;
+        } else {
+          newFocusCard = focusCard;
+          newHighlightInfo = highlightInfo;
+        }
+
+        this.setState({highlightMenu: {by: value, selectedId: highlightInfo ? highlightInfo.selectedId : null, nodes},
+          focusCard:  newFocusCard,
+          highlightInfo: newHighlightInfo, currentViewOptions: newViewOptions});
+      }
+    } else {
+      this.setState({
+        currentViewOptions: newViewOptions,
+        focusCard: {...focusCard, options: newViewOptions}
+      });
+    }
   }
 
   calcFocusCardSpatial({focusCard, mainWidth, breadCrumbHeight, focusHeight}) {
@@ -709,7 +757,7 @@ class App extends Component {
   createChildDescriptors(props) {
 
     const { dataLoaded, focusCard, nodeTypeUri, tools, activeTools, views, error, mainWidth, focusHeight,
-      sideBarWidth, breadCrumbCards, pinned, pinnedWidth,
+      sideBarWidth, breadCrumbCards, pinned, pinnedWidth, highlightMenu,
       hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions}
         = this.state;
 
@@ -778,10 +826,13 @@ class App extends Component {
         tools: tools && tools.map(tool => ({id: tool.id, name: tool.name, selected: !!activeTools[tool.id]})),
         options: get(focusCard, ['template', 'descriptor', 'options']) || {},
         currentViewOptions,
+        highlightMenu,
         onOptionSelect: this.handleOptionSelect,
         onToolToggle: this.handleToolToggle,
         onViewClick: this.handleViewSelect,
-        onSearchResultClick: this.handleSearchResultClick
+        onSearchResultClick: this.handleSearchResultClick,
+        onHighlightClose: this.handleHighlightListClose,
+        onHighlightSelect: this.setHighlightCondition
       })._Sidebar
     ];
   }

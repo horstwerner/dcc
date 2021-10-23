@@ -39,7 +39,8 @@ const graphPropTypes = {
   path: P.string.isRequired,
   viewName: P.string,
   nodeAspectRatio: P.number,
-  bounded: P.bool
+  bounded: P.bool,
+  muteColor: P.string
 }
 
 const commonPropTypes = {
@@ -78,8 +79,8 @@ export default class ChartElement extends TemplateElement {
     return error;
   }
 
-  static create({descriptor, data, onClick}) {
-    return Chart({ data, descriptor, onClick });
+  static create({descriptor, data, onClick, highlightCondition}) {
+    return Chart({ data, descriptor, onClick, highlightCondition });
   }
 
 };

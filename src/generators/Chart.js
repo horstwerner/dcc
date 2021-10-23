@@ -23,7 +23,7 @@ const fillInNumber = function fillInNumber(data, valueString) {
   }
 }
 
-const Chart = function Chart({data, descriptor, onClick}) {
+const Chart = function Chart({data, descriptor, onClick, highlightCondition}) {
   const {key, chartType, x, y, source, inputSelector, overlay, ...chartProps} = descriptor;
 
   if (DEBUG_MODE) {
@@ -38,7 +38,8 @@ const Chart = function Chart({data, descriptor, onClick}) {
     if (!Array.isArray(chartData)) {
       throw new Error(`Overlay (${overlay}) only allowed for node sets. ${source} is not a node set`);
     }
-    let overlayData = resolveProperty(data, overlay);
+    let overlayData = resolveProperty(data, overlay, null, null);
+
     if (!Array.isArray((overlayData))) {
       if (GraphNode.isGraphNode(overlayData)) {
         overlayData = overlayData.get(TYPE_NODES);
@@ -81,7 +82,7 @@ const Chart = function Chart({data, descriptor, onClick}) {
     case 'graph':
       const {viewName, nodeAspectRatio} = descriptor;
       const scope = descriptor['bounded'] ? getUnfilteredNodeArray(source, data) : null;
-      return GraphViz_({spatial, startNodes: chartData, scope, ...chartProps, viewName, nodeAspectRatio, onNodeClick: onClick})._GraphViz;
+      return GraphViz_({spatial, startNodes: chartData, scope, ...chartProps, viewName, nodeAspectRatio, highlightCondition, onNodeClick: onClick})._GraphViz;
     case 'polar':
       return PolarChart_({data, ...chartProps, spatial:{x, y, scale:1}})._PolarChart
     default:

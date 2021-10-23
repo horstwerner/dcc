@@ -1,10 +1,13 @@
+import {nodeArray} from "@symb/util";
+
 export const unifyLists = function unifyLists(lists) {
   if (lists.length < 2) {
     throw new Error('Need at least two lists as arguments for UNIFY');
   }
   const unifiedMap = {};
-  lists.forEach(list => {
-    list.forEach(node => {
+  for (let list of lists) {
+    if (!list) continue;
+    for (let node of nodeArray(list)) {
       const nodeKey = node.getUniqueKey();
       const existing = unifiedMap[nodeKey];
       if (existing) {
@@ -14,8 +17,8 @@ export const unifyLists = function unifyLists(lists) {
       } else {
         unifiedMap[nodeKey] = node;
       }
-    })
-  });
+    }
+  }
   return Object.values(unifiedMap);
 }
 
@@ -24,11 +27,12 @@ export const intersectLists = function intersectLists(lists) {
     throw new Error('Need at least two lists as arguments for INTERSECT');
   }
   const maps = [];
-  for (let i = 0; i < lists.length; i++) {
+  for (let list of lists) {
+    if (!list) continue;
     const map = {};
-    lists[i].forEach(node => {
+    for (let node of nodeArray(list)) {
       map[node.getUniqueKey()] = node;
-    });
+    }
     maps.push(map);
   }
   for (let i = 1; i < lists.length; i++) {
@@ -46,15 +50,18 @@ export const subtractLists = function subtractLists(lists) {
     throw new Error('Need at least two lists as arguments for SUBTRACT');
   }
   const map = {};
-  lists[0].forEach(node => {
+  const list0 = lists[0];
+  if (!list0) return [];
+  for (let node of nodeArray(list0)) {
     map[node.getUniqueKey()] = node;
-  });
+  }
   for (let i = 1; i < lists.length; i++) {
-    lists[i].forEach(node => {
+    const list = lists[i];
+    for (let node of nodeArray(list)) {
       if (map[node.getUniqueKey()]) {
         map[node.getUniqueKey()] = null;
       }
-    });
+    }
   }
   return Object.values(map).filter(Boolean);
 }

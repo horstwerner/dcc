@@ -6,3 +6,6 @@ export const CLICK_DISABLED = 'disabled';
 export const BLANK_NODE_URI = 'core:blank-node';
 export const LOG_LEVEL_RESULTS = 'results';
 export const LOG_LEVEL_PATHS = 'paths';
+
+export const OPTION_HIGHLIGHT = 'highlight';
+export const DEFAULT_MUTE_COLOR= '#EAEAEA';
