@@ -1,0 +1,38 @@
+.background {
+  position: absolute;
+  background-color: rgba(255,255,255,0.5);
+  left: 0;
+  top: 0;
+  z-index: 1000;
+}
+
+.fallBack {
+  position: absolute;
+  padding: 16px;
+  box-sizing: border-box;
+  background-color: #FEFEFE;
+  border-radius: 3px;
+  box-shadow: 6px 6px 6px 0 rgba(0,0,0,0.15);
+}
+
+.modal {
+  position: absolute;
+  padding: 4px;
+  box-sizing: border-box;
+  background-color: #FEFEFE;
+  border-radius: 3px;
+  box-shadow: 6px 6px 6px 0 rgba(0,0,0,0.15);
+}
+
+.icon {
+  opacity: 0.6;
+  cursor: pointer;
+  overflow: visible;
+  position: absolute;
+}
+.icon:hover {
+  opacity: 1!important;
+}
+.icon:active {
+  opacity: 1!important;
+}

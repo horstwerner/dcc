@@ -23,6 +23,9 @@ import {BLANK_NODE_URI} from "@/components/Constants";
 import GraphNode from "@/graph/GraphNode";
 import Filter from "@/graph/Filter";
 
+export const iconSize = 24;
+export const iconMargin = 6;
+
 export const STYLE_ATTRIBUTES = [
  'color',
  'background-color',
@@ -137,12 +140,12 @@ export const Caption = function Caption(props) {
 Caption.propTypes = CAPTION_PROPS;
 
 export const Link = function Link(props) {
-  const {key, x, y, w, h, text, image, style, url} = props;
+  const {key, x, y, w, h, text, image, style, url, modal, modalWidth, modalHeight} = props;
 
   const child = text ? Div_({key: 'button', size:{width: w, height: h}, style: calcStyle({'font-size': h, ...style})}, text)._Div :
       Image_({key: 'icon', source: image, width: w, height: h, cornerRadius: style && style.cornerRadius})._Image
 
-  return Link_({key, spatial: {x, y, scale: 1}, url}, child)._Link
+  return Link_({key, spatial: {x, y, scale: 1}, url, modal: !!modal, modalWidth, modalHeight}, child)._Link
 }
 
 
@@ -263,11 +266,6 @@ export const ChildSet = function ChildSet(data, context, descriptor, singleCard,
     clickMode,
     options})._CardSet
 };
-
-
-
-const iconSize = 24;
-const iconMargin = 6;
 
 export const hoverCardMenu = function hoverCardMenu(key, top, right, onClose, onStash) {
 

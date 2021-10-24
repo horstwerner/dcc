@@ -21,6 +21,8 @@ import {createFilterControl, updatedToolControl} from "@/Tools";
 import TypeDictionary, {TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/TypeDictionary";
 import {SYNTH_NODE_MAP, SYNTH_NODE_RETRIEVE} from "@/templates/Template";
 import {mapNode} from "@/graph/Analysis";
+import {LINK_EVENT} from "@/components/Link";
+import {ModalLayer_} from "@/components/ModalLayer";
 
 const APP = 'app';
 const BREADCRUMBS = 'breadcrumbs';
@@ -62,6 +64,7 @@ class App extends Component {
       allowInteractions: true,
       waiting: true,
       dataLoaded: false,
+      modalIframe: null,
       windowWidth: window.innerWidth,
       windowHeight: window.innerHeight,
       breadCrumbHeight: 0,
@@ -104,6 +107,7 @@ class App extends Component {
             this.setFocusCard(focusCard, null);
           }
         });
+
     this.handleNodeClick = this.handleNodeClick.bind(this);
     this.handleHoverCardPin = this.handleHoverCardPin.bind(this);
     this.handleBreadCrumbClick = this.handleBreadCrumbClick.bind(this);
@@ -121,6 +125,10 @@ class App extends Component {
     this.onError = this.onError.bind(this);
     this.moveCardToFocus = this.moveCardToFocus.bind(this);
     this.removeModals = this.removeModals.bind(this);
+    this.onModalLinkClick = this.onModalLinkClick.bind(this);
+    this.handleModalClose = this.handleModalClose.bind(this);
+
+    this.dom.addEventListener(LINK_EVENT, this.onModalLinkClick);
 
     document.body.onkeyup = this.handleKeyUp;
     document.body.onkeydown = this.handleKeyDown;
@@ -142,6 +150,17 @@ class App extends Component {
     this.setState({error});
   }
 
+  onModalLinkClick(e) {
+    const { url, modalWidth, modalHeight } = e.detail;
+    const width = modalWidth || (window.innerWidth / 2);
+    const height = modalHeight || (window.innerHeight / 2);
+
+    this.setState({modalIframe: {width, height , url}});
+  }
+
+  handleModalClose() {
+    this.setState({modalIframe: null});
+  }
 
   createChildKey() {
     return `card${this.nextChildIndex++}`;
@@ -644,7 +663,7 @@ class App extends Component {
   createChildDescriptors(props) {
 
     const { dataLoaded, focusCard, nodeTypeUri, tools, activeTools, views, error, mainWidth, focusHeight,
-      sideBarWidth, breadCrumbCards, pinned,
+      sideBarWidth, breadCrumbCards, pinned, modalIframe,
       hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions}
         = this.state;
 
@@ -659,6 +678,7 @@ class App extends Component {
     if (hoverCard) {
       const menuRight = hoverCard.template.getSize().width * hoverCard.spatial.scale + hoverCard.spatial.x;
       hoverChildren.push(hoverCard);
+
       if (allowInteractions) {
         hoverChildren.push(hoverCardMenu(HOVER_MENU, hoverCard.spatial.y, menuRight, this.handleHoverCardClose,
             this.handleHoverCardPin));
@@ -675,6 +695,16 @@ class App extends Component {
 
 
     const focusInfo = nodeTypeUri && `${TypeDictionary.getType(nodeTypeUri).name} ${focusCard.data.type.uri === TYPE_AGGREGATOR ? `(${focusCard.data.get(TYPE_NODE_COUNT)})` : ''}`;
+
+    let modal;
+    if (modalIframe) {
+      const { url, width, height } = modalIframe;
+      const renderW = Math.min(width, window.innerWidth - 64);
+      const renderH = Math.min(height, window.innerHeight - 64);
+      const x = (window.innerWidth - renderW) / 2;
+      const y = (window.innerHeight - renderH) / 2;
+      modal = ModalLayer_({x, y, size: {width: renderW, height: renderH}, url, onClose: this.handleModalClose})._ModalLayer;
+    }
 
     return [
       BreadcrumbLane_({
@@ -716,7 +746,8 @@ class App extends Component {
         onToolToggle: this.handleToolToggle,
         onViewClick: this.handleViewSelect,
         onSearchResultClick: this.handleSearchResultClick
-      })._Sidebar
+      })._Sidebar,
+      modal
     ];
   }
 }

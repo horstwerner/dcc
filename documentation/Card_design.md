@@ -149,6 +149,11 @@ The box is the same as a text field without any text. It's appearance is control
   * `url` a string that can include attributes in handlebars like `caption`
   * `text` Link text
   * `style` as in textfield
+  * `modal` - optional, if true, the link content is shown as modal iframe in the DCC window
+  * `modalWidth`, `modalHeight` - optional, size in pixels for the modal.
+
+When specifying a link target as modal, make sure that the targeted site allows rendering inside an iframe, otherwise
+the content will not show in the modal window.
 
 ### chart
   * `chartType` (`rect`, `stackedBar`, `graph` or `polar`)
