@@ -11,8 +11,9 @@ import cssRadioButtonsGray from "@/components/themes/gray/RadioButtons.css";
 import cssAppDefault from "@/components/themes/default/App.css";
 import cssAppGray from "@/components/themes/gray/App.css";
 
+const urlParams = new URLSearchParams(window.location.search);
 
-export const DEBUG_MODE = true;
+export const DEBUG_MODE = urlParams.has('debug') ? !!urlParams.get(`debug`) : false;
 export const OFFLINE_MODE = false;
 export const THEME_DEFAULT = 'default';
 export const THEME_GRAY = 'gray';
@@ -32,6 +33,7 @@ export const HOVER_MENU_DELAY = 700;
 export const SIDEBAR_PERCENT = 0.2;
 export const SIDEBAR_MAX = 250;
 export const MENU_WIDTH = SIDEBAR_MAX - 0.5 * MARGIN;
+export const HIGHLIGHT_LIST_WIDTH = 220;
 export const CANVAS_WIDTH = 1980 - SIDEBAR_MAX - 10;
 export const MAX_CARD_HEIGHT = 1000;
 
@@ -62,17 +64,23 @@ const alignMap = {
   center: 'center'
 }
 
+export const PATH_SEPARATOR = 'pathSeparator';
+
 const configuration = {
   displayNameAttribute : TYPE_NAME,
   theme: THEME_DEFAULT,
   logoUrl: 'public/DCCLogo.svg',
-  logoAlign: 'flex-end'
+  logoAlign: 'flex-end',
+  [PATH_SEPARATOR]: '/'
 };
 
 export const setConfig = function setConfig(config) {
   Object.assign(configuration, config);
   if (config.logoAlign) {
     configuration.logoAlign = alignMap[config.logoAlign] || 'center';
+  }
+  if (config.title) {
+    document.title = config.title;
   }
 }
 

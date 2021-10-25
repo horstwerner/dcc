@@ -6,7 +6,13 @@ import ComponentFactory from "@symb/ComponentFactory";
 import GraphNode from "@/graph/GraphNode";
 import Template from "@/templates/Template";
 import Arrangement from "@/arrangement/Arrangement";
-import {CLICK_DISABLED, CLICK_NORMAL, CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
+import {
+  CLICK_DISABLED,
+  CLICK_NORMAL,
+  CLICK_OPAQUE,
+  CLICK_TRANSPARENT,
+  DEFAULT_MUTE_COLOR
+} from "@/components/Constants";
 
 const CARDSET = 'card-set';
 
@@ -33,12 +39,13 @@ class CardSet extends Component {
 
   createChildDescriptors(props) {
 
-    const { arrangement, nodes, template, onClick, clickMode, options } = props;
+    const { arrangement, nodes, template, onClick, clickMode, options, highlightCondition, muteColor } = props;
 
     const childDescriptors = [];
     arrangement.forEachRasterpos(nodes, (node, rasterPos) => {
+      const deEmphasizeColor = highlightCondition && !highlightCondition.matches(node) ? (muteColor || DEFAULT_MUTE_COLOR) : null;
       childDescriptors.push(
-          Card_({key: node.getUniqueKey(), spatial: rasterPos, data: node, parentSet: this, onClick, template, clickMode, options})._Card
+          Card_({key: node.getUniqueKey(), spatial: rasterPos, data: node, parentSet: this, onClick, template, clickMode, options, deEmphasizeColor})._Card
       );
     });
     return childDescriptors;

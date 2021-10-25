@@ -1,22 +1,30 @@
 import P from 'prop-types';
-import {get, omit, pick, without} from 'lodash';
+import {get, isEmpty, omit, pick, without} from 'lodash';
 import Component from '@symb/Component';
 import ComponentFactory from "@symb/ComponentFactory";
-import Cache from './graph/Cache';
+import Cache, {traverseWithRecursion} from './graph/Cache';
 import TemplateRegistry, {DEFAULT_VIEW_NAME} from './templates/TemplateRegistry';
 import {Div_} from '@symb/Div';
 import {Card_} from "@/components/Card";
 import {Sidebar_} from "@/components/Sidebar";
 import GraphNode from "@/graph/GraphNode";
 import {DEBUG_MODE, getAppCss, getConfig, MARGIN, SIDEBAR_MAX, SIDEBAR_PERCENT} from "@/Config";
-import {createContext, fillIn, fit, getCommonType, isDataEqual} from "@symb/util";
+import {createContext, fillIn, fit, getCommonType, getNodeArray, isDataEqual} from "@symb/util";
 import {createPreprocessedCardNode, focusCardMenu, hoverCardMenu} from "@/components/Generators";
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 import {calcMaxChildren, ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 
-import {CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
-import {fetchSubGraph, getCardDescriptors, getClientConfig, getData, getDictionary, getToolDescriptors} from "@/Data";
+import {CLICK_OPAQUE, CLICK_TRANSPARENT, LOG_LEVEL_PATHS, OPTION_HIGHLIGHT} from "@/components/Constants";
+import {
+  fetchSubGraph,
+  getCardDescriptors,
+  getClientConfig,
+  getData,
+  getDictionary,
+  getParameterizedUrl,
+  getToolDescriptors
+} from "@/Data";
 import {createFilterControl, updatedToolControl} from "@/Tools";
 import TypeDictionary, {
   TYPE_AGGREGATOR,
@@ -27,6 +35,7 @@ import TypeDictionary, {
 } from "@/graph/TypeDictionary";
 import {SYNTH_NODE_MAP, SYNTH_NODE_RETRIEVE} from "@/templates/Template";
 import {mapNode} from "@/graph/Analysis";
+import {LoadingAnimation_} from "@/components/LoadingAnimation";
 import {LINK_EVENT} from "@/components/Link";
 import {ModalLayer_} from "@/components/ModalLayer";
 
@@ -53,6 +62,8 @@ class App extends Component {
   constructor(props, parent, domNode) {
     super(props, parent, domNode);
 
+    this.loadingAnimation = LoadingAnimation_({})._LoadingAnimation;
+
     this.state = {
       nextChildPos: MARGIN,
       currentData: Cache.rootNode,
@@ -69,6 +80,7 @@ class App extends Component {
       focusData: null,
       focusCard: null,
       hoverCard: null,
+      unfilteredSaved: false,
       allowInteractions: true,
       waiting: true,
       dataLoaded: false,
@@ -94,7 +106,11 @@ class App extends Component {
           if (DEBUG_MODE) {
             Cache.validateNodes();
           }
-          const {mainWidth, breadCrumbHeight} = this.state;
+          const updateSocket = getConfig('updateWebSocket');
+          if (updateSocket) {
+              this.connectToUpdateSocket(updateSocket);
+          }
+          const { mainWidth, breadCrumbHeight } = this.state;
           if (!this.state.error) {
             const startData = Cache.getNode(TYPE_THING, 'symb:rootNode');
             Cache.getEntityTypes().forEach(entityType => {
@@ -134,6 +150,7 @@ class App extends Component {
     this.handleHoverCardClose = this.handleHoverCardClose.bind(this);
     this.handleFocusCardPin = this.handleFocusCardPin.bind(this);
     this.handleToolToggle = this.handleToolToggle.bind(this);
+    this.handleHighlightListClose = this.handleHighlightListClose.bind(this);
     this.handleViewSelect = this.handleViewSelect.bind(this);
     this.removeToolFilter = this.removeToolFilter.bind(this);
     this.setToolFilter = this.setToolFilter.bind(this);
@@ -144,6 +161,10 @@ class App extends Component {
     this.onError = this.onError.bind(this);
     this.moveCardToFocus = this.moveCardToFocus.bind(this);
     this.removeModals = this.removeModals.bind(this);
+    this.onWSOpen = this.onWSOpen.bind(this);
+    this.onWSMessage = this.onWSMessage.bind(this);
+    this.onWSClose = this.onWSClose.bind(this);
+    this.setHighlightCondition = this.setHighlightCondition.bind(this);
     this.onModalLinkClick = this.onModalLinkClick.bind(this);
     this.handleModalClose = this.handleModalClose.bind(this);
 
@@ -155,6 +176,38 @@ class App extends Component {
     document.body.onkeydown = this.handleKeyDown;
     this.onResize(window.innerWidth, window.innerHeight);
   }
+
+  connectToUpdateSocket(url) {
+    this.ws = new WebSocket(getParameterizedUrl(url));
+    this.ws.onopen = this.onWSOpen;
+    this.ws.onclose = this.onWSClose;
+    this.ws.onmessage = this.onWSMessage;
+    this.ws.onerror = this.onError;
+  }
+
+  onWSOpen() {
+    console.log('Websocket connection established ');
+  };
+
+  onWSClose() {
+    console.log('Websocket connection closed');
+    this.ws = null;
+  };
+
+  onWSMessage(event) {
+    const data = JSON.parse(event.data);
+    const { update } = data;
+    if (update) {
+      Cache.updateNodes(update);
+      this.clearChildren();
+      this.update(this.innerProps);
+      this.renderStateChange();
+    }
+    // TODO: only activate when contextual node problem solved, see GraphNode.destroy()
+    // if (remove) {
+    //   Cache.removeNodes(remove);
+    // }
+  };
 
   updateDom(props, tween) {
     if (this.state.dataLoaded) {
@@ -345,11 +398,12 @@ class App extends Component {
   }
 
   moveCardToFocus(newFocusCard, remainingBreadcrumbCards) {
-    const { focusCard, pinned, breadCrumbHeight, mainWidth, pinnedWidth } = this.state;
+    const { focusCard, pinned, breadCrumbHeight, mainWidth, pinnedWidth, unfilteredSaved, currentFilters } = this.state;
     const existingPinned = pinned.find(card => isDataEqual(focusCard.data, card.data));
-    const breadCrumbCards = existingPinned ?
+    const saved = unfilteredSaved && isEmpty(currentFilters);
+    const breadCrumbCards = (existingPinned || saved) ?
         remainingBreadcrumbCards :
-        [...remainingBreadcrumbCards, this.toBreadCrumbCard(focusCard)];
+        [...remainingBreadcrumbCards, this.toBreadCrumbCard(focusCard, false)];
 
     this.removeModals();
     this.setState({allowInteractions: false, focusCard: newFocusCard, hoverCard: null, breadCrumbCards});
@@ -379,14 +433,14 @@ class App extends Component {
 
     const newBreadCrumbs = [];
 
-    let cursor = mainWidth - pinnedWidth;
+    let cursor = mainWidth - pinnedWidth - MARGIN;
 
     let scaleFactor = 1;
     let breadIdx = breadCrumbs.length - 1;
     while (cursor > 0 && breadIdx >= 0){
       const card = {...breadCrumbs[breadIdx]};
       const nativeSize = card.template.getSize();
-      const cardScale =  (breadCrumbHeight - 2 * MARGIN) / nativeSize.height * scaleFactor;
+      const cardScale = (breadCrumbHeight - 2 * MARGIN) / nativeSize.height * scaleFactor;
       const cardW = nativeSize.width * cardScale;
       const cardH = nativeSize.height * cardScale;
       card.spatial = {x: cursor - cardW, y: 0.5 * (breadCrumbHeight - cardH), scale: cardScale};
@@ -404,13 +458,16 @@ class App extends Component {
   /**
    * calculate descriptor for a new breadcrumb card from a current focus card
    * @param sourceCard
+   * @param duplicate create new key (i.e. new card)
    * @return breadCrumbCard
    */
-  toBreadCrumbCard(sourceCard) {
+  toBreadCrumbCard(sourceCard, duplicate) {
     return {...sourceCard,
       clickMode: CLICK_OPAQUE,
       onClick: this.handleBreadCrumbClick,
-      style: {zIndex: 0}
+      style: {zIndex: 0},
+      highlightCondition: null,
+      key: duplicate ? this.createChildKey() : sourceCard.key
     };
   }
 
@@ -493,6 +550,8 @@ class App extends Component {
 
     return { views, tools, activeTools, toolControls, currentFilters: [], focusData: data, nodeTypeUri,
       currentViewOptions, reference,
+      highlightInfo: null, highlightMenu: null,
+      currentViewOptions, unfilteredSaved: false,
       ...this.recalcLayout({ toolControls, windowWidth, windowHeight, focusCard })};
   }
 
@@ -532,14 +591,28 @@ class App extends Component {
     return  {...focusCard, data};
   }
 
+  focusCardWithHighlight(focusCard, highlightCondition) {
+    return {...focusCard, highlightCondition};
+  }
 
   updateFilteredState(newFilters, toolId, selectedId) {
-    const { focusData, focusCard, activeTools, toolControls } = this.state;
+    const { focusData, focusCard, activeTools, toolControls, unfilteredSaved, breadCrumbCards, breadCrumbHeight, mainWidth, pinnedWidth } = this.state;
     const { } = this.state;
     const tool = activeTools[toolId];
     const newFocusCard = this.updatedFocusCard(focusCard, focusData, newFilters);
+    let newBreadCrumbCards = breadCrumbCards;
+    let newUnfilteredSaved = unfilteredSaved;
+    if (!unfilteredSaved) {
+      const newBreadcrumb = this.toBreadCrumbCard(focusCard, true);
+      this.setState({breadCrumbCards: [...breadCrumbCards, newBreadcrumb]});
+      newBreadCrumbCards = this.calcBreadCrumbChildren([...breadCrumbCards, newBreadcrumb], breadCrumbHeight, mainWidth, pinnedWidth);
+      newUnfilteredSaved = true;
+    }
+
     this.transitionToState({currentFilters: newFilters,
       toolControls: toolControls.map(control => (control.key !== toolId ? control : updatedToolControl(tool, control, selectedId, newFocusCard.data, this.setToolFilter, this.removeToolFilter))),
+      unfilteredSaved: newUnfilteredSaved,
+      breadCrumbCards: newBreadCrumbCards,
       focusCard: newFocusCard});
   }
 
@@ -589,17 +662,58 @@ class App extends Component {
 
     const focusCard = this.createFocusCard(data, template, currentViewOptions);
     focusCard.spatial = this.calcFocusCardSpatial({focusCard, breadCrumbHeight, mainWidth, focusHeight});
-    this.transitionToState({ focusCard, currentViewOptions: template.getDefaultOptions() });
+    this.transitionToState({ focusCard, currentViewOptions: template.getDefaultOptions(), highlightMenu: null, highlightInfo: null });
+  }
+
+  setHighlightCondition({by, selectedId, selectedValue}) {
+    const { highlightMenu, focusCard } = this.state;
+    const matchComparator = GraphNode.isGraphNode(selectedValue) ? COMPARISON_HAS_ASSOCIATED : COMPARISON_EQUAL;
+    const highlightInfo = {dimension: by, selectedId, condition: new Filter(by, matchComparator, selectedValue)};
+    this.setState({highlightInfo, highlightMenu: {...highlightMenu, selectedId}, focusCard: this.focusCardWithHighlight(focusCard, highlightInfo.condition)});
+  }
+
+  handleHighlightListClose() {
+    this.setState({highlightMenu: null});
   }
 
   handleOptionSelect(key, value) {
-    const {currentViewOptions, focusCard} = this.state;
+    const {currentViewOptions, focusCard, highlightInfo} = this.state;
     const newViewOptions = {...currentViewOptions, [key]: value};
 
-    this.setState({
-      currentViewOptions: newViewOptions,
-      focusCard: {...focusCard, options: newViewOptions}
-    })
+    const option = get(focusCard, ['template', 'descriptor', 'options'])[key];
+
+    if (option.display === OPTION_HIGHLIGHT) {
+      const originalFocus = omit(focusCard, ['highlightCondition']);
+      if (value == null) {
+        this.setState({highlightInfo: null, highlightMenu: null,  currentViewOptions: newViewOptions, focusCard: originalFocus });
+      } else {
+        const {dataPath, inputSelector} = option;
+        const rootNodes = getNodeArray(inputSelector, TYPE_NODES, focusCard.data);
+        const nodes = dataPath ?
+            [...rootNodes, ...traverseWithRecursion(rootNodes, dataPath, LOG_LEVEL_PATHS, '')] :
+            rootNodes;
+
+        let newHighlightInfo;
+        let newFocusCard;
+
+        if (!highlightInfo || highlightInfo.dimension !== value) {
+          newFocusCard = originalFocus;
+          newHighlightInfo = null;
+        } else {
+          newFocusCard = focusCard;
+          newHighlightInfo = highlightInfo;
+        }
+
+        this.setState({highlightMenu: {by: value, selectedId: highlightInfo ? highlightInfo.selectedId : null, nodes},
+          focusCard:  newFocusCard,
+          highlightInfo: newHighlightInfo, currentViewOptions: newViewOptions});
+      }
+    } else {
+      this.setState({
+        currentViewOptions: newViewOptions,
+        focusCard: {...focusCard, options: newViewOptions}
+      });
+    }
   }
 
   calcFocusCardSpatial({focusCard, mainWidth, breadCrumbHeight, focusHeight}) {
@@ -690,7 +804,7 @@ class App extends Component {
   createChildDescriptors(props) {
 
     const { dataLoaded, focusCard, nodeTypeUri, reference, tools, activeTools, views, error, mainWidth, focusHeight,
-      sideBarWidth, breadCrumbCards, pinned, modalIframe,
+      sideBarWidth, breadCrumbCards, pinned, modalIframe, pinnedWidth, highlightMenu,
       hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions}
         = this.state;
 
@@ -699,7 +813,7 @@ class App extends Component {
       return Div_({}, `An error occurred: ${error}`)._Div;
     }
 
-    if (!dataLoaded) return null;
+    if (!dataLoaded) return this.loadingAnimation;
 
     const hoverChildren = [];
     if (hoverCard) {
@@ -736,6 +850,7 @@ class App extends Component {
     return [
       BreadcrumbLane_({
         key: BREADCRUMBS,
+        pinnedWidth,
         spatial: {x: 0, y: 0, scale: 1},
         size:  {width: mainWidth, height: breadCrumbHeight},
         onClick: this.removeModals,
@@ -770,10 +885,13 @@ class App extends Component {
         tools: tools && tools.map(tool => ({id: tool.id, name: tool.name, selected: !!activeTools[tool.id]})),
         options: get(focusCard, ['template', 'descriptor', 'options']) || {},
         currentViewOptions,
+        highlightMenu,
         onOptionSelect: this.handleOptionSelect,
         onToolToggle: this.handleToolToggle,
         onViewClick: this.handleViewSelect,
-        onSearchResultClick: this.handleSearchResultClick
+        onSearchResultClick: this.handleSearchResultClick,
+        onHighlightClose: this.handleHighlightListClose,
+        onHighlightSelect: this.setHighlightCondition
       })._Sidebar,
       modal
     ];

@@ -203,7 +203,7 @@ export const createPreprocessedCardNode = function createPreprocessedCardNode(da
   return result;
 }
 
-export const ChildSet = function ChildSet(data, context, descriptor, singleCard, onClick, clickMode) {
+export const ChildSet = function ChildSet(data, context, descriptor, singleCard, onClick, clickMode, highlightCondition) {
 
   const { key, name, source, lod, align, arrangement, inputSelector, viewName, x, y, w, h, options} = descriptor;
 
@@ -264,6 +264,7 @@ export const ChildSet = function ChildSet(data, context, descriptor, singleCard,
     arrangement: createArrangement(arrangementDescriptor, nativeChildSize),
     onClick,
     clickMode,
+    highlightCondition,
     options})._CardSet
 };
 

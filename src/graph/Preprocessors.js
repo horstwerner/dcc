@@ -23,8 +23,8 @@ import Cache, {resolve} from "@/graph/Cache";
 import Filter from "@/graph/Filter";
 import {deriveAssociations, mapNode, pathAnalysis} from "@/graph/Analysis";
 import {intersectLists, subtractLists, unifyLists} from "@/graph/SetOperations";
-import {TYPE_NODES} from "@/graph/TypeDictionary";
-import {describeDescriptor, describeSource, nodeArray} from "@symb/util";
+import {TYPE_AGGREGATOR, TYPE_NODES} from "@/graph/TypeDictionary";
+import {describeDescriptor, describeSource, getUnfilteredNodeArray} from "@symb/util";
 
 export const CREATE_NODE = "create-node";
 export const PATH_ANALYSIS = "path-analysis";
@@ -95,12 +95,16 @@ export const preprocess = function preprocess(data, context, preprocessors, logL
       if (logLevel) {
         console.log(`evaluating unfiltered source:`)
       }
-      const unfiltered = resolve(data, source || TYPE_NODES, logLevel);
-      if ( unfiltered == null ) {
+
+      const path = source || (data.getTypeUri() === TYPE_AGGREGATOR ? TYPE_NODES : 'this');
+      let unfiltered = getUnfilteredNodeArray(path, data, logLevel);
+
+      if ( unfiltered.length === 0 ) {
         console.log(`Skipping preprocess because no source data found for ${data.getUniqueKey()}`);
         return;
       }
-      sourceData = (unfiltered && filter) ? nodeArray(unfiltered).filter(filter.matches) : unfiltered;
+
+      sourceData = filter ? unfiltered.filter(filter.matches) : unfiltered;
       if (logLevel && unfiltered && filter) {
         console.log(`Filtered: ${describeSource(sourceData)}`);
       }
@@ -174,11 +178,11 @@ export const preprocess = function preprocess(data, context, preprocessors, logL
       }
     }
 
-   if (setContext) {
+    if (setContext) {
       context.set(setContext, result);
     }
-   if (set) {
-     data.set(set, result);
-   }
+    if (set) {
+      data.set(set, result);
+    }
   });
 }

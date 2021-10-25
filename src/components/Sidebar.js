@@ -4,7 +4,7 @@ import hoverMenuCss from './HoverCardMenu.css';
 import Cache from '@/graph/Cache';
 import Component from "@symb/Component";
 import ComponentFactory from "@symb/ComponentFactory";
-import {getConfig, MARGIN, MENU_WIDTH} from "@/Config";
+import {getConfig, HIGHLIGHT_LIST_WIDTH, MARGIN, MENU_WIDTH} from "@/Config";
 import {calcPanelHeight, MenuPanel_} from "@/components/MenuPanel";
 import {Div_} from "@symb/Div";
 import {Image_} from "@symb/Image";
@@ -12,6 +12,7 @@ import {createOptionControls} from "@/Tools";
 import {SuggestList_} from "@/components/SuggestList";
 import {Menu_} from "@/components/Menu";
 import {Link_} from "@/components/Link";
+import {ValueRangeList_} from "@/components/ValueRangeList";
 
 const SIDEBAR = 'sidebar';
 const MENU_PANEL = 'menu-panel';
@@ -95,7 +96,7 @@ class Sidebar extends Component {
   createChildDescriptors(props) {
 
     const { menuTop, size, views, tools, onViewClick, onToolToggle, options, currentViewOptions, onOptionSelect,
-      onSearchResultClick, focusInfo, logoUrl, logoLink, shareRef} = props;
+      onSearchResultClick, focusInfo, logoUrl, logoLink, shareRef, highlightMenu, onHighlightSelect, onHighlightClose} = props;
     const { currentSearchResults } = this.state;
     const optionsWidth = MENU_WIDTH - 16;
 
@@ -108,6 +109,16 @@ class Sidebar extends Component {
         [Div_({}, focusInfo)._Div,
         Link_({className: css.shareLink, url: shareRef}, Image_({key: 'shareButton', source: 'public/ShareButton.svg', title: 'Share', className: hoverMenuCss.icon, width: 22, height: 22})._Image)._Link]
     )._Div);
+
+
+    let highlightMenuControl;
+    if (highlightMenu) {
+      const {by, selectedId, nodes} = highlightMenu;
+      const highlightSize = {width: HIGHLIGHT_LIST_WIDTH, height: 260};
+      const spatial = {x: - HIGHLIGHT_LIST_WIDTH - 4, y: searchY + 48, scale: 1}
+
+      highlightMenuControl = highlightMenu && ValueRangeList_({nodes, dimension: by, onClick: onHighlightSelect, onClose: onHighlightClose, selectedId, listW: MENU_WIDTH, size: highlightSize, spatial})._ValueRangeList;
+    }
 
     return[
       Div_({key: LOGO_BOX, className: css.logoBox, spatial: {x: 0, y: MARGIN, scale: 1}, style: {justifyContent: getConfig('logoAlign')}},
@@ -130,6 +141,7 @@ class Sidebar extends Component {
         children:[toolMenu],
         spatial: {x: 0, y: size.height - calcPanelHeight(tools) - 4, scale: 1}
       })._MenuPanel,
+      highlightMenuControl,
       (currentSearchResults && SuggestList_({key: 'suggestList', size: {width: MENU_WIDTH - 16},
         spatial: {x: 9, y: searchY + 40, scale: 1}, onSearchResultClick, resultGroups: currentSearchResults})._SuggestList)
     ];

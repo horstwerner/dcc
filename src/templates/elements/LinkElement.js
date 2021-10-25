@@ -16,7 +16,7 @@ export default class LinkElement extends TemplateElement {
   }
 
   static create ({descriptor, data}) {
-    const { url } = descriptor;
-    return url && Link({...descriptor, url: fillIn(url, data)});
+    const { url, text } = descriptor;
+    return url && Link({...descriptor, text: fillIn(text, data), url: fillIn(url, data)});
   }
 }

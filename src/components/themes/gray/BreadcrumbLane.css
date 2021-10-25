@@ -33,3 +33,9 @@
     /*position: absolute;*/
     transform-origin: 0 0;
 }
+
+.pinnedBackground {
+    position: absolute;
+    transform-origin: 0 0;
+    background-color: #ebebe9;
+}

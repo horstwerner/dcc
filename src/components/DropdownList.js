@@ -5,7 +5,7 @@ import css from './DropdownList.css';
 import {Div_} from "@symb/Div";
 import {Image_} from "@symb/Image";
 
-const ROW_HEIGHT = 20;
+export const ROW_HEIGHT = 20;
 const ARROW_WIDTH = 20;
 const DEFAULT_LABEL_WIDTH = 70;
 const GRACE_PERIOD = 250;
