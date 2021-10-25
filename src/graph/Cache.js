@@ -66,12 +66,12 @@ class Cache {
     return node;
   };
 
-  getNodeByUniqueKey(key) {
-    //separate first segment of path from rest
-    const parts = key.split(/\/(.+)/);
-
-    return this.getNode(parts[0], parts[1]);
-  }
+  // getNodeByUniqueKey(key) {
+  //   //separate first segment of path from rest
+  //   const parts = key.split(/\/(.+)/);
+  //
+  //   return this.getNode(parts[0], parts[1]);
+  // }
 
   getAllNodesOf (nodeType) {
     let type = TypeDictionary.getType(nodeType);
@@ -209,6 +209,7 @@ export const traverse = function(source, path, logLevel, indent) {
           const related = getSegmentData(node, step);
           if (related != null) {
             if (Array.isArray(related)) {
+              // noinspection JSUnresolvedVariable
               for (let j = 0; j < related.length; j++) {
                 nextSet.add( related[j]);
               }
@@ -249,6 +250,7 @@ export const resolve = function (node, path, logLevel, indent) {
 export const resolveAttribute = function (node, path) {
   const result = resolveProperty(node, path, null, null);
 
+  // noinspection JSUnresolvedFunction
   return (GraphNode.isGraphNode(result)) ?
       result.getDisplayName() :
       result;

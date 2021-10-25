@@ -31,7 +31,7 @@ class ModalLayer extends Component {
     return [
         Div_({key: 'fallback', className: css.fallBack, size, spatial: {x, y, scale: 1}}, `Opening ${url}...`),
         IFrame_({key: 'iframe', className: css.modal, url, size, spatial: {x, y, scale: 1}})._IFrame,
-        Image_({key: 'closeButton', className: css.icon, width: iconSize, height: iconSize,
+        Image_({key: 'closeButton', className: css.icon, title: 'Close', width: iconSize, height: iconSize,
           spatial: {x: x + size.width - iconSize , y: y - iconSize - iconMargin, scale: 1},
           source: 'public/CloseButton.svg', onClick: onClose})._Image
     ];

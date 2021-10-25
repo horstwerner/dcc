@@ -18,7 +18,13 @@ import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from 
 import {CLICK_OPAQUE, CLICK_TRANSPARENT} from "@/components/Constants";
 import {fetchSubGraph, getCardDescriptors, getClientConfig, getData, getDictionary, getToolDescriptors} from "@/Data";
 import {createFilterControl, updatedToolControl} from "@/Tools";
-import TypeDictionary, {TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/TypeDictionary";
+import TypeDictionary, {
+  TYPE_AGGREGATOR,
+  TYPE_NAME,
+  TYPE_NODE_COUNT,
+  TYPE_NODES,
+  TYPE_THING
+} from "@/graph/TypeDictionary";
 import {SYNTH_NODE_MAP, SYNTH_NODE_RETRIEVE} from "@/templates/Template";
 import {mapNode} from "@/graph/Analysis";
 import {LINK_EVENT} from "@/components/Link";
@@ -40,6 +46,8 @@ class App extends Component {
   static propTypes = {
     title: P.string
   };
+
+  startUrl;
 
   // noinspection DuplicatedCode
   constructor(props, parent, domNode) {
@@ -88,12 +96,23 @@ class App extends Component {
           }
           const {mainWidth, breadCrumbHeight} = this.state;
           if (!this.state.error) {
-            const startData = new GraphNode(TYPE_AGGREGATOR, Cache.createUri());
+            const startData = Cache.getNode(TYPE_THING, 'symb:rootNode');
             Cache.getEntityTypes().forEach(entityType => {
               startData.setBulkAssociation(entityType, Cache.rootNode.get(entityType));
-            })
-            const startTemplate = TemplateRegistry.getTemplate(getConfig('startTemplate'));
-            const startNode = createPreprocessedCardNode(startData, null, startTemplate, null);
+            });
+            let startTemplate;
+            let startNode;
+            if (window.location.href.includes('#')) {
+              const decoded = atob(decodeURI(window.location.href.split('#')[1]));
+              const {data, template} = JSON.parse(decoded);
+              const dataNode = Array.isArray(data) ? data.map(el => Cache.getNodeByUri(el)) : Cache.getNodeByUri(data);
+              startTemplate = TemplateRegistry.getTemplate(template);
+              startNode = createPreprocessedCardNode(dataNode, null, startTemplate, null)
+            } else {
+              startTemplate = TemplateRegistry.getTemplate(getConfig('startTemplate'));
+              startNode = createPreprocessedCardNode(startData, null, startTemplate, null);
+            }
+
             const focusCard = this.createFocusCard(startNode, startTemplate, null);
             const { pinned, pinnedWidth } = this.calcPinnedCardPositions([this.toPinnedCard(focusCard, PINNED_ROOT_CARD)], mainWidth, breadCrumbHeight);
 
@@ -129,6 +148,8 @@ class App extends Component {
     this.handleModalClose = this.handleModalClose.bind(this);
 
     this.dom.addEventListener(LINK_EVENT, this.onModalLinkClick);
+
+    this.startUrl = window.location.href.split('#')[0];
 
     document.body.onkeyup = this.handleKeyUp;
     document.body.onkeydown = this.handleKeyDown;
@@ -464,8 +485,14 @@ class App extends Component {
       focusCard.options = currentViewOptions;
     }
     const {windowWidth, windowHeight} = this.state;
+    let reference = this.startUrl;
+    if (GraphNode.isGraphNode(data)) {
+      const appendix = {data: data.getReference(), template: focusCard.template.id};
+      reference = `${this.startUrl}#${encodeURI(btoa(JSON.stringify(appendix)))}`;
+    }
+
     return { views, tools, activeTools, toolControls, currentFilters: [], focusData: data, nodeTypeUri,
-      currentViewOptions,
+      currentViewOptions, reference,
       ...this.recalcLayout({ toolControls, windowWidth, windowHeight, focusCard })};
   }
 
@@ -662,7 +689,7 @@ class App extends Component {
 
   createChildDescriptors(props) {
 
-    const { dataLoaded, focusCard, nodeTypeUri, tools, activeTools, views, error, mainWidth, focusHeight,
+    const { dataLoaded, focusCard, nodeTypeUri, reference, tools, activeTools, views, error, mainWidth, focusHeight,
       sideBarWidth, breadCrumbCards, pinned, modalIframe,
       hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions}
         = this.state;
@@ -737,6 +764,7 @@ class App extends Component {
         logoUrl: getConfig('logoUrl'),
         logoLink: getConfig('logoLink'),
         focusInfo,
+        shareRef: reference,
         spatial: {x: mainWidth, y: 0, scale: 1},
         views: views.map(view => ({id: view.id, name: view.name || view.id, selected: view.id === focusCard.template.id})),
         tools: tools && tools.map(tool => ({id: tool.id, name: tool.name, selected: !!activeTools[tool.id]})),

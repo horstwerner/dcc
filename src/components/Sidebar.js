@@ -1,5 +1,6 @@
 import P from 'prop-types';
 import css from './Sidebar.css';
+import hoverMenuCss from './HoverCardMenu.css';
 import Cache from '@/graph/Cache';
 import Component from "@symb/Component";
 import ComponentFactory from "@symb/ComponentFactory";
@@ -36,6 +37,7 @@ class Sidebar extends Component {
     menuTop: P.number.isRequired,
     views: P.array,
     tools: P.array,
+    shareRef: P.string,
     onSearch: P.func,
     onViewClick: P.func,
     onToolToggle: P.func,
@@ -93,7 +95,7 @@ class Sidebar extends Component {
   createChildDescriptors(props) {
 
     const { menuTop, size, views, tools, onViewClick, onToolToggle, options, currentViewOptions, onOptionSelect,
-      onSearchResultClick, focusInfo, logoUrl, logoLink} = props;
+      onSearchResultClick, focusInfo, logoUrl, logoLink, shareRef} = props;
     const { currentSearchResults } = this.state;
     const optionsWidth = MENU_WIDTH - 16;
 
@@ -102,7 +104,10 @@ class Sidebar extends Component {
 
     const viewMenu = Menu_({key: "views", title: 'Views',  entries: views, onEntryClick: onViewClick})._Menu;
     const toolMenu = (tools.length > 0 && Menu_({key: "tools", color: 'gray', title: 'Filters',  entries: tools, onEntryClick: onToolToggle})._Menu);
-    const focusHeader = focusInfo && (Div_({className: css.focusHeader}, focusInfo)._Div);
+    const focusHeader = focusInfo && (Div_({className: css.focusHeader},
+        [Div_({}, focusInfo)._Div,
+        Link_({className: css.shareLink, url: shareRef}, Image_({key: 'shareButton', source: 'public/ShareButton.svg', title: 'Share', className: hoverMenuCss.icon, width: 22, height: 22})._Image)._Link]
+    )._Div);
 
     return[
       Div_({key: LOGO_BOX, className: css.logoBox, spatial: {x: 0, y: MARGIN, scale: 1}, style: {justifyContent: getConfig('logoAlign')}},

@@ -272,8 +272,8 @@ export const hoverCardMenu = function hoverCardMenu(key, top, right, onClose, on
   const width = iconSize;
   const height = iconSize;
   const children = [
-    onStash && Image_({key: 'stashButton', className: hoverMenuCss.icon, width, height, source: 'public/PinButton.svg', onClick: onStash})._Image,
-    onClose && Image_({key: 'closeButton', className: hoverMenuCss.icon, width, height, source: 'public/CloseButton.svg', onClick: onClose})._Image,
+    onStash && Image_({key: 'stashButton', className: hoverMenuCss.icon, width, height, title: 'Pin', source: 'public/PinButton.svg', onClick: onStash})._Image,
+    onClose && Image_({key: 'closeButton', className: hoverMenuCss.icon, width, height, title: 'Close', source: 'public/CloseButton.svg', onClick: onClose})._Image,
   ].filter(Boolean);
   const totalWidth = children.length * iconSize + (children.length - 1) * iconMargin;
 
@@ -285,7 +285,7 @@ export const focusCardMenu = function focusCardMenu(key, top, right, onPin) {
   const width = iconSize;
   const height = iconSize;
   const children =
-    Image_({key: 'stashbutton', className: hoverMenuCss.icon, width, height, source: 'public/PinButton.svg', onClick: onPin})._Image;
+    Image_({key: 'stashbutton', className: hoverMenuCss.icon, width, height, source: 'public/PinButton.svg', title: 'Pin', onClick: onPin})._Image;
 
   return Div_({key, className: hoverMenuCss.menu, children, style: {width: iconSize, height}, spatial: {x: right - iconSize - iconMargin, y: top -0.7 * iconSize, scale: 1}})._Div
 }
