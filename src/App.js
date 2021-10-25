@@ -26,13 +26,7 @@ import {
   getToolDescriptors
 } from "@/Data";
 import {createFilterControl, updatedToolControl} from "@/Tools";
-import TypeDictionary, {
-  TYPE_AGGREGATOR,
-  TYPE_NAME,
-  TYPE_NODE_COUNT,
-  TYPE_NODES,
-  TYPE_THING
-} from "@/graph/TypeDictionary";
+import TypeDictionary, {TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/TypeDictionary";
 import {SYNTH_NODE_MAP, SYNTH_NODE_RETRIEVE} from "@/templates/Template";
 import {mapNode} from "@/graph/Analysis";
 import {LoadingAnimation_} from "@/components/LoadingAnimation";
@@ -112,7 +106,7 @@ class App extends Component {
           }
           const { mainWidth, breadCrumbHeight } = this.state;
           if (!this.state.error) {
-            const startData = Cache.getNode(TYPE_THING, 'symb:rootNode');
+            const startData = Cache.getNode(TYPE_AGGREGATOR, 'symb:rootNode');
             Cache.getEntityTypes().forEach(entityType => {
               startData.setBulkAssociation(entityType, Cache.rootNode.get(entityType));
             });
