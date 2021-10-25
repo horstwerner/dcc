@@ -549,9 +549,7 @@ class App extends Component {
     }
 
     return { views, tools, activeTools, toolControls, currentFilters: [], focusData: data, nodeTypeUri,
-      currentViewOptions, reference,
-      highlightInfo: null, highlightMenu: null,
-      currentViewOptions, unfilteredSaved: false,
+      reference, highlightInfo: null, highlightMenu: null, currentViewOptions, unfilteredSaved: false,
       ...this.recalcLayout({ toolControls, windowWidth, windowHeight, focusCard })};
   }
 
