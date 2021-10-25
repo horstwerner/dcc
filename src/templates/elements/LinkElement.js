@@ -11,7 +11,6 @@ export default class LinkElement extends TemplateElement {
     url: P.string.isRequired,
     text: P.string,
     image: P.string,
-    onModal: P.func,
     style: P.shape(StylePropType)
   }
 

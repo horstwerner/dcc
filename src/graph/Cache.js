@@ -153,21 +153,21 @@ class Cache {
     });
   }
 
-  removeNodes(idArray) {
-    idArray.forEach(id => {
-          const node = this.getNodeByUri(id);
-          if (node) {
-            node.destroy();
-            this.lookUpGlobal[id] = null;
-            const listByType = this.rootNode.get(node.getTypeUri());
-            const index = listByType.indexOf(node);
-            if (index !== -1) {
-              listByType.splice(index, 1);
-            }
-          }
-        }
-    )
-  }
+  // removeNodes(idArray) {
+  //   idArray.forEach(id => {
+  //         const node = this.getNodeByUri(id);
+  //         if (node) {
+  //           node.destroy();
+  //           this.lookUpGlobal[id] = null;
+  //           const listByType = this.rootNode.get(node.getTypeUri());
+  //           const index = listByType.indexOf(node);
+  //           if (index !== -1) {
+  //             listByType.splice(index, 1);
+  //           }
+  //         }
+  //       }
+  //   )
+  // }
 
   importNodeTable(typeUri, headerRow, valueRows) {
     const idIndex = Math.max(headerRow.indexOf('id'), 0);
@@ -239,7 +239,6 @@ export const traverse = function(source, path, logLevel, indent) {
           const related = getSegmentData(node, step);
           if (related != null) {
             if (Array.isArray(related)) {
-              // noinspection JSUnresolvedVariable
               for (let j = 0; j < related.length; j++) {
                 nextSet.add( related[j]);
               }
