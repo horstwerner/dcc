@@ -143,7 +143,7 @@ class Cache {
   updateNodes(nodeArray) {
     nodeArray.forEach(rawNode => {
       const { id, type } = rawNode;
-      const node = this.getNodeByUri(id);
+      const node = this.getNode(type, id);
       if (!node) {
         this.importNodeData(this.getNode(type, id), rawNode);
       } else {
