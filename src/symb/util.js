@@ -266,3 +266,13 @@ export const inspectPathSegment = function inspect(associationName) {
     return {edgeType: associationName, recursive: false};
   }
 }
+
+export const writeToClipboard = function writeToClipboard(text) {
+  const dummyField = document.createElement("textarea");
+  dummyField.textContent = text;
+  document.body.appendChild(dummyField);
+  dummyField.select();
+  document.execCommand('copy');
+  dummyField.blur();
+  document.body.removeChild(dummyField);
+}

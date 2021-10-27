@@ -16,11 +16,15 @@ export class Image extends Component {
     }
     this.innerProps = {...props};
 
-    const {source, width, height, cornerRadius, onClick, color, onMouseEnter, onMouseLeave} = props;
+    const {source, width, height, cornerRadius, onClick, title, color, onMouseEnter, onMouseLeave} = props;
     this.dom.setAttribute('src', source);
     this.dom.setAttribute('draggable', false);
     if (cornerRadius) {
       this.dom.style.borderRadius = `${cornerRadius}px`;
+    }
+    if (title) {
+      this.dom.setAttribute('alt', title);
+      this.dom.setAttribute('title', title);
     }
     if (color != null) {
       this.dom.style.backgroundColor = color;

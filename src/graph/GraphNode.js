@@ -2,11 +2,12 @@ import Cache from './Cache';
 import TypeDictionary, {
   DATATYPE_BOOLEAN,
   DATATYPE_FLOAT, DATATYPE_INTEGER,
-  DATATYPE_STRING,
-  TYPE_CONTEXTUAL_NODE, TYPE_NAME,
+  DATATYPE_STRING, TYPE_AGGREGATOR,
+  TYPE_CONTEXTUAL_NODE, TYPE_NAME, TYPE_NODES,
   TYPE_THING, TYPE_TYPE, TYPE_URI
 } from './TypeDictionary';
 import {getConfig, PATH_SEPARATOR} from "@/Config";
+import {nodeArray} from "@symb/util";
 
 // noinspection JSUnusedGlobalSymbols
 export default class GraphNode {
@@ -214,6 +215,14 @@ export default class GraphNode {
       result.push(`${key}: ${valueStr}`);
     });
     return result.join(`\n`) + (this.originalNode ? `------------>\n${this.originalNode.getSummary()}`: '');
+  }
+
+  getReference() {
+    if (this.type.uri === TYPE_AGGREGATOR) {
+      return nodeArray(this.get(TYPE_NODES)).map(node => node.uri);
+    } else {
+      return this.uri;
+    }
   }
 
 

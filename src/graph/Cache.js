@@ -67,12 +67,12 @@ class Cache {
     return node;
   };
 
-  getNodeByUniqueKey(key) {
-    //separate first segment of path from rest
-    const parts = key.split(/\/(.+)/);
-
-    return this.getNode(parts[0], parts[1]);
-  }
+  // getNodeByUniqueKey(key) {
+  //   //separate first segment of path from rest
+  //   const parts = key.split(/\/(.+)/);
+  //
+  //   return this.getNode(parts[0], parts[1]);
+  // }
 
   getAllNodesOf (nodeType) {
     let type = TypeDictionary.getType(nodeType);
@@ -143,7 +143,7 @@ class Cache {
   updateNodes(nodeArray) {
     nodeArray.forEach(rawNode => {
       const { id, type } = rawNode;
-      const node = this.getNodeByUri(id);
+      const node = this.getNode(type, id);
       if (!node) {
         this.importNodeData(this.getNode(type, id), rawNode);
       } else {
@@ -153,21 +153,21 @@ class Cache {
     });
   }
 
-  removeNodes(idArray) {
-    idArray.forEach(id => {
-          const node = this.getNodeByUri(id);
-          if (node) {
-            node.destroy();
-            this.lookUpGlobal[id] = null;
-            const listByType = this.rootNode.get(node.getTypeUri());
-            const index = listByType.indexOf(node);
-            if (index !== -1) {
-              listByType.splice(index, 1);
-            }
-          }
-        }
-    )
-  }
+  // removeNodes(idArray) {
+  //   idArray.forEach(id => {
+  //         const node = this.getNodeByUri(id);
+  //         if (node) {
+  //           node.destroy();
+  //           this.lookUpGlobal[id] = null;
+  //           const listByType = this.rootNode.get(node.getTypeUri());
+  //           const index = listByType.indexOf(node);
+  //           if (index !== -1) {
+  //             listByType.splice(index, 1);
+  //           }
+  //         }
+  //       }
+  //   )
+  // }
 
   importNodeTable(typeUri, headerRow, valueRows) {
     const idIndex = Math.max(headerRow.indexOf('id'), 0);
@@ -332,6 +332,7 @@ export const resolve = function (node, path, logLevel, indent) {
 export const resolveAttribute = function (node, path) {
   const result = resolveProperty(node, path, null, null);
 
+  // noinspection JSUnresolvedFunction
   return (GraphNode.isGraphNode(result)) ?
       result.getDisplayName() :
       result;

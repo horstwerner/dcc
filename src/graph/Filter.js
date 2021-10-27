@@ -73,8 +73,8 @@ export default class Filter {
     const attribute = Object.keys(descriptor)[0];
     const rest = descriptor[attribute];
     const comparison = parseComparison(rest);
-    if (attribute === 'core:type' && comparison.matches !== COMPARISON_OF_TYPE) {
-      throw new Error(`Error in filter ${JSON.stringify(descriptor)}: use 'is' as comparator for core:type`);
+    if (attribute === 'core:type' && comparison.matches !== COMPARISON_EQUAL && comparison.matches !== COMPARISON_OF_TYPE) {
+      throw new Error(`Error in filter ${JSON.stringify(descriptor)}: use 'is' or '=' as comparator for core:type`);
     }
     if (comparison.matches === COMPARISON_OF_TYPE && attribute !== 'core:type') {
       throw new Error(`Error in filter ${JSON.stringify(descriptor)}: 'is' can only be used for 'core:type'`);
@@ -93,7 +93,9 @@ export default class Filter {
   }
 
   matches(graphNode) {
-    const rawValue = (this.attribute !== TYPE_TYPE) ?  resolveProperty(graphNode, this.attribute) : graphNode.type;
+    const rawValue = (this.attribute !== TYPE_TYPE) ?
+        resolveProperty(graphNode, this.attribute) :
+        (this.matchFunction === COMPARISON_OF_TYPE? graphNode.type : graphNode.getTypeUri());
     const value = this.isNumeric ? Number(rawValue) : rawValue;
     const comparand = this.dynamicComparand ? fillIn(this.comparand, graphNode): this.comparand;
     return this.matchFunction(comparand, value);
