@@ -13,7 +13,8 @@ export class Link extends Component {
   static propTypes = {
     text: P.string,
     url: P.string,
-    modal: P.bool
+    modal: P.bool,
+    onClick: P.func
   };
 
   constructor(props) {
@@ -34,7 +35,7 @@ export class Link extends Component {
   }
 
   updateDom(props) {
-    const { text, url, modal } = props;
+    const { text, url, modal, onClick } = props;
     if (text) {
       this.dom.innerText = text;
     }
@@ -42,6 +43,8 @@ export class Link extends Component {
     this.dom.href = url;
     if (modal) {
       this.dom.onclick = this.onInternalClick;
+    } else if (onClick) {
+      this.dom.onclick = onClick;
     }
   }
 

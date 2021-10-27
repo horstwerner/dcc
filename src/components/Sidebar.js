@@ -13,6 +13,7 @@ import {SuggestList_} from "@/components/SuggestList";
 import {Menu_} from "@/components/Menu";
 import {Link_} from "@/components/Link";
 import {ValueRangeList_} from "@/components/ValueRangeList";
+import {writeToClipboard} from "@symb/util";
 
 const SIDEBAR = 'sidebar';
 const MENU_PANEL = 'menu-panel';
@@ -107,7 +108,9 @@ class Sidebar extends Component {
     const toolMenu = (tools.length > 0 && Menu_({key: "tools", color: 'gray', title: 'Filters',  entries: tools, onEntryClick: onToolToggle})._Menu);
     const focusHeader = focusInfo && (Div_({className: css.focusHeader},
         [Div_({}, focusInfo)._Div,
-        Link_({className: css.shareLink, url: shareRef}, Image_({key: 'shareButton', source: 'public/ShareButton.svg', title: 'Share', className: hoverMenuCss.icon, width: 22, height: 22})._Image)._Link]
+        Link_({className: css.shareLink, url: shareRef, onClick: () => {
+                writeToClipboard(shareRef)}},
+            Image_({key: 'shareButton', source: 'public/ShareButton.svg', title: 'Share', className: hoverMenuCss.icon, width: 22, height: 22})._Image)._Link]
     )._Div);
 
 
