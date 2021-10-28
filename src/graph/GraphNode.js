@@ -9,6 +9,23 @@ import TypeDictionary, {
 import {getConfig, PATH_SEPARATOR} from "@/Config";
 import {nodeArray} from "@symb/util";
 
+const sort = function sort(nodeArray, propertyUri, descending) {
+  const factor = descending ? -1 : 1;
+
+  if (nodeArray.length < 2) return nodeArray;
+  const type = TypeDictionary.getType(propertyUri);
+  if (!type) throw new Error(`Can't sort by unknown type ${propertyUri}`);
+  const dataType = type.dataType;
+  if (![DATATYPE_INTEGER, DATATYPE_FLOAT, DATATYPE_STRING].includes(dataType)) {
+    throw new Error(`Can't sort by data type ${dataType}`);
+  }
+  return dataType === DATATYPE_STRING ?
+      [...nodeArray].sort((a, b) => factor * ('' + a.get(propertyUri)).localeCompare(b.get(propertyUri))):
+      [...nodeArray].sort((a, b) => factor * (a.get(propertyUri) - b.get(propertyUri)))
+}
+
+
+
 // noinspection JSUnusedGlobalSymbols
 export default class GraphNode {
 
@@ -136,24 +153,22 @@ export default class GraphNode {
     }
 
     let propName = propertyUri;
-    let filter = null;
+    let filterFunc = null;
     if (propertyUri.charAt(propertyUri.length - 1) === ']') {
       const propLen = propertyUri.indexOf('[');
       if (propLen > -1) {
         propName = propertyUri.substr(0, propLen);
-        const typeUri = propertyUri.substring(propLen + 1, propertyUri.length - 1);
-        filter = (node => node.isOfType(typeUri));
+        filterFunc = parseFilter(propertyUri.substring(propLen + 1, propertyUri.length - 1));
       }
     }
     let result = this.properties[propName];
     if (result === undefined && this.originalNode) {
       result = this.originalNode.get(propName);
     }
-    if (filter !== null && result) {
-      if (Array.isArray(result)) return result.filter(filter);
-      if (GraphNode.isGraphNode(result) && filter(result)) return result;
-      return null;
+    if (filterFunc && result) { // noinspection JSValidateTypes
+      return filterFunc(result);
     }
+
     return result;
   }
 
@@ -353,9 +368,9 @@ export default class GraphNode {
 
   destroy() {
     // remove inverses resulting from associations this has to other nodes
-    node.removeRemoteInverseAssociations();
+    this.removeRemoteInverseAssociations();
     // remove direct associations other nodes have to this
-    node.removeRemoteAssociations();
+    this.removeRemoteAssociations();
     // TODO: handle contextual nodes pointing to this
   }
 
@@ -451,4 +466,36 @@ export default class GraphNode {
     return false;
   };
 
+}
+
+function getMin(content, property) {
+  if (GraphNode.isGraphNode(content)) return content;
+  if (!Array.isArray(content) || content.length === 0) return null;
+  const sorted = sort(content, property, false);
+  return sorted [0];
+}
+
+function getMax(content, property) {
+  if (GraphNode.isGraphNode(content)) return content;
+  if (!Array.isArray(content) || content.length === 0) return null;
+  return sort(content, property, true)[0];
+}
+
+function parseFilter(str) {
+  if (str.startsWith('min(') && str.endsWith(')')) {
+    const propertyUri = str.substring(4, str.length - 1);
+    return (content) => getMin(content, propertyUri);
+  } else if (str.startsWith('max(') && str.endsWith(')')){
+    const propertyUri = str.substring(4, str.length - 1);
+    return (content) => getMax(content, propertyUri);
+  } else {
+    const type = TypeDictionary.getType(str);
+    if (!type) {
+      console.error(`Can't filter by unknown type: ${str}`);
+      return null;
+    }
+    return (content) => GraphNode.isGraphNode(content) ?
+        (content.isOfType(str) ? content : null) :
+        content.filter(node => node.isOfType(str));
+  }
 }
