@@ -23,6 +23,7 @@ import {
   FIRST_FOUND, CREATE_NODE
 } from "@/graph/Preprocessors";
 import {LOG_LEVEL_PATHS, LOG_LEVEL_RESULTS, OPTION_HIGHLIGHT} from "@/components/Constants";
+import {DEFAULT_VIEW_NAME} from "@/templates/TemplateRegistry";
 
 export const SYNTH_NODE_MAP = 'map';
 export const SYNTH_NODE_RETRIEVE = 'retrieve';
@@ -66,6 +67,7 @@ export default class Template {
     }),
     appliesTo: P.oneOfType([P.string,P.array]),
     clickable: P.bool,
+    isDefault: P.bool,
     detailTemplate: P.string,
     detailNode: P.shape({
       type: P.string.isRequired,
@@ -114,8 +116,14 @@ export default class Template {
     this.selectable = !descriptor.detailTemplate;
     this.aggregate = descriptor.aggregate;
     this.appliesTo = descriptor.appliesTo;
-    this.name = descriptor.name;
+    this.name = descriptor.name || '';
+    this.searchName = this.name.toLowerCase();
     this.descriptor = descriptor;
+    this.isDefault = descriptor.isDefault;
+  }
+
+  matches(name) {
+    return name === this.searchName || (this.isDefault && name === DEFAULT_VIEW_NAME);
   }
 
   isClickable() {

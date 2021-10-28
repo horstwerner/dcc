@@ -92,7 +92,8 @@ class TemplateRegistry {
         return this.getTemplate(TYPE_THING);
       }
     }
-    let result = candidates.find(template => (template.name || '').toLowerCase() === searchName);
+
+    let result = candidates.find(template => template.matches(searchName));
     if (result) return result;
     if (superType) {
       return this.getTemplateForSingleCard(superType, viewName);
@@ -100,7 +101,7 @@ class TemplateRegistry {
 
     console.log(`Warning: Can't find view ${viewName} for ${typeUri}. Falling back to default or other`);
     if (searchName !== DEFAULT_VIEW_NAME) {
-      result = candidates.find(template => (template.name || '').toLowerCase() === DEFAULT_VIEW_NAME);
+      result = candidates.find(template => template.matches(DEFAULT_VIEW_NAME));
     }
     if (result) return result;
 
