@@ -9,7 +9,8 @@ import TypeDictionary, {
 import {getConfig, PATH_SEPARATOR} from "@/Config";
 import {nodeArray} from "@symb/util";
 
-// noinspection JSUnusedGlobalSymbols
+// noinspection JSUnusedGlobalSymbo
+// ls
 export default class GraphNode {
 
   uri;
@@ -285,7 +286,7 @@ export default class GraphNode {
   removeAssociation (type, graphNode) {
     const associated = this.properties[type];
     if (associated === graphNode) {
-      this.properties[type] = null;
+      delete this.properties[type];
       return;
     }
     else if (Array.isArray(associated)) {
@@ -299,17 +300,18 @@ export default class GraphNode {
   }
 
   removeRemoteInverseAssociations() {
-    Object.keys(this.properties).forEach(propUri => {
+    for (let propUri of Object.keys(this.properties)) {
       const type = TypeDictionary.getType(propUri);
-      const prop = this.properties[propUri];
       if (type.isAssociation) {
+        const prop = this.properties[propUri];
+        if (!prop) continue;
         const inverseTypeUri = type.getInverseType(this.getTypeUri());
         (Array.isArray(prop) ? prop : [prop]).forEach(targetNode => {
           if (!this.isInverseAssociation(type.uri, targetNode)) {
             targetNode.removeLocalInverseAssociation(inverseTypeUri, this);}
         });
       }
-    });
+    }
   }
 
   removeRemoteAssociations() {
@@ -353,9 +355,9 @@ export default class GraphNode {
 
   destroy() {
     // remove inverses resulting from associations this has to other nodes
-    node.removeRemoteInverseAssociations();
+    this.removeRemoteInverseAssociations();
     // remove direct associations other nodes have to this
-    node.removeRemoteAssociations();
+    this.removeRemoteAssociations();
     // TODO: handle contextual nodes pointing to this
   }
 
