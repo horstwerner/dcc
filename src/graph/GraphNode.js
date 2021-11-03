@@ -9,8 +9,7 @@ import TypeDictionary, {
 import {getConfig, PATH_SEPARATOR} from "@/Config";
 import {nodeArray} from "@symb/util";
 
-// noinspection JSUnusedGlobalSymbo
-// ls
+// noinspection JSUnusedGlobalSymbols
 export default class GraphNode {
 
   uri;
