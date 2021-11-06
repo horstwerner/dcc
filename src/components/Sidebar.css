@@ -74,7 +74,15 @@
     margin-bottom: -4px;
 }
 
+.shareLink {
+    margin-top: 2px;
+    margin-left: 8px;
+}
+
 .focusHeader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     color: rgba(0,0,0,0.5);
     font-size: 14px;
     font-family: Arial, sans-serif;

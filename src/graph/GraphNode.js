@@ -2,11 +2,12 @@ import Cache from './Cache';
 import TypeDictionary, {
   DATATYPE_BOOLEAN,
   DATATYPE_FLOAT, DATATYPE_INTEGER,
-  DATATYPE_STRING,
-  TYPE_CONTEXTUAL_NODE, TYPE_NAME,
+  DATATYPE_STRING, TYPE_AGGREGATOR,
+  TYPE_CONTEXTUAL_NODE, TYPE_NAME, TYPE_NODES,
   TYPE_THING, TYPE_TYPE, TYPE_URI
 } from './TypeDictionary';
 import {getConfig, PATH_SEPARATOR} from "@/Config";
+import {nodeArray} from "@symb/util";
 
 // noinspection JSUnusedGlobalSymbols
 export default class GraphNode {
@@ -216,6 +217,14 @@ export default class GraphNode {
     return result.join(`\n`) + (this.originalNode ? `------------>\n${this.originalNode.getSummary()}`: '');
   }
 
+  getReference() {
+    if (this.type.uri === TYPE_AGGREGATOR) {
+      return nodeArray(this.get(TYPE_NODES)).map(node => node.uri);
+    } else {
+      return this.uri;
+    }
+  }
+
 
   /**
    * private, lower level, one-directional addition of association
@@ -276,7 +285,7 @@ export default class GraphNode {
   removeAssociation (type, graphNode) {
     const associated = this.properties[type];
     if (associated === graphNode) {
-      this.properties[type] = null;
+      delete this.properties[type];
       return;
     }
     else if (Array.isArray(associated)) {
@@ -290,17 +299,18 @@ export default class GraphNode {
   }
 
   removeRemoteInverseAssociations() {
-    Object.keys(this.properties).forEach(propUri => {
+    for (let propUri of Object.keys(this.properties)) {
       const type = TypeDictionary.getType(propUri);
-      const prop = this.properties[propUri];
       if (type.isAssociation) {
+        const prop = this.properties[propUri];
+        if (!prop) continue;
         const inverseTypeUri = type.getInverseType(this.getTypeUri());
         (Array.isArray(prop) ? prop : [prop]).forEach(targetNode => {
           if (!this.isInverseAssociation(type.uri, targetNode)) {
             targetNode.removeLocalInverseAssociation(inverseTypeUri, this);}
         });
       }
-    });
+    }
   }
 
   removeRemoteAssociations() {
@@ -344,9 +354,9 @@ export default class GraphNode {
 
   destroy() {
     // remove inverses resulting from associations this has to other nodes
-    node.removeRemoteInverseAssociations();
+    this.removeRemoteInverseAssociations();
     // remove direct associations other nodes have to this
-    node.removeRemoteAssociations();
+    this.removeRemoteAssociations();
     // TODO: handle contextual nodes pointing to this
   }
 

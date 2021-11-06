@@ -30,6 +30,8 @@ import TypeDictionary, {TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES}
 import {SYNTH_NODE_MAP, SYNTH_NODE_RETRIEVE} from "@/templates/Template";
 import {mapNode} from "@/graph/Analysis";
 import {LoadingAnimation_} from "@/components/LoadingAnimation";
+import {LINK_EVENT} from "@/components/Link";
+import {ModalLayer_} from "@/components/ModalLayer";
 
 const APP = 'app';
 const BREADCRUMBS = 'breadcrumbs';
@@ -47,6 +49,8 @@ class App extends Component {
   static propTypes = {
     title: P.string
   };
+
+  startUrl;
 
   // noinspection DuplicatedCode
   constructor(props, parent, domNode) {
@@ -74,6 +78,7 @@ class App extends Component {
       allowInteractions: true,
       waiting: true,
       dataLoaded: false,
+      modalIframe: null,
       windowWidth: window.innerWidth,
       windowHeight: window.innerHeight,
       breadCrumbHeight: 0,
@@ -101,12 +106,23 @@ class App extends Component {
           }
           const { mainWidth, breadCrumbHeight } = this.state;
           if (!this.state.error) {
-            const startData = new GraphNode(TYPE_AGGREGATOR, Cache.createUri());
+            const startData = Cache.getNode(TYPE_AGGREGATOR, 'symb:rootNode');
             Cache.getEntityTypes().forEach(entityType => {
               startData.setBulkAssociation(entityType, Cache.rootNode.get(entityType));
-            })
-            const startTemplate = TemplateRegistry.getTemplate(getConfig('startTemplate'));
-            const startNode = createPreprocessedCardNode(startData, null, startTemplate, null);
+            });
+            let startTemplate;
+            let startNode;
+            if (window.location.href.includes('#')) {
+              const decoded = atob(decodeURI(window.location.href.split('#')[1]));
+              const {data, template} = JSON.parse(decoded);
+              const dataNode = Array.isArray(data) ? data.map(el => Cache.getNodeByUri(el)) : Cache.getNodeByUri(data);
+              startTemplate = TemplateRegistry.getTemplate(template);
+              startNode = createPreprocessedCardNode(dataNode, null, startTemplate, null)
+            } else {
+              startTemplate = TemplateRegistry.getTemplate(getConfig('startTemplate'));
+              startNode = createPreprocessedCardNode(startData, null, startTemplate, null);
+            }
+
             const focusCard = this.createFocusCard(startNode, startTemplate, null);
             const { pinned, pinnedWidth } = this.calcPinnedCardPositions([this.toPinnedCard(focusCard, PINNED_ROOT_CARD)], mainWidth, breadCrumbHeight);
 
@@ -120,6 +136,7 @@ class App extends Component {
             this.setFocusCard(focusCard, null);
           }
         });
+
     this.handleNodeClick = this.handleNodeClick.bind(this);
     this.handleHoverCardPin = this.handleHoverCardPin.bind(this);
     this.handleBreadCrumbClick = this.handleBreadCrumbClick.bind(this);
@@ -142,6 +159,12 @@ class App extends Component {
     this.onWSMessage = this.onWSMessage.bind(this);
     this.onWSClose = this.onWSClose.bind(this);
     this.setHighlightCondition = this.setHighlightCondition.bind(this);
+    this.onModalLinkClick = this.onModalLinkClick.bind(this);
+    this.handleModalClose = this.handleModalClose.bind(this);
+
+    this.dom.addEventListener(LINK_EVENT, this.onModalLinkClick);
+
+    this.startUrl = window.location.href.split('#')[0];
 
     document.body.onkeyup = this.handleKeyUp;
     document.body.onkeydown = this.handleKeyDown;
@@ -195,6 +218,17 @@ class App extends Component {
     this.setState({error});
   }
 
+  onModalLinkClick(e) {
+    const { url, modalWidth, modalHeight } = e.detail;
+    const width = modalWidth || (window.innerWidth / 2);
+    const height = modalHeight || (window.innerHeight / 2);
+
+    this.setState({modalIframe: {width, height , url}});
+  }
+
+  handleModalClose() {
+    this.setState({modalIframe: null});
+  }
 
   createChildKey() {
     return `card${this.nextChildIndex++}`;
@@ -502,9 +536,14 @@ class App extends Component {
       focusCard.options = currentViewOptions;
     }
     const {windowWidth, windowHeight} = this.state;
+    let reference = this.startUrl;
+    if (GraphNode.isGraphNode(data)) {
+      const appendix = {data: data.getReference(), template: focusCard.template.id};
+      reference = `${this.startUrl}#${encodeURI(btoa(JSON.stringify(appendix)))}`;
+    }
+
     return { views, tools, activeTools, toolControls, currentFilters: [], focusData: data, nodeTypeUri,
-      highlightInfo: null, highlightMenu: null,
-      currentViewOptions, unfilteredSaved: false,
+      reference, highlightInfo: null, highlightMenu: null, currentViewOptions, unfilteredSaved: false,
       ...this.recalcLayout({ toolControls, windowWidth, windowHeight, focusCard })};
   }
 
@@ -756,8 +795,8 @@ class App extends Component {
 
   createChildDescriptors(props) {
 
-    const { dataLoaded, focusCard, nodeTypeUri, tools, activeTools, views, error, mainWidth, focusHeight,
-      sideBarWidth, breadCrumbCards, pinned, pinnedWidth, highlightMenu,
+    const { dataLoaded, focusCard, nodeTypeUri, reference, tools, activeTools, views, error, mainWidth, focusHeight,
+      sideBarWidth, breadCrumbCards, pinned, modalIframe, pinnedWidth, highlightMenu,
       hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions}
         = this.state;
 
@@ -772,6 +811,7 @@ class App extends Component {
     if (hoverCard) {
       const menuRight = hoverCard.template.getSize().width * hoverCard.spatial.scale + hoverCard.spatial.x;
       hoverChildren.push(hoverCard);
+
       if (allowInteractions) {
         hoverChildren.push(hoverCardMenu(HOVER_MENU, hoverCard.spatial.y, menuRight, this.handleHoverCardClose,
             this.handleHoverCardPin));
@@ -788,6 +828,16 @@ class App extends Component {
 
 
     const focusInfo = nodeTypeUri && `${TypeDictionary.getType(nodeTypeUri).name} ${focusCard.data.type.uri === TYPE_AGGREGATOR ? `(${focusCard.data.get(TYPE_NODE_COUNT)})` : ''}`;
+
+    let modal;
+    if (modalIframe) {
+      const { url, width, height } = modalIframe;
+      const renderW = Math.min(width, window.innerWidth - 64);
+      const renderH = Math.min(height, window.innerHeight - 64);
+      const x = (window.innerWidth - renderW) / 2;
+      const y = (window.innerHeight - renderH) / 2;
+      modal = ModalLayer_({x, y, size: {width: renderW, height: renderH}, url, onClose: this.handleModalClose})._ModalLayer;
+    }
 
     return [
       BreadcrumbLane_({
@@ -821,6 +871,7 @@ class App extends Component {
         logoUrl: getConfig('logoUrl'),
         logoLink: getConfig('logoLink'),
         focusInfo,
+        shareRef: reference,
         spatial: {x: mainWidth, y: 0, scale: 1},
         views: views.map(view => ({id: view.id, name: view.name || view.id, selected: view.id === focusCard.template.id})),
         tools: tools && tools.map(tool => ({id: tool.id, name: tool.name, selected: !!activeTools[tool.id]})),
@@ -833,7 +884,8 @@ class App extends Component {
         onSearchResultClick: this.handleSearchResultClick,
         onHighlightClose: this.handleHighlightListClose,
         onHighlightSelect: this.setHighlightCondition
-      })._Sidebar
+      })._Sidebar,
+      modal
     ];
   }
 }

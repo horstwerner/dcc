@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@symb/*": ["src/symb/*"],
+      "@img/*":["src/img/*"],
+      "@/*": ["src/*"]
+    }
+  }
+}
