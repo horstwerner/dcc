@@ -1,4 +1,4 @@
-import {get} from 'lodash';
+import get from 'lodash/get';
 import Template from './Template';
 import TypeDictionary, {TYPE_THING} from "@/graph/TypeDictionary";
 import {DEBUG_MODE} from "@/Config";

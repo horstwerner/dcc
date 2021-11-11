@@ -1,5 +1,5 @@
 import P from 'prop-types';
-import {pick} from 'lodash';
+import pick from 'lodash/pick';
 import TemplateElement, {StylePropType} from "@/templates/elements/TemplateElement";
 import {Image_} from "@symb/Image";
 import css from "@/components/Card.css";

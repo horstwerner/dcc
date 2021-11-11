@@ -1,4 +1,4 @@
-import {pick} from 'lodash';
+import pick from 'lodash/pick';
 import TemplateElement, {StylePropType} from "@/templates/elements/TemplateElement";
 import {Div_} from "@symb/Div";
 import css from "@/components/Card.css";

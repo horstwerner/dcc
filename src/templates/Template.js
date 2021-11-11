@@ -1,5 +1,5 @@
 import P from 'prop-types';
-import {mapValues} from 'lodash';
+import mapValues from 'lodash/mapValues';
 import ColorCoder from "@symb/ColorCoder";
 import CaptionElement from "@/templates/elements/CaptionElement";
 import TextFieldElement from "@/templates/elements/TextFieldElement";

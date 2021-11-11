@@ -1,4 +1,4 @@
-import {mapValues} from 'lodash';
+import mapValues from 'lodash/mapValues';
 import TypeDictionary, {
   DATATYPE_BOOLEAN,
   DATATYPE_ENTITY,

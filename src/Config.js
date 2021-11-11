@@ -1,4 +1,4 @@
-import {pick} from 'lodash';
+import pick from 'lodash/pick';
 import {TYPE_NAME} from "@/graph/TypeDictionary";
 import cssBreadCrumbDefault from "@/components/themes/default/BreadcrumbLane.css";
 import cssBreadCrumbGray from "@/components/themes/gray/BreadcrumbLane.css";

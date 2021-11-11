@@ -1,4 +1,4 @@
-import {omit} from "lodash";
+import omit from 'lodash/omit';
 import Cache from "@/graph/Cache";
 import TemplateRegistry from "@/templates/TemplateRegistry";
 import {getConfigs, OFFLINE_MODE, setConfig} from "@/Config";

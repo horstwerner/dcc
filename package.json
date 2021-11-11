@@ -8,7 +8,7 @@
   "scripts": {
     "start": "concurrently \"cd dev-backend && node server.js\" \"webpack-dev-server -d --open --env.development\"",
     "offline": "webpack-dev-server -d --open --env.development",
-    "build": "webpack --mode production --env.production"
+    "build": "webpack --mode=production --env.production"
   },
   "eslint": "5.12.0",
   "eslint-loader": "2.1.1",
@@ -25,6 +25,7 @@
   "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
   "main": "index.js",
   "devDependencies": {
+    "webpack-bundle-analyzer": "^4.5.0",
     "@babel/core": "^7.3.3",
     "@babel/plugin-proposal-class-properties": "^7.3.3",
     "@babel/preset-env": "^7.3.1",

@@ -1,4 +1,5 @@
-import {isEqual, mapValues} from 'lodash';
+import isEqual from 'lodash/isEqual';
+import mapValues from 'lodash/mapValues';
 import Cache, {resolve, resolveAttribute} from "@/graph/Cache";
 
 import GraphNode from "@/graph/GraphNode";

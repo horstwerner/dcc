@@ -1,5 +1,9 @@
 import P from 'prop-types';
-import {get, isEmpty, omit, pick, without} from 'lodash';
+import get from 'lodash/get';
+import isEmpty from 'lodash/isEmpty';
+import omit from 'lodash/omit';
+import pick from 'lodash/pick';
+import without from 'lodash/without';
 import Component from '@symb/Component';
 import ComponentFactory from "@symb/ComponentFactory";
 import Cache, {traverseWithRecursion} from './graph/Cache';

@@ -3,7 +3,8 @@
  */
 
 import P from "prop-types";
-import {mapValues, omit} from 'lodash';
+import mapValues from 'lodash/mapValues';
+import omit from 'lodash/omit';
 import {DEBUG_MODE} from "@/Config";
 import css from "@/components/Card.css";
 import {Div_, FlexBox_} from "@symb/Div";

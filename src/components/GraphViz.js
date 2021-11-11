@@ -1,4 +1,7 @@
-import {get, isEmpty, sum} from 'lodash';
+import get from 'lodash/get';
+import isEmpty from 'lodash/isEmpty';
+import sum from 'lodash/sum';
+
 import Component from "@symb/Component";
 import css from "./Card.css";
 import {Path_} from "./Path";
