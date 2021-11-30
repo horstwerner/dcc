@@ -1,15 +1,10 @@
 import mapValues from 'lodash/mapValues';
-import TypeDictionary, {
-  DATATYPE_BOOLEAN,
-  DATATYPE_ENTITY,
-  DATATYPE_FLOAT,
-  DATATYPE_INTEGER,
-  TYPE_THING
-} from './TypeDictionary';
+import TypeDictionary from './TypeDictionary';
 import GraphNode from './GraphNode';
 import {LOG_LEVEL_PATHS, LOG_LEVEL_RESULTS} from "@/components/Constants";
 import {describeSource, inspectPathSegment} from "@symb/util";
 import {getConfig, PATH_SEPARATOR} from "@/Config";
+import {DATATYPE_BOOLEAN, DATATYPE_ENTITY, DATATYPE_FLOAT, DATATYPE_INTEGER, TYPE_THING} from "@/graph/BaseTypes";
 
 class Cache {
 
@@ -109,7 +104,7 @@ class Cache {
       if (propUri === 'id' || propUri === 'type') return;
       const propType = TypeDictionary.getType(propUri);
       if (!propType) {
-        throw new Error(`Property type ${propUri} not declared in data dictionary`);
+        throw new Error(`Error during Node import:\nProperty type ${propUri} not declared in data dictionary`);
       }
       switch (propType.dataType) {
         case DATATYPE_ENTITY:

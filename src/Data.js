@@ -118,7 +118,7 @@ export const getClientConfigFromDB = function (onError) {
         setConfig(result.data);})
       .catch(error => {
         console.log(error.stack);
-        onError(error.message);
+        onError(`Error while fetching client configuration:\n${error.message}`);
       });
 }
 
@@ -157,7 +157,7 @@ export const getToolDescriptorsFromDb = function (onError) {
       })
       .catch(error => {
         console.log(error.stack);
-        onError(error.message)
+        onError(`Error while fetching tools:\n${error.message}`)
       });
 };
 
@@ -179,7 +179,7 @@ export const fetchSubGraph = function fetchSubGraph(queryUrl, entryPointType, en
         }
       }).catch(error => {
     console.log(error.stack);
-    onError(error.message);
+    onError(`Error while fetching graph data:\n${error.message}`);
   });
 }
 
@@ -225,7 +225,7 @@ export const getDataFromDB = function(onError) {
           })
           .catch(error => {
             console.log(error.stack);
-            onError(error.message);
+            onError(`Error while retrieving table data:\n${error.message}`);
           })
       );
     });

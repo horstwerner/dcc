@@ -1,7 +1,8 @@
 import get from 'lodash/get';
 import Template from './Template';
-import TypeDictionary, {TYPE_THING} from "@/graph/TypeDictionary";
+import TypeDictionary from "@/graph/TypeDictionary";
 import {DEBUG_MODE} from "@/Config";
+import {TYPE_THING} from "@/graph/BaseTypes";
 
 export const DEFAULT_VIEW_NAME = 'default';
 

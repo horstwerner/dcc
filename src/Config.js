@@ -1,5 +1,4 @@
 import pick from 'lodash/pick';
-import {TYPE_NAME} from "@/graph/TypeDictionary";
 import cssBreadCrumbDefault from "@/components/themes/default/BreadcrumbLane.css";
 import cssBreadCrumbGray from "@/components/themes/gray/BreadcrumbLane.css";
 import cssMenuDefault from "@/components/themes/default/Menu.css";
@@ -10,6 +9,7 @@ import cssRadioButtonsDefault from "@/components/themes/default/RadioButtons.css
 import cssRadioButtonsGray from "@/components/themes/gray/RadioButtons.css";
 import cssAppDefault from "@/components/themes/default/App.css";
 import cssAppGray from "@/components/themes/gray/App.css";
+import {TYPE_NAME} from "@/graph/BaseTypes";
 
 const urlParams = new URLSearchParams(window.location.search);
 

@@ -19,10 +19,10 @@ import CompactGridArrangement from "@/arrangement/CompactGridArrangement";
 import {preprocess} from "@/graph/Preprocessors";
 import hoverMenuCss from './HoverCardMenu.css';
 import {Link_} from "@/components/Link";
-import {TYPE_CONTEXT, TYPE_NODE_COUNT} from "@/graph/TypeDictionary";
 import {BLANK_NODE_URI} from "@/components/Constants";
 import GraphNode from "@/graph/GraphNode";
 import Filter from "@/graph/Filter";
+import {TYPE_CONTEXT, TYPE_NODE_COUNT} from "@/graph/BaseTypes";
 
 export const iconSize = 24;
 export const iconMargin = 6;
@@ -157,7 +157,7 @@ export function createArrangement(descriptor, childSize) {
   }
 
   const { type } = descriptor;
-  // console.log(`rendering card set with ${width}/${height}`);
+
   switch (type) {
     case GRID:
       const {x, y, w, h, padding, maxScale, centerX, centerY } = descriptor;

@@ -1,7 +1,6 @@
 const path = require("path");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 
 module.exports = function(webpackEnv) {
@@ -54,7 +53,6 @@ module.exports = function(webpackEnv) {
           collapseWhitespace: true
         },
       }),
-      new BundleAnalyzerPlugin(),
       new MiniCssExtractPlugin({
         // Options similar to the same options in webpackOptions.output
         // both options are optional

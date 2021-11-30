@@ -4,7 +4,7 @@ import {LOD_FULL, LOD_RECT} from "@/components/CardSet";
 import {GRID} from "@/arrangement/GridArrangement";
 import {ChildSet} from "@/components/Generators";
 import {CLICK_NORMAL} from "@/components/Constants";
-import {TYPE_CONTEXT} from "@/graph/TypeDictionary";
+import {TYPE_CONTEXT} from "@/graph/BaseTypes";
 
 export default class CardsElement extends TemplateElement {
 

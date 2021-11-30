@@ -2,7 +2,7 @@ import P from 'prop-types';
 import {resolveAttribute} from './graph/Cache';
 import clone from "lodash/clone";
 import {DEBUG_MODE} from "@/Config";
-import {TYPE_NODE_COUNT} from "@/graph/TypeDictionary";
+import {TYPE_NODE_COUNT} from "@/graph/BaseTypes";
 
 export const AGG_COUNT = 'count';
 export const AGG_SUM = 'sum';
