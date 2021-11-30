@@ -7,8 +7,8 @@ import {GraphViz_} from "@/components/GraphViz";
 import {DEBUG_MODE} from "@/Config";
 import {PolarChart_} from "@/components/PolarChart";
 import {getNodeArray, getUnfilteredNodeArray} from "@symb/util";
-import {TYPE_NODES} from "@/graph/TypeDictionary";
 import GraphNode from "@/graph/GraphNode";
+import {TYPE_NODES} from "@/graph/BaseTypes";
 
 const fillInNumber = function fillInNumber(data, valueString) {
   if (isNaN(valueString)) {

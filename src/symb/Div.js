@@ -1,5 +1,5 @@
 import P from 'prop-types';
-import {merge} from 'lodash';
+import merge from 'lodash/merge';
 import Component from "./Component";
 import ComponentFactory from "./ComponentFactory"
 

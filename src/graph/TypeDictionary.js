@@ -1,22 +1,14 @@
 import Type from "@/graph/Type";
-
-export const DATATYPE_INTEGER = 'INTEGER';
-export const DATATYPE_STRING = 'STRING';
-export const DATATYPE_BOOLEAN = 'BOOLEAN';
-export const DATATYPE_FLOAT = 'FLOAT';
-export const DATATYPE_ENTITY = 'ENTITY';
-export const TYPE_URI = 'core:uri';
-export const TYPE_NAME = 'core:name';
-export const TYPE_THING = 'core:thing';  // fallback type
-export const TYPE_AGGREGATOR = 'core:aggregator';
-export const TYPE_CONTEXTUAL_NODE = 'core:contextual';
-export const TYPE_PREDECESSOR_COUNT = 'core:predecessorCount';
-export const TYPE_SUCCESSOR_COUNT = 'core:successorCount';
-export const TYPE_NODES = 'core:subNodes';
-export const TYPE_TYPE = 'core:type';
-export const TYPE_CONTEXT = 'core:context';
-export const TYPE_NODE_COUNT = 'core:nodeCount';
-export const TYPE_DEPTH = 'core:depth';
+import {
+  DATATYPE_ENTITY,
+  DATATYPE_INTEGER,
+  TYPE_AGGREGATOR,
+  TYPE_CONTEXT,
+  TYPE_CONTEXTUAL_NODE,
+  TYPE_NODE_COUNT,
+  TYPE_NODES,
+  TYPE_THING
+} from "@/graph/BaseTypes";
 
 class TypeDictionary {
 
@@ -50,7 +42,7 @@ class TypeDictionary {
       if (type.subClassOf) {
         const superType = this.typeMap[type.subClassOf];
         if (!superType) {
-          throw new Error(`Type ${type.uri} declares nonexistent super type ${type.subClassOf}`);
+          throw new Error(`Error in Type Dictionary:\nType ${type.uri} declares nonexistent super type ${type.subClassOf}`);
         }
         type.superType = superType;
         superType.subTypes.push(type);
