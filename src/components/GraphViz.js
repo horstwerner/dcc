@@ -67,7 +67,6 @@ const traverseGraph = function traverseGraph(startNodes, scopeKeys, path) {
         } else {
           sourceVizNode.outEdges.push({targetKey});
           targetVizNode.inEdges.push({sourceKey});
-          // console.log(`setting ${targetKey} to ${depth}`);
           if (targetVizNode.depth < sourceVizNode.depth + 1) {
             targetVizNode.depth = sourceVizNode.depth + 1;
             bumpSuccessorDepth(targetVizNode.outEdges, targetVizNode.depth + 1, vizNodesByKey,
