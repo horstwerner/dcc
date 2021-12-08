@@ -1,5 +1,9 @@
 import P from 'prop-types';
-import {get, isEmpty, omit, pick, without} from 'lodash';
+import get from 'lodash/get';
+import isEmpty from 'lodash/isEmpty';
+import omit from 'lodash/omit';
+import pick from 'lodash/pick';
+import without from 'lodash/without';
 import Component from '@symb/Component';
 import ComponentFactory from "@symb/ComponentFactory";
 import Cache, {traverseWithRecursion} from './graph/Cache';
@@ -26,12 +30,13 @@ import {
   getToolDescriptors
 } from "@/Data";
 import {createFilterControl, updatedToolControl} from "@/Tools";
-import TypeDictionary, {TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/TypeDictionary";
+import TypeDictionary from "@/graph/TypeDictionary";
 import {SYNTH_NODE_MAP, SYNTH_NODE_RETRIEVE} from "@/templates/Template";
 import {mapNode} from "@/graph/Analysis";
 import {LoadingAnimation_} from "@/components/LoadingAnimation";
 import {LINK_EVENT} from "@/components/Link";
 import {ModalLayer_} from "@/components/ModalLayer";
+import {TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/BaseTypes";
 
 const APP = 'app';
 const BREADCRUMBS = 'breadcrumbs';
@@ -57,6 +62,7 @@ class App extends Component {
     super(props, parent, domNode);
 
     this.loadingAnimation = LoadingAnimation_({})._LoadingAnimation;
+    this.onError = this.onError.bind(this);
 
     this.state = {
       nextChildPos: MARGIN,
@@ -176,7 +182,8 @@ class App extends Component {
     this.ws.onopen = this.onWSOpen;
     this.ws.onclose = this.onWSClose;
     this.ws.onmessage = this.onWSMessage;
-    this.ws.onerror = this.onError;
+    this.ws.onerror = ( ) => {
+      this.onError(`Couldn't establish connection with websocket ${url}`) };
   }
 
   onWSOpen() {
@@ -215,7 +222,7 @@ class App extends Component {
   }
 
   onError(error) {
-    this.setState({error});
+    this.setState({error: typeof error === 'string' ? error : JSON.stringify(error)});
   }
 
   onModalLinkClick(e) {
@@ -802,7 +809,7 @@ class App extends Component {
 
     // const backgroundColor = (map && map.backColor) || '#ffffff';
     if (error) {
-      return Div_({}, `An error occurred: ${error}`)._Div;
+      return Div_({className:  getAppCss().errorMessage}, `An error occurred:\n${error}`)._Div;
     }
 
     if (!dataLoaded) return this.loadingAnimation;

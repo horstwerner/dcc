@@ -1,18 +1,12 @@
-import {get} from 'lodash';
+import get from 'lodash/get';
 import GraphNode from "@/graph/GraphNode";
 import Cache, {
   resolve,
   traverse
 } from "@/graph/Cache";
-import {
-  TYPE_AGGREGATOR,
-  TYPE_DEPTH,
-  TYPE_NODES,
-  TYPE_PREDECESSOR_COUNT,
-  TYPE_SUCCESSOR_COUNT
-} from "@/graph/TypeDictionary";
 import {BLANK_NODE_URI, LOG_LEVEL_PATHS} from "@/components/Constants";
 import {describeSource} from "@symb/util";
+import {TYPE_AGGREGATOR, TYPE_DEPTH, TYPE_NODES, TYPE_PREDECESSOR_COUNT, TYPE_SUCCESSOR_COUNT} from "@/graph/BaseTypes";
 
 export const getAssociated = function getAssociated(node, association) {
 

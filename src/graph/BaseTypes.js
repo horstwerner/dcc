@@ -1,0 +1,17 @@
+export const DATATYPE_INTEGER = 'INTEGER';
+export const DATATYPE_STRING = 'STRING';
+export const DATATYPE_BOOLEAN = 'BOOLEAN';
+export const DATATYPE_FLOAT = 'FLOAT';
+export const DATATYPE_ENTITY = 'ENTITY';
+export const TYPE_URI = 'core:uri';
+export const TYPE_NAME = 'core:name';
+export const TYPE_THING = 'core:thing';  // fallback type
+export const TYPE_AGGREGATOR = 'core:aggregator';
+export const TYPE_CONTEXTUAL_NODE = 'core:contextual';
+export const TYPE_PREDECESSOR_COUNT = 'core:predecessorCount';
+export const TYPE_SUCCESSOR_COUNT = 'core:successorCount';
+export const TYPE_NODES = 'core:subNodes';
+export const TYPE_TYPE = 'core:type';
+export const TYPE_CONTEXT = 'core:context';
+export const TYPE_NODE_COUNT = 'core:nodeCount';
+export const TYPE_DEPTH = 'core:depth';

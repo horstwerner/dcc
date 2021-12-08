@@ -11,6 +11,9 @@ export default class LinkElement extends TemplateElement {
     url: P.string.isRequired,
     text: P.string,
     image: P.string,
+    modal: P.bool,
+    modalWidth: P.number,
+    modalHeight: P.number,
     style: P.shape(StylePropType)
   }
 

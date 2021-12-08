@@ -1,9 +1,9 @@
 import {RadioButtons_} from "@/components/RadioButtons";
 import {getValueRange} from "@/graph/GroupedSet";
 import {DropdownList_} from "@/components/DropdownList";
-import {TYPE_NODES} from "@/graph/TypeDictionary";
 import {Menu_} from "@/components/Menu";
 import {OPTION_HIGHLIGHT} from "@/components/Constants";
+import {TYPE_NODES} from "@/graph/BaseTypes";
 
 const FILTER_RESET = 'core:filterReset';
 export const FILTER_HEIGHT = 20;

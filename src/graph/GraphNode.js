@@ -1,13 +1,18 @@
 import Cache from './Cache';
-import TypeDictionary, {
-  DATATYPE_BOOLEAN,
-  DATATYPE_FLOAT, DATATYPE_INTEGER,
-  DATATYPE_STRING, TYPE_AGGREGATOR,
-  TYPE_CONTEXTUAL_NODE, TYPE_NAME, TYPE_NODES,
-  TYPE_THING, TYPE_TYPE, TYPE_URI
-} from './TypeDictionary';
+import TypeDictionary from './TypeDictionary';
 import {getConfig, PATH_SEPARATOR} from "@/Config";
 import {nodeArray} from "@symb/util";
+import {
+  DATATYPE_BOOLEAN,
+  DATATYPE_FLOAT, DATATYPE_INTEGER, DATATYPE_STRING,
+  TYPE_AGGREGATOR,
+  TYPE_CONTEXTUAL_NODE,
+  TYPE_NAME,
+  TYPE_NODES,
+  TYPE_THING,
+  TYPE_TYPE,
+  TYPE_URI
+} from "@/graph/BaseTypes";
 
 // noinspection JSUnusedGlobalSymbols
 export default class GraphNode {
@@ -73,7 +78,7 @@ export default class GraphNode {
     const type = TypeDictionary.getType(typeUri);
     if (!type) throw new Error(`Type ${typeUri} not declared in type dictionary`);
     if (type.isAssociation) {
-      throw new Error(`Can't use association type ${typeUri} as node type`);
+      throw new Error(`Can't use association type ${typeUri} as node type for node ${this.uri}`);
     }
     this.type = type;
     if (this.type === undefined) throw new Error("Can't find type " + typeUri);

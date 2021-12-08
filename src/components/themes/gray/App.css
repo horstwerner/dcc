@@ -42,3 +42,9 @@
 .pin:active {
   opacity: 0.7;
 }
+
+.errorMessage {
+  padding: 24px;
+  font-size: 16px;
+  color: #a30000;
+}

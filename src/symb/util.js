@@ -1,17 +1,12 @@
-import {isEqual, mapValues} from 'lodash';
+import isEqual from 'lodash/isEqual';
+import mapValues from 'lodash/mapValues';
 import Cache, {resolve, resolveAttribute} from "@/graph/Cache";
 
 import GraphNode from "@/graph/GraphNode";
 import Filter from "@/graph/Filter";
-import TypeDictionary, {
-  TYPE_AGGREGATOR,
-  TYPE_CONTEXT,
-  TYPE_NAME,
-  TYPE_NODE_COUNT,
-  TYPE_NODES,
-  TYPE_THING
-} from "@/graph/TypeDictionary";
+import TypeDictionary from "@/graph/TypeDictionary";
 import {BLANK_NODE_URI} from "@/components/Constants";
+import {TYPE_AGGREGATOR, TYPE_CONTEXT, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES, TYPE_THING} from "@/graph/BaseTypes";
 
 export function getTransformString(x, y, scale) {
   return `translate(${Math.round(x)}px, ${Math.round(y)}px) scale(${scale})`;

@@ -23,8 +23,8 @@ import Cache, {resolve} from "@/graph/Cache";
 import Filter from "@/graph/Filter";
 import {deriveAssociations, mapNode, pathAnalysis} from "@/graph/Analysis";
 import {intersectLists, subtractLists, unifyLists} from "@/graph/SetOperations";
-import {TYPE_AGGREGATOR, TYPE_NODES} from "@/graph/TypeDictionary";
 import {describeDescriptor, describeSource, getUnfilteredNodeArray} from "@symb/util";
+import {TYPE_AGGREGATOR, TYPE_NODES} from "@/graph/BaseTypes";
 
 export const CREATE_NODE = "create-node";
 export const PATH_ANALYSIS = "path-analysis";

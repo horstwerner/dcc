@@ -2,7 +2,7 @@ import {EMPTY, sliceBy} from "@/graph/GroupedSet";
 import {LOD_FULL} from "@/components/CardSet";
 import {ChildSet} from "@/components/Generators";
 import {getNodeArray} from "@symb/util";
-import {TYPE_CONTEXT} from "@/graph/TypeDictionary";
+import {TYPE_CONTEXT} from "@/graph/BaseTypes";
 
 
 const Trellis = function Trellis(data, descriptor, onClick, clickMode) {

@@ -1,4 +1,5 @@
-import {mapValues, sortBy} from 'lodash';
+import mapValues from 'lodash/mapValues';
+import sortBy from 'lodash/sortBy';
 import {resolve, resolveAttribute} from "@/graph/Cache";
 import {createCardNode} from "@symb/util";
 import GraphNode from "@/graph/GraphNode";

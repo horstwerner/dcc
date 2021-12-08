@@ -1,5 +1,7 @@
 import P from 'prop-types';
-import {isEmpty, isEqual, mapValues} from 'lodash';
+import isEmpty from 'lodash/isEmpty';
+import isEqual from 'lodash/isEqual';
+import mapValues from 'lodash/mapValues';
 import {DEBUG_MODE, TRANSITION_DURATION} from '@/Config';
 import ComponentFactory from './ComponentFactory'
 import {cloneObject, getTransformString} from "@symb/util";
