@@ -130,6 +130,9 @@ class Cache {
     }
     nodeArray.forEach(rawNode => {
       const { id, type } = rawNode;
+      if (Array.isArray(type)) {
+        throw new Error(`Node ${id} has type array instead of string: ${type.join()}`);
+      }
       const node = this.getNode(type, id);
       this.importNodeData(node, rawNode);
     });
