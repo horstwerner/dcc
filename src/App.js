@@ -843,7 +843,7 @@ class App extends Component {
       const renderH = Math.min(height, window.innerHeight - 64);
       const x = (window.innerWidth - renderW) / 2;
       const y = (window.innerHeight - renderH) / 2;
-      modal = ModalLayer_({x, y, size: {width: renderW, height: renderH}, url, onClose: this.handleModalClose})._ModalLayer;
+      modal = ModalLayer_({key: 'modal', x, y, size: {width: renderW, height: renderH}, url, onClose: this.handleModalClose})._ModalLayer;
     }
 
     return [
