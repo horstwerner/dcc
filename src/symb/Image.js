@@ -14,10 +14,11 @@ export class Image extends Component {
     if (isEqual(this.innerProps, props)) {
       return;
     }
-    this.innerProps = {...props};
 
     const {source, width, height, cornerRadius, onClick, title, color, onMouseEnter, onMouseLeave} = props;
-    this.dom.setAttribute('src', source);
+    if (!this.innerProps || this.innerProps.source !== source) {
+      this.dom.setAttribute('src', source);
+    }
     this.dom.setAttribute('draggable', false);
     if (cornerRadius) {
       this.dom.style.borderRadius = `${cornerRadius}px`;
@@ -47,6 +48,7 @@ export class Image extends Component {
       this.dom.onclick = onClick;
       this.dom.oncontextmenu = onClick;
     }
+    this.innerProps = {...props};
   }
 
   createChildDescriptors(props) {

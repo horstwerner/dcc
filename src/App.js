@@ -178,6 +178,10 @@ class App extends Component {
   }
 
   connectToUpdateSocket(url) {
+    if (!url.startsWith('wss:') && !url.startsWith('ws:')) {
+      const {protocol, host} = window.location;
+      url = `${(protocol === 'https:' ? 'wss' : 'ws')}://${host}${url}`;
+    }
     this.ws = new WebSocket(getParameterizedUrl(url));
     this.ws.onopen = this.onWSOpen;
     this.ws.onclose = this.onWSClose;

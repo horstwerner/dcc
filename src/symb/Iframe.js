@@ -21,7 +21,9 @@ class Iframe extends Component {
 
   updateDom(props) {
     const {size, url} = props;
-    this.dom.setAttribute('src', url);
+    if (!this.innerProps || url !== this.innerProps.url) {
+      this.dom.setAttribute('src', url);
+    }
     this.dom.setAttribute('width', size.width);
     this.dom.setAttribute('height', size.height);
   }
