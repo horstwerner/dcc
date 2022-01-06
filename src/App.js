@@ -178,6 +178,10 @@ class App extends Component {
   }
 
   connectToUpdateSocket(url) {
+    if (!url.startsWith('wss:') && !url.startsWith('ws:')) {
+      const {protocol, host} = window.location;
+      url = `${(protocol === 'https:' ? 'wss' : 'ws')}://${host}${url}`;
+    }
     this.ws = new WebSocket(getParameterizedUrl(url));
     this.ws.onopen = this.onWSOpen;
     this.ws.onclose = this.onWSClose;
@@ -843,7 +847,7 @@ class App extends Component {
       const renderH = Math.min(height, window.innerHeight - 64);
       const x = (window.innerWidth - renderW) / 2;
       const y = (window.innerHeight - renderH) / 2;
-      modal = ModalLayer_({x, y, size: {width: renderW, height: renderH}, url, onClose: this.handleModalClose})._ModalLayer;
+      modal = ModalLayer_({key: 'modal', x, y, size: {width: renderW, height: renderH}, url, onClose: this.handleModalClose})._ModalLayer;
     }
 
     return [

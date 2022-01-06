@@ -206,9 +206,6 @@ setInterval(() => {
 
     ws.isAlive = false;
     console.log('ping');
-    ws.ping(null, false, true);
+    ws.ping(null, false, null);
   });
 }, 10000);
-
-
-
