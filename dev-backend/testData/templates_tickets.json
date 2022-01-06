@@ -418,8 +418,7 @@
         "highlight": {
           "caption": "Highlight",
           "display": "highlight",
-          "inputSelector": {"jira:release": "=1.2"},
-          "dataPath": "jira:is-prerequisite-for[jira:ticket]*",
+          "reference": "graph",
           "selection": [
             {"label": "By Release", "value":  "jira:release"},
             {"label": "By Feature", "value":  "jira:feature"},
