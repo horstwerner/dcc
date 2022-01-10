@@ -230,11 +230,27 @@ class App extends Component {
   }
 
   onModalLinkClick(e) {
-    const { url, modalWidth, modalHeight } = e.detail;
+    const { url, modalWidth, modalHeight, templateId } = e.detail;
     const width = modalWidth || (window.innerWidth / 2);
     const height = modalHeight || (window.innerHeight / 2);
+    if (templateId) {
+      this.openStaticCard(templateId);
+    } else {
+      this.setState({modalIframe: {width, height, url}});
+    }
+  }
 
-    this.setState({modalIframe: {width, height , url}});
+  openStaticCard( templateId ) {
+    const { mainWidth, focusHeight, breadCrumbHeight, focusData } = this.state;
+
+    const template = TemplateRegistry.getTemplate(templateId);
+
+    const spatial = this.calcHoverCardSpatial({template, mainWidth, focusHeight, breadCrumbHeight, maxScale: 1});
+    const newHoverCard = Card_({key: this.createChildKey(), data:focusData, hover: true, template, spatial, clickMode: CLICK_OPAQUE,
+      onClick: this.handleHoverCardToFocus,
+      style: {zIndex: 2}})._Card
+
+    this.setState({hoverCard: newHoverCard, allowInteractions: true});
   }
 
   handleModalClose() {
@@ -731,9 +747,9 @@ class App extends Component {
         height, MARGIN,  MARGIN + breadCrumbHeight, 2);
   }
 
-  calcHoverCardSpatial({template, mainWidth, focusHeight, breadCrumbHeight}) {
+  calcHoverCardSpatial({template, mainWidth, focusHeight, breadCrumbHeight, maxScale}) {
     const { width, height } = template.getSize();
-    return fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, width, height, MARGIN,MARGIN + breadCrumbHeight + 6,2);
+    return fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, width, height, MARGIN,MARGIN + breadCrumbHeight + 6,maxScale || 2);
   }
 
   handleSearchResultClick(node) {

@@ -7,6 +7,7 @@ import {sizeType} from "@/templates/elements/TemplateElement";
 import BoxElement from "@/templates/elements/BoxElement";
 import ImageElement from "@/templates/elements/ImageElement";
 import LinkElement from "@/templates/elements/LinkElement";
+import InfoElement from "@/templates/elements/InfoElement";
 import CardElement from "@/templates/elements/CardElement";
 import CardsElement from "@/templates/elements/CardsElement";
 import TrellisElement from "@/templates/elements/TrellisElement";
@@ -44,7 +45,7 @@ const fillPlaceholders = function fillPlaceholders(element, options, defaultValu
 const elementClassByType = {};
 const elementTypes = [];
 //["caption", "box", "image", "textfield", "card", "cards", "chart", "trellis", "link"]
-[CaptionElement, TextFieldElement, BoxElement, ImageElement, LinkElement, CardElement, CardsElement, TrellisElement, ChartElement].forEach(elClass => {
+[CaptionElement, TextFieldElement, BoxElement, ImageElement, LinkElement, InfoElement, CardElement, CardsElement, TrellisElement, ChartElement].forEach(elClass => {
   // noinspection JSUnresolvedVariable
   elementClassByType[elClass.key] = elClass;
   // noinspection JSUnresolvedVariable

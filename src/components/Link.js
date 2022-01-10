@@ -13,6 +13,7 @@ export class Link extends Component {
   static propTypes = {
     text: P.string,
     url: P.string,
+    templateId: P.string,
     modal: P.bool,
     onClick: P.func
   };
@@ -23,9 +24,9 @@ export class Link extends Component {
   }
 
   onInternalClick() {
-    const {url, modalWidth, modalHeight} = this.innerProps;
+    const {url, templateId, modalWidth, modalHeight} = this.innerProps;
     const openEvent = new CustomEvent(LINK_EVENT, {
-      detail: {url, modalWidth, modalHeight},
+      detail: {url, templateId, modalWidth, modalHeight},
       bubbles: true,
       cancelable: true,
       composed: false,

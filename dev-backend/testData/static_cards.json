@@ -1,0 +1,45 @@
+{
+  "cards": [
+    {
+      "id": "graphHelp",
+      "appliesTo": "core:static",
+      "background": {
+        "type": "rect",
+        "color": {"$": "CARD_BACKGROUND_COLOR"},
+        "borderColor": "#E8E8E8",
+        "w": 800,
+        "h": 600,
+        "cornerRadius": 6
+      },
+      "elements": [
+        {
+          "key": "stripe",
+          "type": "box",
+          "background-color":  "#407090",
+          "x": 0, "y": 0, "w": 800, "h": 48
+        },
+        {
+          "key": "heading",
+          "type": "caption",
+          "x": 12, "y": 10, "w": 300, "h": 36,
+          "text": "Dependency Graph",
+          "style": {"font-size": "26px", "font-weight":  "bold", "color": "white"}
+        },
+        {
+          "key": "screenshot",
+          "type": "image",
+          "source": "images/graph_sample.png",
+          "border": "solid 2px #C0C0C0",
+          "x": 12, "y": 64, "w": 280, "h": 180
+        },
+        {
+          "key": "text1",
+          "type": "caption",
+          "style": {"font-size": "20px", "line-height":  "1.5"},
+          "text": "The dependency visualizes the 'is prerequisite for' associations between tickets. It orders the cards so that the cards with the deepest dependencies are the rightmost.",
+          "x": 320, "y": 64, "w": 460, "h": 180
+        }
+      ]
+    }
+  ]
+}
