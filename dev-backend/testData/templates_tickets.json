@@ -445,6 +445,7 @@
           "chartType": "graph",
           "x": 20, "y": 20, "w": 680, "h": 480,
           "path": "jira:is-prerequisite-for[jira:ticket]*",
+          "edgeAnnotations": [{"pointsRight":  true, "helpTemplate":  "relDependsOn"}],
           "viewName": "$view"
         },
         {

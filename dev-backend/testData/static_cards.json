@@ -36,10 +36,45 @@
           "key": "text1",
           "type": "caption",
           "style": {"font-size": "20px", "line-height":  "1.5"},
-          "text": "The dependency visualizes the 'is prerequisite for' associations between tickets. It orders the cards so that the cards with the deepest dependencies are the rightmost.",
+          "text": "The dependency graph visualizes the 'is prerequisite for' associations between tickets. It orders the cards so that the cards with the deepest dependencies are the rightmost.",
           "x": 320, "y": 64, "w": 460, "h": 180
         }
       ]
+    },
+    {
+      "id": "relDependsOn",
+      "appliesTo": "core:static",
+      "background": {
+        "type": "rect",
+        "color": {"$": "CARD_BACKGROUND_COLOR"},
+        "borderColor": "#E8E8E8",
+        "w": 480,
+        "h": 320,
+        "cornerRadius": 6
+      },
+      "elements": [
+        {
+          "key": "stripe",
+          "type": "box",
+          "background-color":  "#407090",
+          "x": 0, "y": 0, "w": 480, "h": 48
+        },
+        {
+          "key": "heading",
+          "type": "caption",
+          "x": 12, "y": 10, "w": 300, "h": 36,
+          "text": "Relation 'Depends on'",
+          "style": {"font-size": "26px", "font-weight":  "bold", "color": "white"}
+        },
+        {
+          "key": "text1",
+          "type": "caption",
+          "style": {"font-size": "18px", "line-height":  "1.5"},
+          "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+          "x": 12, "y": 64, "w": 460, "h": 220
+        }
+      ]
     }
+
   ]
 }

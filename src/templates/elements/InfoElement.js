@@ -2,7 +2,7 @@ import P from 'prop-types';
 import TemplateElement from "@/templates/elements/TemplateElement";
 import {Link} from "@/components/Generators";
 
-export default class ImageElement extends TemplateElement {
+export default class InfoElement extends TemplateElement {
 
   static key = 'info';
 

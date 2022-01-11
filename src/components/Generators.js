@@ -142,17 +142,18 @@ export const Caption = function Caption(props) {
   )._FlexBox;
 }
 
-Caption.propTypes = CAPTION_PROPS;
-
-
 export const Link = function Link(props) {
-  const {key, x, y, w, h, text, image, style, url, templateId, modal, modalWidth, modalHeight} = props;
+  const {key, x, y, w, h, text, image, className, style, url, templateId, modal, modalWidth, modalHeight, rotate} = props;
 
-  const child = text ? Div_({key: 'button', size:{width: w, height: h}, style: calcStyle({'font-size': h, ...style})}, text)._Div :
-      Image_({key: 'icon', source: image, width: w, height: h, cornerRadius: style && style.cornerRadius})._Image
+  const child = text ? Div_({key: 'button', size:{width: w, height: h},
+      style: calcStyle({'font-size': h, ...style})}, text)._Div :
+    Image_({key: 'icon', className, source: image, width: w, height: h, cornerRadius: style && style.cornerRadius})._Image
 
-  return Link_({key, spatial: {x, y, scale: 1}, url, modal: !!modal, templateId, modalWidth, modalHeight}, child)._Link
+  return Link_({key, className, spatial: {x, y, scale: 1, rotate}, url, modal: !!modal, templateId, modalWidth, modalHeight}, child)._Link
 }
+
+
+Caption.propTypes = CAPTION_PROPS;
 
 
 export function createArrangement(descriptor, childSize) {
