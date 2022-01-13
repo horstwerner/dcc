@@ -30,9 +30,11 @@ export const iconMargin = 6;
 export const STYLE_ATTRIBUTES = [
  'color',
  'background-color',
+ 'border',
  'border-radius',
  'font-weight',
  'font-size',
+ 'line-height',
  'padding',
  'z-index',
  'font-family',
@@ -90,10 +92,12 @@ export function calcStyle(styleDescriptor) {
     const value = styleDescriptor[key];
     switch (key) {
       case 'color':
+      case 'border':
       case 'background-color':
       case 'border-radius':
       case 'font-weight':
       case 'font-size':
+      case 'line-height':
       case 'padding':
       case 'z-index':
       case 'font-family':
@@ -138,16 +142,18 @@ export const Caption = function Caption(props) {
   )._FlexBox;
 }
 
-Caption.propTypes = CAPTION_PROPS;
-
 export const Link = function Link(props) {
-  const {key, x, y, w, h, text, image, style, url, modal, modalWidth, modalHeight} = props;
+  const {key, x, y, w, h, text, image, className, style, url, templateId, modal, modalWidth, modalHeight, rotate} = props;
 
-  const child = text ? Div_({key: 'button', size:{width: w, height: h}, style: calcStyle({'font-size': h, ...style})}, text)._Div :
-      Image_({key: 'icon', source: image, width: w, height: h, cornerRadius: style && style.cornerRadius})._Image
+  const child = text ? Div_({key: 'button', size:{width: w, height: h},
+      style: calcStyle({'font-size': h, ...style})}, text)._Div :
+    Image_({key: 'icon', className, source: image, width: w, height: h, cornerRadius: style && style.cornerRadius})._Image
 
-  return Link_({key, spatial: {x, y, scale: 1}, url, modal: !!modal, modalWidth, modalHeight}, child)._Link
+  return Link_({key, className, spatial: {x, y, scale: 1, rotate}, url, modal: !!modal, templateId, modalWidth, modalHeight}, child)._Link
 }
+
+
+Caption.propTypes = CAPTION_PROPS;
 
 
 export function createArrangement(descriptor, childSize) {

@@ -31,6 +31,7 @@ export default class Component {
       x: P.number,
       y: P.number,
       scale: P.number,
+      rotate: P.number
     }),
     children: P.oneOfType([P.object, P.string, P.array])
   };
@@ -325,9 +326,9 @@ export default class Component {
     return this.spatial || DEFAULT_SPATIAL;
   }
 
-  setSpatial({x, y, scale}) {
+  setSpatial({x, y, scale, rotate}) {
     if (!this.dom) return;
-    this.dom.style.transform = getTransformString(x, y, scale);
+    this.dom.style.transform = getTransformString(x, y, scale, rotate);
     this.spatial = {x, y, scale};
   }
 
