@@ -683,17 +683,23 @@ class App extends Component {
     const {currentViewOptions, focusCard, highlightInfo} = this.state;
     const newViewOptions = {...currentViewOptions, [key]: value};
 
-    const option = get(focusCard, ['template', 'descriptor', 'options'])[key];
+    const template = focusCard.template.descriptor;
+    const option = get(template,[ 'options'])[key];
 
     if (option.display === OPTION_HIGHLIGHT) {
       const originalFocus = omit(focusCard, ['highlightCondition']);
       if (value == null) {
         this.setState({highlightInfo: null, highlightMenu: null,  currentViewOptions: newViewOptions, focusCard: originalFocus });
       } else {
-        const {dataPath, inputSelector} = option;
-        const rootNodes = getNodeArray(inputSelector, TYPE_NODES, focusCard.data);
-        const nodes = dataPath ?
-            [...rootNodes, ...traverseWithRecursion(rootNodes, dataPath, LOG_LEVEL_PATHS, '')] :
+        const { reference } = option;
+        const refElement = template.elements.find(el => el.key === reference);
+        if (!refElement) {
+          throw new Error(`Can't find reference element ${reference} in template ${template.id}`);
+        }
+        const {source, path, inputSelector} = refElement;
+        const rootNodes = getNodeArray(inputSelector, source, focusCard.data);
+        const nodes = path ?
+            [...rootNodes, ...traverseWithRecursion(rootNodes, path, LOG_LEVEL_PATHS, '')] :
             rootNodes;
 
         let newHighlightInfo;
