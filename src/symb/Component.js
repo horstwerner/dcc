@@ -38,6 +38,7 @@ export default class Component {
 
   static baseTag = 'div';
 
+  forceUpdate = false;
   updateScheduled = false;
 
   constructor(props, parent, domNode) {
@@ -204,6 +205,11 @@ export default class Component {
     return result;
   }
 
+  refresh() {
+    this.forceUpdate = true;
+    this.update(this.innerProps);
+  }
+
   update(props, tween) {
 
     if (props) {
@@ -219,7 +225,7 @@ export default class Component {
     // each of the top-level properties can be updated independently without requiring
     // a full update
 
-    if (alpha != null && alpha !== this.getAlpha()) {
+    if (this.forceUpdate || (alpha != null && alpha !== this.getAlpha())) {
       if (tween) {
         tween.addFade(this, alpha);
       } else {
@@ -244,8 +250,7 @@ export default class Component {
       this.updateClassName(className);
     }
 
-    if (innerProps && !isEmpty(innerProps)) {
-      if (!isEqual(this.innerProps, props)) {
+    if (this.forceUpdate || (innerProps && !isEmpty(innerProps) && !isEqual(this.innerProps, props))) {
         this.updateDom(props, tween);
         const childDescriptors = this.createChildDescriptors(props);
         if (childDescriptors != null) {
@@ -253,11 +258,11 @@ export default class Component {
         }
         this.innerProps = cloneObject(props);
       }
-    }
+    this.forceUpdate = false;
   }
 
   updateSize(size, tween) {
-    if (this.size && isEqual(this.size, size)) return;
+    if (!this.forceUpdate && this.size && isEqual(this.size, size)) return;
     if (!this.size) {
       this.size = {};
     }
@@ -294,7 +299,7 @@ export default class Component {
   }
 
   updateStyle(style) {
-    if (isEqual(style, this.style)) return;
+    if (!this.forceUpdate && isEqual(style, this.style)) return;
     const writeStyle =  (this.style) ? mapValues(this.style, () => '') : {};
     Object.assign(writeStyle, style);
     this.style = {...style};
@@ -308,7 +313,7 @@ export default class Component {
   // }
 
   updateSpatial(spatial, tween) {
-    if (isEqual(this.getSpatial(), spatial)) return;
+    if (!this.forceUpdate && isEqual(this.getSpatial(), spatial)) return;
 
     const {x, y, scale} = spatial;
     if (isNaN(x) || isNaN(y) || isNaN(scale)){
@@ -347,7 +352,7 @@ export default class Component {
   }
 
   updateClassName(className) {
-    if (className !== this.className) {
+    if (this.forceUpdate || className !== this.className) {
       this.dom.className = className;
       this.className = className;
     }

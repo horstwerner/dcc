@@ -10,7 +10,7 @@ export const StylePropType = {
   'padding': P.string,
   'z-index': P.number,
   'font-family': P.string,
-  'line-height': P.number,
+  'line-height': P.string,
   'v-align': P.oneOf(['top', 'center', 'bottom']),
   'h-align': P.oneOf(['left', 'center', 'right'])
 };
