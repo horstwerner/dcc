@@ -4,11 +4,13 @@ export const StylePropType = {
   'color': P.string,
   'background-color': P.string,
   'border-radius': P.string,
+  'border': P.string,
   'font-weight': P.string,
   'font-size': P.string,
   'padding': P.string,
   'z-index': P.number,
   'font-family': P.string,
+  'line-height': P.string,
   'v-align': P.oneOf(['top', 'center', 'bottom']),
   'h-align': P.oneOf(['left', 'center', 'right'])
 };

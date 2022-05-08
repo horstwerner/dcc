@@ -46,6 +46,7 @@ const HOVER_MENU = 'hover-menu';
 const TOOL_HEIGHT = 10;
 const BREADCRUMB_LANE_HEIGHT = 104;
 const PINNED_ROOT_CARD = 'rootcard';
+const MAIN = 'main';
 
 class App extends Component {
 
@@ -204,14 +205,14 @@ class App extends Component {
     const { update } = data;
     if (update) {
       Cache.updateNodes(update);
-      this.clearChildren();
-      this.update(this.innerProps);
-      this.renderStateChange();
+      const main = this.getChild(MAIN);
+      if (main) {
+        main.clearChildren();
+        this.childByKey[MAIN] = null;
+        this.refresh();
+        this.renderStateChange();
+      }
     }
-    // TODO: only activate when contextual node problem solved, see GraphNode.destroy()
-    // if (remove) {
-    //   Cache.removeNodes(remove);
-    // }
   };
 
   updateDom(props, tween) {
@@ -230,11 +231,27 @@ class App extends Component {
   }
 
   onModalLinkClick(e) {
-    const { url, modalWidth, modalHeight } = e.detail;
+    const { url, modalWidth, modalHeight, templateId } = e.detail;
     const width = modalWidth || (window.innerWidth / 2);
     const height = modalHeight || (window.innerHeight / 2);
+    if (templateId) {
+      this.openStaticCard(templateId);
+    } else {
+      this.setState({modalIframe: {width, height, url}});
+    }
+  }
 
-    this.setState({modalIframe: {width, height , url}});
+  openStaticCard( templateId ) {
+    const { mainWidth, focusHeight, breadCrumbHeight, focusData } = this.state;
+
+    const template = TemplateRegistry.getTemplate(templateId);
+
+    const spatial = this.calcHoverCardSpatial({template, mainWidth, focusHeight, breadCrumbHeight, maxScale: 1});
+    const newHoverCard = Card_({key: this.createChildKey(), data:focusData, hover: true, template, spatial, clickMode: CLICK_OPAQUE,
+      onClick: this.handleHoverCardToFocus,
+      style: {zIndex: 2}})._Card
+
+    this.setState({hoverCard: newHoverCard, allowInteractions: true});
   }
 
   handleModalClose() {
@@ -245,6 +262,11 @@ class App extends Component {
     return `card${this.nextChildIndex++}`;
   }
 
+  getSideBar() {
+    const main = this.getChild(MAIN);
+    if (main) return main.getChild(SIDEBAR);
+    return null;
+  }
 
   handleKeyDown(event) {
     if (event.key === 'f' && (event.ctrlKey || event.altKey)) {
@@ -261,12 +283,12 @@ class App extends Component {
         this.removeModals();
       }
     } else if (event.key === 'f' && (event.ctrlKey || event.altKey)) {
-      this.getChild(SIDEBAR).focusSearchBox();
+      this.getSideBar().focusSearchBox();
     }
   }
 
   removeModals() {
-    this.getChild(SIDEBAR).clearSearch();
+    this.getSideBar().clearSearch();
   }
 
   handleHoverCardPin() {
@@ -731,9 +753,9 @@ class App extends Component {
         height, MARGIN,  MARGIN + breadCrumbHeight, 2);
   }
 
-  calcHoverCardSpatial({template, mainWidth, focusHeight, breadCrumbHeight}) {
+  calcHoverCardSpatial({template, mainWidth, focusHeight, breadCrumbHeight, maxScale}) {
     const { width, height } = template.getSize();
-    return fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, width, height, MARGIN,MARGIN + breadCrumbHeight + 6,2);
+    return fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, width, height, MARGIN,MARGIN + breadCrumbHeight + 6,maxScale || 2);
   }
 
   handleSearchResultClick(node) {
@@ -817,9 +839,11 @@ class App extends Component {
       hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions}
         = this.state;
 
+    const css = getAppCss();
+
     // const backgroundColor = (map && map.backColor) || '#ffffff';
     if (error) {
-      return Div_({className:  getAppCss().errorMessage}, `An error occurred:\n${error}`)._Div;
+      return Div_({className:  css.errorMessage}, `An error occurred:\n${error}`)._Div;
     }
 
     if (!dataLoaded) return this.loadingAnimation;
@@ -839,7 +863,7 @@ class App extends Component {
     }
 
     const pinButtons = pinned.slice(1).map(card =>
-        Div_({key: `${card.key}-pin`, className: getAppCss().pin,
+        Div_({key: `${card.key}-pin`, className: css.pin,
           onClick: () => {this.removePin(card)},
           spatial: {x: card.spatial.x + card.spatial.scale * card.template.getSize().width - 20, y: card.spatial.y - 11, scale: 1}})._Div);
 
@@ -857,53 +881,56 @@ class App extends Component {
     }
 
     return [
-      BreadcrumbLane_({
-        key: BREADCRUMBS,
-        pinnedWidth,
-        spatial: {x: 0, y: 0, scale: 1},
-        size:  {width: mainWidth, height: breadCrumbHeight},
-        onClick: this.removeModals,
-      })._BreadcrumbLane,
-      ...breadCrumbCards,
-      ...pinned,
-      ...pinButtons,
-      ToolPanel_({
-        key: 'tools',
-        size: { width: mainWidth, height: toolbarHeight},
-        spatial: {x: 0, y: focusHeight + breadCrumbHeight, scale: 1},
-        children: toolControls
-      })._ToolPanel,
-      Div_({
-        key: FOCUS,
-        className: getAppCss().focus,
-        spatial: {x: 0, y: breadCrumbHeight, scale: 1},
-        size: {width: mainWidth, height: focusHeight},
-        onClick: this.removeModals
-      })._Div,
-      focusCard,
-      ...hoverChildren,
-      Sidebar_({key: SIDEBAR,
-        size: {width: sideBarWidth, height: windowHeight},
-        menuTop: breadCrumbHeight,
-        logoUrl: getConfig('logoUrl'),
-        logoLink: getConfig('logoLink'),
-        focusInfo,
-        shareRef: reference,
-        spatial: {x: mainWidth, y: 0, scale: 1},
-        views: views.map(view => ({id: view.id, name: view.name || view.id, selected: view.id === focusCard.template.id})),
-        tools: tools && tools.map(tool => ({id: tool.id, name: tool.name, selected: !!activeTools[tool.id]})),
-        options: get(focusCard, ['template', 'descriptor', 'options']) || {},
-        currentViewOptions,
-        highlightMenu,
-        onOptionSelect: this.handleOptionSelect,
-        onToolToggle: this.handleToolToggle,
-        onViewClick: this.handleViewSelect,
-        onSearchResultClick: this.handleSearchResultClick,
-        onHighlightClose: this.handleHighlightListClose,
-        onHighlightSelect: this.setHighlightCondition
-      })._Sidebar,
+      Div_({key: MAIN, className: css.absolute},
+        [
+          BreadcrumbLane_({
+            key: BREADCRUMBS,
+            pinnedWidth,
+            spatial: {x: 0, y: 0, scale: 1},
+            size:  {width: mainWidth, height: breadCrumbHeight},
+            onClick: this.removeModals,
+          })._BreadcrumbLane,
+          ...breadCrumbCards,
+          ...pinned,
+          ...pinButtons,
+          ToolPanel_({
+            key: 'tools',
+            size: { width: mainWidth, height: toolbarHeight},
+            spatial: {x: 0, y: focusHeight + breadCrumbHeight, scale: 1},
+            children: toolControls
+          })._ToolPanel,
+          Div_({
+            key: FOCUS,
+            className: css.focus,
+            spatial: {x: 0, y: breadCrumbHeight, scale: 1},
+            size: {width: mainWidth, height: focusHeight},
+            onClick: this.removeModals
+          })._Div,
+          focusCard,
+          ...hoverChildren,
+          Sidebar_({key: SIDEBAR,
+            size: {width: sideBarWidth, height: windowHeight},
+            menuTop: breadCrumbHeight,
+            logoUrl: getConfig('logoUrl'),
+            logoLink: getConfig('logoLink'),
+            focusInfo,
+            shareRef: reference,
+            spatial: {x: mainWidth, y: 0, scale: 1},
+            views: views.map(view => ({id: view.id, name: view.name || view.id, selected: view.id === focusCard.template.id})),
+            tools: tools && tools.map(tool => ({id: tool.id, name: tool.name, selected: !!activeTools[tool.id]})),
+            options: get(focusCard, ['template', 'descriptor', 'options']) || {},
+            currentViewOptions,
+            highlightMenu,
+            onOptionSelect: this.handleOptionSelect,
+            onToolToggle: this.handleToolToggle,
+            onViewClick: this.handleViewSelect,
+            onSearchResultClick: this.handleSearchResultClick,
+            onHighlightClose: this.handleHighlightListClose,
+            onHighlightSelect: this.setHighlightCondition
+          })._Sidebar]
+        )._Div,
       modal
-    ];
+    ]
   }
 }
 

@@ -1,20 +1,20 @@
 import get from 'lodash/get';
 import isEmpty from 'lodash/isEmpty';
 import sum from 'lodash/sum';
-
+import {centerPoint, createContext, directionAngle, fit, roundCorners} from '@symb/util';
 import Component from "@symb/Component";
-import css from "./Card.css";
+import cardCss from "./Card.css";
+import graphCss from "./Graph.css";
 import {Path_} from "./Path";
 import {Card_} from "./Card";
 import {getAssociated} from "@/graph/Analysis";
 import {Svg_} from "@/components/Svg";
-import {createContext, fit, roundCorners} from "@symb/util";
 import P from "prop-types";
 import GraphNode from "@/graph/GraphNode";
 import ComponentFactory from "@symb/ComponentFactory";
 import {CLICK_OPAQUE, DEFAULT_MUTE_COLOR} from "@/components/Constants";
 import TemplateRegistry from "@/templates/TemplateRegistry";
-import {createPreprocessedCardNode} from "@/components/Generators";
+import {createPreprocessedCardNode, Link} from "@/components/Generators";
 import PathParser from "@symb/PathParser";
 import {traverse} from "@/graph/Cache";
 
@@ -58,15 +58,15 @@ const traverseGraph = function traverseGraph(startNodes, scopeKeys, path) {
         let targetVizNode = vizNodesByKey[targetKey];
         if (!targetVizNode) {
           // new node added to analysis
-          sourceVizNode.outEdges.push({targetKey});
-          vizNodesByKey[targetKey] = {graphNode: targetNode, depth: sourceVizNode.depth + 1, inEdges: [{sourceKey}], outEdges: []};
+          sourceVizNode.outEdges.push({targetKey, segmentIndex: curSegmentIdx});
+          vizNodesByKey[targetKey] = {graphNode: targetNode, depth: sourceVizNode.depth + 1, inEdges: [{sourceKey, segmentIndex: curSegmentIdx}], outEdges: []};
           nextNodeMap[targetKey] = targetNode;
           if (recursive) {
             accumulatedNextNodeMap[targetKey] = targetNode;
           }
         } else {
-          sourceVizNode.outEdges.push({targetKey});
-          targetVizNode.inEdges.push({sourceKey});
+          sourceVizNode.outEdges.push({targetKey, segmentIndex: curSegmentIdx});
+          targetVizNode.inEdges.push({sourceKey, segmentIndex: curSegmentIdx});
           if (targetVizNode.depth < sourceVizNode.depth + 1) {
             targetVizNode.depth = sourceVizNode.depth + 1;
             bumpSuccessorDepth(targetVizNode.outEdges, targetVizNode.depth + 1, vizNodesByKey,
@@ -109,7 +109,7 @@ const GRAPH_VIZ = 'graph-viz';
 class GraphViz extends Component {
 
   static type = GRAPH_VIZ;
-  static className = css.card;
+  static className = cardCss.card;
 
   static propTypes = {
     startNodes: P.arrayOf(P.instanceOf(GraphNode)).isRequired,
@@ -121,12 +121,14 @@ class GraphViz extends Component {
     nodeAspectRatio: P.number,
     viewName: P.string,
     muteColor: P.string,
-    edgeColor: P.string
+    edgeColor: P.string,
+    edgeAnnotations: P.arrayOf(P.shape({pointsRight: P.bool, helpTemplate: P.string}))
   }
 
   createChildDescriptors(props) {
 
-    const {startNodes, scope, w, h, nodeAspectRatio, path, viewName, onNodeClick, highlightCondition, muteColor, edgeColor} = props;
+    const {startNodes, scope, w, h, nodeAspectRatio, path, viewName, onNodeClick, highlightCondition, muteColor,
+      edgeColor, edgeAnnotations} = props;
 
     if (!startNodes) return null;
 
@@ -218,16 +220,18 @@ class GraphViz extends Component {
     vizNodes.forEach(vizNode => {
       if (!vizNode.outEdges) return;
       const startMuted = highlightCondition && (!highlightCondition.matches(vizNode.graphNode));
-      vizNode.outEdges.forEach(({targetKey}) => {
+      vizNode.outEdges.forEach(({targetKey, segmentIndex}) => {
         const targetNode = vizNodesByKey[targetKey];
         const targetMuted = highlightCondition && (!highlightCondition.matches(targetNode.graphNode));
         let points;
+        let centerIdx;
         if (targetNode.pos.x > vizNode.pos.x) { // forward edge
           points = [vizNode.pos,
             {x: vizNode.terminals[1], y: vizNode.pos.y},
             {x: targetNode.terminals[0], y: targetNode.pos.y},
             targetNode.pos
           ];
+          centerIdx = 1;
         } else { // backward edge
           const dySrc = (Math.sign(targetNode.pos.y - vizNode.pos.y) || -4) * 0.28 * childH
           const dyTrg = Math.abs(targetNode.pos.y - vizNode.pos.y) < 0.6 * childH ? dySrc : -dySrc;
@@ -238,18 +242,41 @@ class GraphViz extends Component {
             {x: targetNode.terminals[0] , y: targetNode.pos.y},
             targetNode.pos
           ];
+          centerIdx = 2;
         }
         const color = (startMuted || targetMuted) ? muteColor || DEFAULT_MUTE_COLOR : edgeColor || EDGE_COLOR;
-        lines.push({points, color});
+        lines.push({points, centerIdx, color, segmentIndex, key: `${vizNode.graphNode.getUniqueKey()}->${targetKey}`});
       });
     });
 
     const roundDist = 0.07 * childW;
     const children = [];
-    children.push(Svg_({style:{pointerEvents: 'none'}, width: w, height: h, children: lines.map(line => {
-        return createSvgPath(line, roundDist);
-      })
+    children.push(Svg_({style:{pointerEvents: 'none'}, width: w, height: h, children: lines.map(line => createSvgPath(line, roundDist))
     })._Svg);
+
+    if (edgeAnnotations) {
+      for (let {points, centerIdx, segmentIndex, key} of lines) {
+        const {pointsRight, helpTemplate} = edgeAnnotations[segmentIndex];
+        const p1 = points[centerIdx];
+        const p2 = points[centerIdx + 1];
+        const size = 10;
+        const centerP = centerPoint(p1, p2);
+        let angle = 180 * directionAngle(p1, p2) / Math.PI;
+        if (!pointsRight) {
+          angle = angle + 180;
+        }
+        const arrow = Link({
+          key,
+          modal: true,
+          x: centerP.x -0.5 * size, y: centerP.y - 0.5 * size, w: size, h: size,
+          image: 'public/EdgeArrow.svg',
+          className: graphCss.edgeArrow,
+          rotate: angle,
+          templateId: helpTemplate
+        })
+        children.push(arrow);
+      }
+    }
 
     vizNodes.forEach(vizNode => {
       const cardNode = createPreprocessedCardNode(vizNode.graphNode, createContext(), vizNode.template, null);

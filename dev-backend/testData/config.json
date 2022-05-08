@@ -1,6 +1,6 @@
 {
   "dictionaryFile": "testData/dictionary.json",
-  "templateFiles": ["testData/templates_tickets.json", "testData/templates_teams.json"],
+  "templateFiles": ["testData/templates_tickets.json", "testData/templates_teams.json", "testData/static_cards.json"],
   "toolFile": "testData/tools.json",
   "dataFiles": ["testData/jira.csv", "testData/teams.csv", "testData/bugs.csv"],
   "clientConfig": {"getGraph": false, "getTables":  ["jira:ticket", "jira:team", "jira:bug"],

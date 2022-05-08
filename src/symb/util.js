@@ -8,7 +8,10 @@ import TypeDictionary from "@/graph/TypeDictionary";
 import {BLANK_NODE_URI} from "@/components/Constants";
 import {TYPE_AGGREGATOR, TYPE_CONTEXT, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES, TYPE_THING} from "@/graph/BaseTypes";
 
-export function getTransformString(x, y, scale) {
+export function getTransformString(x, y, scale, rotate) {
+  if (rotate) {
+    return `translate(${Math.round(x)}px, ${Math.round(y)}px) scale(${scale}) rotate(${rotate}deg)`;
+  }
   return `translate(${Math.round(x)}px, ${Math.round(y)}px) scale(${scale})`;
 }
 
@@ -86,6 +89,19 @@ const interpolate = function interpolate(p1, p2, length) {
   const d = Math.max(dist(p1, p2), 2 * length);
   return {x: p1.x + length / d * (p2.x - p1.x), y: p1.y + length / d * (p2.y - p1.y)};
 
+}
+
+export const centerPoint = function centerPoint(p1, p2) {
+  if (!p1 || !p2) {
+    debugger
+  }
+  return {x: p1.x + 0.5 * (p2.x - p1.x), y: p1.y + 0.5 * (p2.y - p1.y)};
+}
+
+export const directionAngle = function directionAngle(p1, p2) {
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  return Math.atan2(dy, dx);
 }
 
 export const rotate = function rotate(points, angle) {

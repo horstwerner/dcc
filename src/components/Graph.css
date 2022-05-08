@@ -1,0 +1,7 @@
+.edgeArrow {
+    position: absolute;
+    transform-origin: 50% 50%;
+    box-sizing: border-box;
+    width: 10px;
+    height: 10px;
+}
