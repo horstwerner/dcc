@@ -124,7 +124,7 @@ class App extends Component {
               const {data, template} = JSON.parse(decoded);
               const dataNode = Array.isArray(data) ? data.map(el => Cache.getNodeByUri(el)) : Cache.getNodeByUri(data);
               startTemplate = TemplateRegistry.getTemplate(template);
-              startNode = createPreprocessedCardNode(dataNode, null, startTemplate, null)
+              startNode = createPreprocessedCardNode(dataNode, null, startTemplate, null);
             } else {
               startTemplate = TemplateRegistry.getTemplate(getConfig('startTemplate'));
               startNode = createPreprocessedCardNode(startData, null, startTemplate, null);
@@ -140,7 +140,7 @@ class App extends Component {
               pinnedWidth,
               dataLoaded: true
             });
-            this.setFocusCard(focusCard, null);
+            this.setFocusCard(focusCard, startNode);
           }
         });
 
