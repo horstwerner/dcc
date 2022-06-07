@@ -551,6 +551,9 @@ class App extends Component {
     } else if (data){
       nodeTypeUri = data.getTypeUri();
     }
+    if (DEBUG_MODE) {
+      console.log(`Node type is ${nodeTypeUri}`);
+    }
     const views = TemplateRegistry.getViewsFor(nodeTypeUri, aggregate, template).filter(view => view.selectable);
     const tools = aggregate ? TemplateRegistry.getToolsFor(nodeTypeUri) : [];
     const activeTools = {};

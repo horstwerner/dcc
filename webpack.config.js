@@ -13,6 +13,9 @@ module.exports = function(webpackEnv) {
     output: {
       path: path.resolve(__dirname, "build"),
       filename: "bundle.js",
+      devtoolLineToLine: true,
+      sourceMapFilename: "./bundle.js.map",
+      pathinfo: true,
     },
     module: {
       rules: [
@@ -63,7 +66,7 @@ module.exports = function(webpackEnv) {
     mode: isEnvProduction ? 'production' : isEnvDevelopment && 'development',
     // Stop compilation early in production
     bail: isEnvProduction,
-    devtool: isEnvProduction ? '' : 'inline-source-map',
+    devtool: isEnvProduction ? 'source-map' : 'inline-source-map',
     devServer: {
       proxy: {
             '/api': 'http://localhost:3001',
