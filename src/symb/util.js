@@ -47,6 +47,7 @@ const findParameters = function findParameters(text) {
 }
 
 export const fillIn = function fillIn(textTemplate, data) {
+  if (!textTemplate || !data) return null;
   const parameters = findParameters(textTemplate);
   let result = textTemplate;
   for (let i = 0; i < parameters.length; i++) {

@@ -8,17 +8,18 @@ export default class LinkElement extends TemplateElement {
   static key = 'link';
 
   static propTypes = {...TemplateElement.propTypes,
-    url: P.string.isRequired,
+    url: P.string,
     text: P.string,
     image: P.string,
     modal: P.bool,
+    templateId: P.string,
     modalWidth: P.number,
     modalHeight: P.number,
     style: P.shape(StylePropType)
   }
 
   static create ({descriptor, data}) {
-    const { url, text } = descriptor;
-    return url && Link({...descriptor, text: fillIn(text, data), url: fillIn(url, data)});
+    const { url, templateId, text } = descriptor;
+    return (url || templateId) && Link({...descriptor, text: fillIn(text, data), url: fillIn(url, data)});
   }
 }
