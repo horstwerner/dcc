@@ -119,19 +119,22 @@ class App extends Component {
             });
             let startTemplate;
             let startNode;
+            startTemplate = TemplateRegistry.getTemplate(getConfig('startTemplate'));
+            startNode = createPreprocessedCardNode(startData, null, startTemplate, null);
+            const startCard = this.createFocusCard(startNode, startTemplate, null);
+            const { pinned, pinnedWidth } = this.calcPinnedCardPositions([this.toPinnedCard(startCard, PINNED_ROOT_CARD)], mainWidth, breadCrumbHeight);
+
+            let focusCard;
             if (window.location.href.includes('#')) {
               const decoded = atob(decodeURI(window.location.href.split('#')[1]));
               const {data, template} = JSON.parse(decoded);
               const dataNode = Array.isArray(data) ? data.map(el => Cache.getNodeByUri(el)) : Cache.getNodeByUri(data);
-              startTemplate = TemplateRegistry.getTemplate(template);
-              startNode = createPreprocessedCardNode(dataNode, null, startTemplate, null)
+              const nodeTemplate = TemplateRegistry.getTemplate(template);
+              const node = createPreprocessedCardNode(dataNode, null, startTemplate, null);
+              focusCard = this.createFocusCard(node, nodeTemplate, null)
             } else {
-              startTemplate = TemplateRegistry.getTemplate(getConfig('startTemplate'));
-              startNode = createPreprocessedCardNode(startData, null, startTemplate, null);
+              focusCard = startCard;
             }
-
-            const focusCard = this.createFocusCard(startNode, startTemplate, null);
-            const { pinned, pinnedWidth } = this.calcPinnedCardPositions([this.toPinnedCard(focusCard, PINNED_ROOT_CARD)], mainWidth, breadCrumbHeight);
 
             this.setState({
               focusData: null,
@@ -140,7 +143,7 @@ class App extends Component {
               pinnedWidth,
               dataLoaded: true
             });
-            this.setFocusCard(focusCard, null);
+            this.setFocusCard(focusCard, startNode);
           }
         });
 
