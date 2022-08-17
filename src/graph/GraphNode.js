@@ -21,6 +21,7 @@ export default class GraphNode {
   type;
   uniqueKey;
   originalNode;
+  isSynthetic;
 
   static isGraphNode(o) {
     return o && typeof o === 'object' && o.constructor === GraphNode;
@@ -37,6 +38,7 @@ export default class GraphNode {
       throw new Error('Undefined uri in node constructor');
     }
     this.uri = uri;
+    this.isSynthetic = false;
     this.properties = {};
     // these associations are pointing back - and belong - to another graph node, which points to this
     this.inverseAssociations = {};
@@ -222,11 +224,20 @@ export default class GraphNode {
     return result.join(`\n`) + (this.originalNode ? `------------>\n${this.originalNode.getSummary()}`: '');
   }
 
+  markAsSynthetic() {
+    this.isSynthetic = true;
+  }
+
+  isSyntheticNode() {
+    return this.isSynthetic;
+  }
+
   getReference() {
     if (this.type.uri === TYPE_AGGREGATOR) {
-      return nodeArray(this.get(TYPE_NODES)).map(node => node.uri);
+      const nodes = nodeArray(this.get(TYPE_NODES));
+      return !nodes.some(node => node.isSyntheticNode()) ? nodes.map(node => node.uri) : null;
     } else {
-      return this.uri;
+      return this.isSyntheticNode() ? null: this.uri;
     }
   }
 

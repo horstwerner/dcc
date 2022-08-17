@@ -81,7 +81,7 @@ Data paths can be also used in conditions and color coders.
 
 ## Synthetic Nodes
 In order to render views that don't represent plain graph nodes but composite data, synthetic nodes can be created.
-Synthetic nodes need to have a type that is declared in the dictionary, and they may have an uri (if no uri is specified,
+Synthetic nodes need to have a type that is declared in the dictionary, and they may have a uri (if no uri is specified,
 the uri will be set to `core:blank-node` and the node will not be registered in the cache). The way to create a synthetic
 node is to declare it as `detailNode` in a clickable template. When the template is clicked, the synthetic node will
 be used instead of the original graph node for the detail card that becomes the focus (or hover card). The base parameters

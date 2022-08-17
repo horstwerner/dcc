@@ -108,9 +108,11 @@ class Sidebar extends Component {
     const toolMenu = (tools.length > 0 && Menu_({key: "tools", color: 'gray', title: 'Filters',  entries: tools, onEntryClick: onToolToggle})._Menu);
     const focusHeader = focusInfo && (Div_({className: css.focusHeader},
         [Div_({}, focusInfo)._Div,
-        Link_({className: css.shareLink, url: shareRef, onClick: () => {
+        shareRef ? Link_({className: css.shareLink, url: shareRef, onClick: () => {
                 writeToClipboard(shareRef)}},
-            Image_({key: 'shareButton', source: 'public/ShareButton.svg', title: 'Share', className: hoverMenuCss.icon, width: 22, height: 22})._Image)._Link]
+            Image_({key: 'shareButton', source: 'public/ShareButton.svg', title: 'Share', className: hoverMenuCss.icon, width: 22, height: 22})._Image)._Link
+          : Image_({key: 'shareButtonDisabled', source: 'public/ShareButton.svg', title: 'not sharable', className: hoverMenuCss.iconDisabled, width: 22, height: 22})._Image
+        ]
     )._Div);
 
 
