@@ -31,3 +31,10 @@
 .iconAbsolute:active{
   opacity: 0.8!important;
 }
+
+.iconDisabled {
+    opacity: 0.2!important;
+    margin-left: 6px;
+    cursor: not-allowed;
+    overflow: visible;
+}

@@ -60,7 +60,7 @@ export const getDataOffline = function(onError) {
    * @type {Promise[]}
    */
   const result = [];
-  const { getTables, getGraph } = getConfigs('getTables', 'getGraph');
+  const { getTables, getGraph } = getConfigs(['getTables', 'getGraph']);
   if (getGraph) {
     result.push(
        pseudoFetch(OFFLINE_DATA.graph)

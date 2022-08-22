@@ -184,6 +184,7 @@ export const fetchSubGraph = function fetchSubGraph(queryUrl, entryPointType, en
 }
 
 export const getParameterizedUrl = function getParameterizedUrl(baseUrl) {
+  const {getGraph} = getConfigs(['getGraph']);
   const graphParams = (typeof getGraph === 'object') ? getGraph : {};
   const urlParams = new URLSearchParams(window.location.search);
   urlParams.forEach((value, key) => {

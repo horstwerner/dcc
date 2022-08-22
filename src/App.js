@@ -574,8 +574,13 @@ class App extends Component {
     const {windowWidth, windowHeight} = this.state;
     let reference = this.startUrl;
     if (GraphNode.isGraphNode(data)) {
-      const appendix = {data: data.getReference(), template: focusCard.template.id};
-      reference = `${this.startUrl}#${encodeURI(btoa(JSON.stringify(appendix)))}`;
+      const dataRef = data.getReference();
+      if (dataRef) {
+        const appendix = {data: dataRef, template: focusCard.template.id};
+        reference = `${this.startUrl}#${encodeURI(btoa(JSON.stringify(appendix)))}`;
+      } else {
+        reference = null;
+      }
     }
 
     return { views, tools, activeTools, toolControls, currentFilters: [], focusData: data, nodeTypeUri,
