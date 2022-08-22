@@ -346,8 +346,8 @@ export default class GraphNode {
       Object.keys(this.properties).forEach(propUri => {
         const propType = TypeDictionary.getType(propUri);
         if (propType.isAssociation) {
-          const associated = this.properties[propType];
-          if (associated === node || (Array.isArray(associated) && associated.contains(node))) {
+          const associated = this.properties[propUri];
+          if (associated === node || (Array.isArray(associated) && associated.includes(node))) {
             this.removeAssociation(propType, node);
           }
         }
