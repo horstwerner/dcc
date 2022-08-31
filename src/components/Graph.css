@@ -5,3 +5,10 @@
     width: 10px;
     height: 10px;
 }
+.lane {
+    position: absolute;
+    transform-origin: 0 0;
+    font-size: 12px;
+    padding: 8px;
+    box-sizing: border-box;
+}

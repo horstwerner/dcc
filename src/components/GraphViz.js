@@ -16,7 +16,9 @@ import {CLICK_OPAQUE, DEFAULT_MUTE_COLOR} from "@/components/Constants";
 import TemplateRegistry from "@/templates/TemplateRegistry";
 import {createPreprocessedCardNode, Link} from "@/components/Generators";
 import PathParser from "@symb/PathParser";
-import {traverse} from "@/graph/Cache";
+import {resolveAttribute, traverse} from "@/graph/Cache";
+import mapValues from "lodash/mapValues";
+import {Div_} from "@symb/Div";
 
 const LANE_BREAK_THRESHOLD = 8;
 
@@ -104,6 +106,87 @@ const createSvgPath = function createSvgPath(line, dist) {
   return Path_({d, style: {fill: 'none', stroke: color, strokeWidth: 2}})._Path;
 }
 
+const layoutSimpleLane = function layoutSimpleLanes(lanes, laneIdx, childW, xStep, netLaneH, rasterH, childH, vizNodesByKey, viewName) {
+
+    const staggered = lanes.length > LANE_BREAK_THRESHOLD;
+
+    const lane = lanes[laneIdx];
+
+    const xCursor = childW + laneIdx * xStep +
+      (laneIdx === 0 && staggered ? 0.25 * childW : 0) -
+      (laneIdx === lanes.length - 1 && staggered ? 0.25 * childW : 0);
+
+    const staggeredXCursor = [
+      xCursor - 0.5 * 1.1 * childW,
+      xCursor + 0.5 * 1.1 * childW,
+    ];
+
+    const laneTerminals = [];
+    let laneChildW = 0;
+    const lanePositions = staggered ? Math.ceil(lane.length / 2) + (lane.length % 2 === 0 ? 0.5 : 0) : lane.length;
+    let yCursor = Math.max(0, (netLaneH - rasterH * (lanePositions - 1)) / 2) + 0.5 * childH;
+    const yStep = rasterH;
+    lane.forEach(node => {
+      node.rank = sum(node.inEdges.map(edge => get(vizNodesByKey[edge.sourceKey], 'pos.y'))) / (node.inEdges.length || 1);
+    });
+    lane.sort((a, b) => a.rank - b.rank);
+    let count = 0;
+
+    lane.forEach(node => {
+      node.laneIdx = laneIdx;
+      const offset = count++ % 2;
+      if (!staggered) {
+        node.pos = {x: xCursor, y: yCursor};
+      } else {
+        node.pos = {x: staggeredXCursor[offset], y: yCursor + 0.5 * offset * yStep}
+      }
+      yCursor += yStep * (staggered ? offset : 1);
+
+      node.terminals = laneTerminals;
+      node.template = TemplateRegistry.getTemplateForSingleCard(node.graphNode.getTypeUri(), viewName || 'default');
+      const {width, height} = node.template.getSize();
+      node.spatial = fit(childW, childH, width, height, node.pos.x - 0.5 * childW, node.pos.y - 0.5 * childH);
+      laneChildW = Math.max(laneChildW, node.spatial.scale * width);
+    });
+
+    laneTerminals[0] = (staggered ? staggeredXCursor[0] : xCursor) - 0.6 * laneChildW;
+    laneTerminals[1] = (staggered ? staggeredXCursor[1] : xCursor) + 0.6 * laneChildW;
+
+}
+
+const layoutSwimLanes = function layoutSwimLanes(lane, laneIdx, swimLanePosY, childW, xStep, netLaneH, rasterH, childH, vizNodesByKey, viewName) {
+
+    const xCursor = childW + laneIdx * xStep + xStep;
+    const swimLaneYCursor = mapValues(swimLanePosY, y =>  y * rasterH + 0.5 * childH);
+
+    const laneTerminals = [];
+    let laneChildW = 0;
+
+
+    lane.forEach(node => {
+      node.rank = sum(node.inEdges.map(edge => get(vizNodesByKey[edge.sourceKey], 'pos.y'))) / (node.inEdges.length || 1);
+    });
+    lane.sort((a, b) => a.rank - b.rank);
+
+    lane.forEach(node => {
+      node.laneIdx = laneIdx;
+
+      node.pos = {x: xCursor, y: swimLaneYCursor[node.swimLane]};
+
+      swimLaneYCursor[node.swimLane] += rasterH;
+
+      node.terminals = laneTerminals;
+      node.template = TemplateRegistry.getTemplateForSingleCard(node.graphNode.getTypeUri(), viewName || 'default');
+      const { width, height } = node.template.getSize();
+      node.spatial = fit(childW, childH, width, height, node.pos.x - 0.5 * childW, node.pos.y - 0.5 * childH);
+      laneChildW = Math.max(laneChildW, node.spatial.scale * width);
+    });
+
+    laneTerminals[0] = xCursor - 0.6 * laneChildW;
+    laneTerminals[1] = xCursor + 0.6 * laneChildW;
+
+}
+
 const GRAPH_VIZ = 'graph-viz';
 
 class GraphViz extends Component {
@@ -122,13 +205,14 @@ class GraphViz extends Component {
     viewName: P.string,
     muteColor: P.string,
     edgeColor: P.string,
-    edgeAnnotations: P.arrayOf(P.shape({pointsRight: P.bool, helpTemplate: P.string}))
+    edgeAnnotations: P.arrayOf(P.shape({pointsRight: P.bool, helpTemplate: P.string})),
+    swimLanes: P.string
   }
 
   createChildDescriptors(props) {
 
     const {startNodes, scope, w, h, nodeAspectRatio, path, viewName, onNodeClick, highlightCondition, muteColor,
-      edgeColor, edgeAnnotations} = props;
+      edgeColor, edgeAnnotations, swimLanes} = props;
 
     if (!startNodes) return null;
 
@@ -141,6 +225,7 @@ class GraphViz extends Component {
     const vizNodesByKey = traverseGraph(startNodes, scopeKeys, path);
     const depth = Math.max(...Object.values(vizNodesByKey).map(node => node.depth));
 
+    // vertical lanes, not swimlanes
     let lanes = [];
     for (let i = 0; i <= depth; i++) {
       lanes[i] = [];
@@ -149,10 +234,34 @@ class GraphViz extends Component {
     vizNodes.forEach(vizNode => lanes[vizNode.depth].push(vizNode));
     lanes = lanes.filter(lane => lane && lane.length > 0);
 
-    let maxNodesPerLane = Math.max(...lanes.map(lane => (lane.length > LANE_BREAK_THRESHOLD ? Math.ceil(lane.length / 2) : lane.length)));
+    // horizontal lanes
+    let swimLaneHeight;
+    let swimLanePosY = {};
+    if (swimLanes) {
+      const swimLaneHeights = {};
+      for (let vNode of vizNodes) {
+        vNode.swimLane = String(resolveAttribute(vNode.graphNode, swimLanes) || 'none');
+        if (!swimLaneHeights[vNode.swimLane]) {
+          swimLaneHeights[vNode.swimLane] = [];
+        }
+        swimLaneHeights[vNode.swimLane][vNode.depth] = (swimLaneHeights[vNode.swimLane][vNode.depth] || 0) + 1;
+      }
+      swimLaneHeight = mapValues(swimLaneHeights, heights => Math.max(...(heights.filter(Boolean))));
+      for (let laneName of Object.keys(swimLaneHeights)) {
+
+      }
+    }
+
+    const maxNodesPerLane =
+      swimLanes
+        ? Object.values(swimLaneHeight).reduce((sum, count) => sum + count, 0)
+        : Math.max(...lanes.map(lane => (lane.length > LANE_BREAK_THRESHOLD
+          ? Math.ceil(lane.length / 2)
+          : lane.length)))
+    ;
 
     const maxChildH = 0.8 * h / (maxNodesPerLane + 1);
-    const maxChildW = 0.5 * w / (lanes.length || 1);
+    const maxChildW = 0.5 * w / (lanes.length + swimLanes ? 1 : 0 || 1);
     const maxAR = maxChildW / (maxChildH || 1);
     let childW, childH;
     const childAR = nodeAspectRatio || 1;
@@ -167,52 +276,32 @@ class GraphViz extends Component {
     const netLaneH = h - childH;
     const rasterH = netLaneH / maxNodesPerLane;
 
-    const xStep = (w - 2 * childW) / ((lanes.length - 1) || 1);
+    const swimLaneOrder = Object.keys(swimLaneHeight).sort();
+
+    const children = [];
+    if (swimLanes) {
+      let y = 0;
+      for (let key of swimLaneOrder) {
+        swimLanePosY[key] = y;
+        y += swimLaneHeight[key];
+      }
+      const col = ['#E0E0E0','rgba(0,0,0,0)'];
+      let colIdx = 0;
+      for (let key of swimLaneOrder) {
+        children.push(Div_({className: graphCss.lane, spatial: {x: 0, y: swimLanePosY[key] * rasterH, scale: 1}, size: {width: w, height: swimLaneHeight[key] * rasterH}, style: {backgroundColor: col[colIdx]}}, key)._Div)
+        colIdx = 1 - colIdx;
+      }
+    }
+
+    const xStep = (w - 2 * childW) / ((lanes.length + (swimLanes ? 1 : 0) - 1) || 1);
 
     for (let laneIdx = 0; laneIdx < lanes.length; laneIdx++) {
       const lane = lanes[laneIdx];
-      const staggered = lane.length > LANE_BREAK_THRESHOLD;
-
-      const xCursor = childW + laneIdx * xStep +
-          (laneIdx === 0 && staggered ? 0.25 * childW : 0) -
-          (laneIdx === lanes.length - 1 && staggered ? 0.25 * childW : 0);
-
-      const staggeredXCursor = [
-        xCursor - 0.5 * 1.1 * childW,
-        xCursor + 0.5 * 1.1 * childW,
-      ];
-
-      const laneTerminals = [];
-      let laneChildW = 0;
-      const lanePositions = staggered ? Math.ceil(lane.length / 2) + (lane.length % 2 === 0 ? 0.5 : 0)  : lane.length;
-      let yCursor = Math.max(0, (netLaneH - rasterH * (lanePositions - 1)) / 2) + 0.5 * childH;
-      const yStep = rasterH; //netLaneH / ((lane.length - 1) || 1);
-      lane.forEach(node => {
-        node.rank = sum(node.inEdges.map(edge => get(vizNodesByKey[edge.sourceKey],'pos.y'))) / (node.inEdges.length || 1);
-      });
-      lane.sort((a, b) => a.rank - b.rank);
-      let count = 0;
-
-      lane.forEach(node => {
-        node.laneIdx = laneIdx;
-        const offset = count++ % 2;
-        if (!staggered) {
-          node.pos = {x: xCursor, y: yCursor};
-        } else  {
-          node.pos = {x: staggeredXCursor[offset], y: yCursor + 0.5 * offset * yStep}
-        }
-        yCursor += yStep * (staggered ? offset : 1);
-
-        node.terminals = laneTerminals;
-        node.template = TemplateRegistry.getTemplateForSingleCard(node.graphNode.getTypeUri(), viewName || 'default');
-        const { width, height } = node.template.getSize();
-        node.spatial = fit(childW, childH, width, height, node.pos.x - 0.5 * childW, node.pos.y - 0.5 * childH);
-        laneChildW = Math.max(laneChildW, node.spatial.scale * width);
-      });
-
-      laneTerminals[0] = (staggered ? staggeredXCursor[0]: xCursor) - 0.6 * laneChildW;
-      laneTerminals[1] = (staggered ? staggeredXCursor[1]: xCursor) + 0.6 * laneChildW;
-
+      if (swimLanes) {
+        layoutSwimLanes(lane, laneIdx, swimLanePosY, childW, xStep, netLaneH, rasterH, childH, vizNodesByKey, viewName);
+      } else {
+        layoutSimpleLane(lanes, laneIdx, childW, xStep, netLaneH, rasterH, childH, vizNodesByKey, viewName);
+      }
     }
 
     const lines = [];
@@ -250,7 +339,6 @@ class GraphViz extends Component {
     });
 
     const roundDist = 0.07 * childW;
-    const children = [];
     children.push(Svg_({style:{pointerEvents: 'none'}, width: w, height: h, children: lines.map(line => createSvgPath(line, roundDist))
     })._Svg);
 
@@ -288,6 +376,8 @@ class GraphViz extends Component {
 
     return children;
   }
+
+
 }
 
 ComponentFactory.registerType(GraphViz);
