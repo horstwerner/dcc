@@ -443,10 +443,12 @@
           "inputSelector": {"jira:release": "=1.2"},
           "bounded": false,
           "chartType": "graph",
-          "x": 20, "y": 20, "w": 680, "h": 480,
+          "x": 20, "y": 60, "w": 660, "h": 440,
           "swimLanes": "jira:team",
           "path": "jira:is-prerequisite-for[jira:ticket]*",
-          "edgeAnnotations": [{"pointsRight":  true, "helpTemplate":  "relDependsOn"}],
+          "edgeAnnotations": [{"pointsRight":  true, "helpTemplate":  "relDependsOn",
+            "toolTip": "depends on"
+          }],
           "viewName": "$view"
         },
         {

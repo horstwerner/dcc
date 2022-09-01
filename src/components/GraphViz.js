@@ -205,7 +205,7 @@ class GraphViz extends Component {
     viewName: P.string,
     muteColor: P.string,
     edgeColor: P.string,
-    edgeAnnotations: P.arrayOf(P.shape({pointsRight: P.bool, helpTemplate: P.string})),
+    edgeAnnotations: P.arrayOf(P.shape({pointsRight: P.bool, helpTemplate: P.string, toolTip: P.string})),
     swimLanes: P.string
   }
 
@@ -247,9 +247,6 @@ class GraphViz extends Component {
         swimLaneHeights[vNode.swimLane][vNode.depth] = (swimLaneHeights[vNode.swimLane][vNode.depth] || 0) + 1;
       }
       swimLaneHeight = mapValues(swimLaneHeights, heights => Math.max(...(heights.filter(Boolean))));
-      for (let laneName of Object.keys(swimLaneHeights)) {
-
-      }
     }
 
     const maxNodesPerLane =
@@ -285,10 +282,10 @@ class GraphViz extends Component {
         swimLanePosY[key] = y;
         y += swimLaneHeight[key];
       }
-      const col = ['#E0E0E0','rgba(0,0,0,0)'];
+      const laneClass = [graphCss.lane1, graphCss.lane2];
       let colIdx = 0;
       for (let key of swimLaneOrder) {
-        children.push(Div_({className: graphCss.lane, spatial: {x: 0, y: swimLanePosY[key] * rasterH, scale: 1}, size: {width: w, height: swimLaneHeight[key] * rasterH}, style: {backgroundColor: col[colIdx]}}, key)._Div)
+        children.push(Div_({className: laneClass[colIdx], spatial: {x: 0, y: swimLanePosY[key] * rasterH, scale: 1}, size: {width: w, height: swimLaneHeight[key] * rasterH}}, key)._Div)
         colIdx = 1 - colIdx;
       }
     }
@@ -344,7 +341,7 @@ class GraphViz extends Component {
 
     if (edgeAnnotations) {
       for (let {points, centerIdx, segmentIndex, key} of lines) {
-        const {pointsRight, helpTemplate} = edgeAnnotations[segmentIndex];
+        const {pointsRight, helpTemplate, toolTip} = edgeAnnotations[segmentIndex];
         const p1 = points[centerIdx];
         const p2 = points[centerIdx + 1];
         const size = 10;
@@ -360,6 +357,7 @@ class GraphViz extends Component {
           image: 'public/EdgeArrow.svg',
           className: graphCss.edgeArrow,
           rotate: angle,
+          title: toolTip,
           templateId: helpTemplate
         })
         children.push(arrow);

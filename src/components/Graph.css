@@ -5,10 +5,19 @@
     width: 10px;
     height: 10px;
 }
-.lane {
+.lane1, .lane2 {
     position: absolute;
     transform-origin: 0 0;
-    font-size: 12px;
+    font-size: 10px;
     padding: 8px;
     box-sizing: border-box;
+    color: rgba(80,80,80,0.8);
+}
+
+.lane2 {
+    background-color: rgba(0,0,0,0);
+}
+
+.lane1 {
+    background-color: rgba(128,128,128,0.25);
 }
