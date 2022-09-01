@@ -294,10 +294,9 @@ class GraphViz extends Component {
     const netLaneH = h - childH;
     const rasterH = netLaneH / maxNodesPerLane;
 
-    const swimLaneOrder = Object.keys(swimLaneHeight).sort();
-
     const children = [];
     if (swimLanes) {
+      const swimLaneOrder = Object.keys(swimLaneHeight).sort();
       let y = 0;
       for (let key of swimLaneOrder) {
         swimLanePosY[key] = y;
