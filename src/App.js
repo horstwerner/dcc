@@ -26,7 +26,7 @@ import {
   getClientConfig,
   getData,
   getDictionary,
-  getParameterizedUrl,
+  getParameterizedDataUrl,
   getToolDescriptors
 } from "@/Data";
 import {createFilterControl, updatedToolControl} from "@/Tools";
@@ -186,7 +186,7 @@ class App extends Component {
       const {protocol, host} = window.location;
       url = `${(protocol === 'https:' ? 'wss' : 'ws')}://${host}${url}`;
     }
-    this.ws = new WebSocket(getParameterizedUrl(url));
+    this.ws = new WebSocket(getParameterizedDataUrl(url));
     this.ws.onopen = this.onWSOpen;
     this.ws.onclose = this.onWSClose;
     this.ws.onmessage = this.onWSMessage;
