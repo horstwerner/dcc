@@ -37,6 +37,7 @@ const polarPropTypes = {
 const graphPropTypes = {
   source: P.string.isRequired,
   path: P.string.isRequired,
+  swimLanes: P.string,
   viewName: P.string,
   nodeAspectRatio: P.number,
   bounded: P.bool,

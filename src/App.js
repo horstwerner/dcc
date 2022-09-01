@@ -26,7 +26,7 @@ import {
   getClientConfig,
   getData,
   getDictionary,
-  getParameterizedUrl,
+  getParameterizedDataUrl,
   getToolDescriptors
 } from "@/Data";
 import {createFilterControl, updatedToolControl} from "@/Tools";
@@ -186,7 +186,7 @@ class App extends Component {
       const {protocol, host} = window.location;
       url = `${(protocol === 'https:' ? 'wss' : 'ws')}://${host}${url}`;
     }
-    this.ws = new WebSocket(getParameterizedUrl(url));
+    this.ws = new WebSocket(getParameterizedDataUrl(url));
     this.ws.onopen = this.onWSOpen;
     this.ws.onclose = this.onWSClose;
     this.ws.onmessage = this.onWSMessage;
@@ -574,8 +574,13 @@ class App extends Component {
     const {windowWidth, windowHeight} = this.state;
     let reference = this.startUrl;
     if (GraphNode.isGraphNode(data)) {
-      const appendix = {data: data.getReference(), template: focusCard.template.id};
-      reference = `${this.startUrl}#${encodeURI(btoa(JSON.stringify(appendix)))}`;
+      const dataRef = data.getReference();
+      if (dataRef) {
+        const appendix = {data: dataRef, template: focusCard.template.id};
+        reference = `${this.startUrl}#${encodeURI(btoa(JSON.stringify(appendix)))}`;
+      } else {
+        reference = null;
+      }
     }
 
     return { views, tools, activeTools, toolControls, currentFilters: [], focusData: data, nodeTypeUri,

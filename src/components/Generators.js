@@ -143,11 +143,11 @@ export const Caption = function Caption(props) {
 }
 
 export const Link = function Link(props) {
-  const {key, x, y, w, h, text, image, className, style, url, templateId, modal, modalWidth, modalHeight, rotate} = props;
+  const {key, x, y, w, h, text, image, className, style, url, templateId, modal, modalWidth, modalHeight, rotate, title} = props;
 
   const child = text ? Div_({key: 'button', size:{width: w, height: h},
       style: calcStyle({'font-size': h, ...style})}, text)._Div :
-    Image_({key: 'icon', className, source: image, width: w, height: h, cornerRadius: style && style.cornerRadius})._Image
+    Image_({key: 'icon', className, source: image, title, width: w, height: h, cornerRadius: style && style.cornerRadius})._Image
 
   return Link_({key, className, spatial: {x, y, scale: 1, rotate}, url, modal: !!modal, templateId, modalWidth, modalHeight}, child)._Link
 }

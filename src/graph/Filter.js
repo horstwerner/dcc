@@ -102,7 +102,7 @@ export default class Filter {
   }
 
   process(source) {
-    if (GraphNode.isGraphNode(source) === GraphNode) {
+    if (GraphNode.isGraphNode(source)) {
       return this.matches(source) ? [source] : [];
     } else if (Array.isArray(source)) {
       return source.filter(this.matches);
