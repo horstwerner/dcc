@@ -12,7 +12,7 @@ import {Svg_} from "@/components/Svg";
 import P from "prop-types";
 import GraphNode from "@/graph/GraphNode";
 import ComponentFactory from "@symb/ComponentFactory";
-import {CLICK_OPAQUE, DEFAULT_MUTE_COLOR} from "@/components/Constants";
+import {CLICK_OPAQUE} from "@/components/Constants";
 import TemplateRegistry from "@/templates/TemplateRegistry";
 import {createPreprocessedCardNode, Link} from "@/components/Generators";
 import PathParser from "@symb/PathParser";
@@ -187,6 +187,28 @@ const layoutSwimLanes = function layoutSwimLanes(lane, laneIdx, swimLanePosY, ch
 
 }
 
+const createEdgeAnnotation = function createEdgeAnnotation ({key, points, centerIdx, pointsRight, helpTemplate, toolTip}) {
+
+  const p1 = points[centerIdx];
+  const p2 = points[centerIdx + 1];
+  const size = 10;
+  const centerP = centerPoint(p1, p2);
+  let angle = 180 * directionAngle(p1, p2) / Math.PI;
+  if (!pointsRight) {
+    angle = angle + 180;
+  }
+  return Link({
+    key,
+    modal: true,
+    x: centerP.x -0.5 * size, y: centerP.y - 0.5 * size, w: size, h: size,
+    image: 'public/EdgeArrow.svg',
+    className: graphCss.edgeArrow,
+    rotate: angle,
+    title: toolTip,
+    templateId: helpTemplate
+  });
+}
+
 const GRAPH_VIZ = 'graph-viz';
 
 class GraphViz extends Component {
@@ -203,7 +225,6 @@ class GraphViz extends Component {
     h: P.number.isRequired,
     nodeAspectRatio: P.number,
     viewName: P.string,
-    muteColor: P.string,
     edgeColor: P.string,
     edgeAnnotations: P.arrayOf(P.shape({pointsRight: P.bool, helpTemplate: P.string, toolTip: P.string})),
     swimLanes: P.string
@@ -211,7 +232,7 @@ class GraphViz extends Component {
 
   createChildDescriptors(props) {
 
-    const {startNodes, scope, w, h, nodeAspectRatio, path, viewName, onNodeClick, highlightCondition, muteColor,
+    const {startNodes, scope, w, h, nodeAspectRatio, path, viewName, onNodeClick, highlightCondition,
       edgeColor, edgeAnnotations, swimLanes} = props;
 
     if (!startNodes) return null;
@@ -301,7 +322,10 @@ class GraphViz extends Component {
       }
     }
 
+    const frontLayerChildren = [];
+    const backLayerChildren = [];
     const lines = [];
+    const mutedLines = [];
     // ####################### C R E A T E   E D G E S #################################################
     vizNodes.forEach(vizNode => {
       if (!vizNode.outEdges) return;
@@ -330,47 +354,41 @@ class GraphViz extends Component {
           ];
           centerIdx = 2;
         }
-        const color = (startMuted || targetMuted) ? muteColor || DEFAULT_MUTE_COLOR : edgeColor || EDGE_COLOR;
-        lines.push({points, centerIdx, color, segmentIndex, key: `${vizNode.graphNode.getUniqueKey()}->${targetKey}`});
+        const key = `${vizNode.graphNode.getUniqueKey()}->${targetKey}`;
+        const color = edgeColor || EDGE_COLOR;
+        ((startMuted || targetMuted) ? mutedLines : lines)
+          .push({points, centerIdx, color, segmentIndex, key});
+
+        if (edgeAnnotations) {
+          const {pointsRight, helpTemplate, toolTip} = edgeAnnotations[segmentIndex];
+          ((startMuted || targetMuted) ? backLayerChildren : frontLayerChildren)
+            .push(createEdgeAnnotation({key, points, centerIdx, pointsRight, toolTip, helpTemplate}));
+        }
       });
     });
 
     const roundDist = 0.07 * childW;
-    children.push(Svg_({style:{pointerEvents: 'none'}, width: w, height: h, children: lines.map(line => createSvgPath(line, roundDist))
+    frontLayerChildren.unshift(Svg_({style:{pointerEvents: 'none'}, width: w, height: h,
+      children: lines.map(line => createSvgPath(line, roundDist))
     })._Svg);
-
-    if (edgeAnnotations) {
-      for (let {points, centerIdx, segmentIndex, key} of lines) {
-        const {pointsRight, helpTemplate, toolTip} = edgeAnnotations[segmentIndex];
-        const p1 = points[centerIdx];
-        const p2 = points[centerIdx + 1];
-        const size = 10;
-        const centerP = centerPoint(p1, p2);
-        let angle = 180 * directionAngle(p1, p2) / Math.PI;
-        if (!pointsRight) {
-          angle = angle + 180;
-        }
-        const arrow = Link({
-          key,
-          modal: true,
-          x: centerP.x -0.5 * size, y: centerP.y - 0.5 * size, w: size, h: size,
-          image: 'public/EdgeArrow.svg',
-          className: graphCss.edgeArrow,
-          rotate: angle,
-          title: toolTip,
-          templateId: helpTemplate
-        })
-        children.push(arrow);
-      }
+    if (highlightCondition) {
+      backLayerChildren.unshift(Svg_({style:{pointerEvents: 'none'}, width: w, height: h,
+        children: mutedLines.map(line => createSvgPath(line, roundDist))
+      })._Svg);
     }
 
     vizNodes.forEach(vizNode => {
       const cardNode = createPreprocessedCardNode(vizNode.graphNode, createContext(), vizNode.template, null);
       const {spatial, template} = vizNode;
       const deEmphasized = highlightCondition && !highlightCondition.matches(cardNode);
-      const deEmphasizeColor = deEmphasized && (muteColor || DEFAULT_MUTE_COLOR);
-      children.push(Card_({key: cardNode.getUniqueKey(), data: cardNode, template, onClick: onNodeClick, clickMode: CLICK_OPAQUE, spatial, deEmphasizeColor})._Card)
+      (deEmphasized ? backLayerChildren : frontLayerChildren)
+        .push(Card_({key: cardNode.getUniqueKey(), data: cardNode, template, onClick: onNodeClick, clickMode: CLICK_OPAQUE, spatial})._Card)
     });
+
+    if (highlightCondition) {
+      children.push(Div_({key: 'backLayer', className: graphCss.backLayer}, backLayerChildren)._Div)
+    }
+    children.push(Div_({key: 'frontLayer', className: graphCss.layer}, frontLayerChildren));
 
     return children;
   }

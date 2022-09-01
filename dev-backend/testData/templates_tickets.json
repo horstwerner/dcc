@@ -438,7 +438,6 @@
         {
           "key": "graph",
           "type": "chart",
-          "muteColor": "#EAEAEA",
           "source": "core:subNodes",
           "inputSelector": {"jira:release": "=1.2"},
           "bounded": false,

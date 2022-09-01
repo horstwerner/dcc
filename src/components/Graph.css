@@ -19,5 +19,15 @@
 }
 
 .lane1 {
-    background-color: rgba(128,128,128,0.25);
+    background-color: rgba(128,128,128,0.2);
+}
+
+.layer, .backLayer {
+    position: absolute;
+    transform-origin: 0 0;
+}
+
+.backLayer {
+    opacity: 0.15;
+    pointer-events: none;
 }
