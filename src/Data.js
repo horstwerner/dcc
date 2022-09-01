@@ -127,7 +127,7 @@ export const getCardDescriptors = function (onError) {
 }
 
 export const getCardDescriptorsFromDb = function (onError) {
-  return fetch('/api/templates')
+  return fetch(getParameterizedTemplateUrl('/api/templates'))
       .then(handleResponse)
       .then(result => {
         const {constants, cards} = result.data;
@@ -141,6 +141,24 @@ export const getCardDescriptorsFromDb = function (onError) {
         onError(error.message);
       });
 };
+
+export const getParameterizedTemplateUrl = function getParameterizedUrl(baseUrl) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const templateParams = {};
+  urlParams.forEach((value, key) => {
+    if (key.startsWith('templates-')) {
+      templateParams[key.substr('templates-'.length)] = value;
+    }
+  });
+
+  const templateParamKeys = Object.keys(templateParams);
+  if (templateParamKeys.length > 0) {
+    const queryParts = templateParamKeys.map(key => `${key}=${encodeURIComponent(templateParams[key])}`);
+    return `${baseUrl}?${queryParts.join('&')}`;
+  } else {
+    return baseUrl;
+  }
+}
 
 export const getToolDescriptors = function (onError) {
   return OFFLINE_MODE ? getToolDescriptorsOffline(onError) : getToolDescriptorsFromDb(onError);
@@ -183,7 +201,7 @@ export const fetchSubGraph = function fetchSubGraph(queryUrl, entryPointType, en
   });
 }
 
-export const getParameterizedUrl = function getParameterizedUrl(baseUrl) {
+export const getParameterizedDataUrl = function getParameterizedUrl(baseUrl) {
   const {getGraph} = getConfigs(['getGraph']);
   const graphParams = (typeof getGraph === 'object') ? getGraph : {};
   const urlParams = new URLSearchParams(window.location.search);
@@ -211,7 +229,7 @@ export const getDataFromDB = function(onError) {
    */
   const result = [];
   if (getGraph) {
-    const queryUrl = getParameterizedUrl('/api/graph');
+    const queryUrl = getParameterizedDataUrl('/api/graph');
     result.push(fetchSubGraph(queryUrl,null, null, onError));
   }
 
