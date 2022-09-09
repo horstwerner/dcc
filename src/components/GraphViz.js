@@ -108,12 +108,12 @@ const createSvgPath = function createSvgPath(line, dist) {
 
 const layoutSimpleLane = function layoutSimpleLanes(lanes, laneIdx, childW, xStep, netLaneH, rasterH, childH, vizNodesByKey, viewName) {
 
-    const staggered = lanes.length > LANE_BREAK_THRESHOLD;
 
     const lane = lanes[laneIdx];
+    const staggered = lane.length > LANE_BREAK_THRESHOLD;
 
-    const xCursor = childW + laneIdx * xStep +
-      (laneIdx === 0 && staggered ? 0.25 * childW : 0) -
+
+  const xCursor = 1.25 * childW + laneIdx * xStep -
       (laneIdx === lanes.length - 1 && staggered ? 0.25 * childW : 0);
 
     const staggeredXCursor = [
@@ -157,7 +157,7 @@ const layoutSimpleLane = function layoutSimpleLanes(lanes, laneIdx, childW, xSte
 const layoutSwimLanes = function layoutSwimLanes(lane, laneIdx, swimLanePosY, childW, xStep, netLaneH, rasterH, childH, vizNodesByKey, viewName) {
 
     const xCursor = childW + laneIdx * xStep + xStep;
-    const swimLaneYCursor = mapValues(swimLanePosY, y =>  y * rasterH + 0.5 * childH);
+    const swimLaneYCursor = mapValues(swimLanePosY, y =>  y * rasterH + 0.85   * childH);
 
     const laneTerminals = [];
     let laneChildW = 0;
@@ -279,7 +279,7 @@ class GraphViz extends Component {
     ;
 
     const maxChildH = 0.8 * h / (maxNodesPerLane + 1);
-    const maxChildW = 0.5 * w / (lanes.length + swimLanes ? 1 : 0 || 1);
+    const maxChildW = 0.4 * w / ((lanes.length + (swimLanes ? 1 : 0)) || 1);
     const maxAR = maxChildW / (maxChildH || 1);
     let childW, childH;
     const childAR = nodeAspectRatio || 1;
@@ -387,7 +387,7 @@ class GraphViz extends Component {
     if (highlightCondition) {
       children.push(Div_({key: 'backLayer', className: graphCss.backLayer}, backLayerChildren)._Div)
     }
-    children.push(Div_({key: 'frontLayer', className: graphCss.layer}, frontLayerChildren));
+    children.push(Div_({key: 'frontLayer', className: graphCss.layer}, frontLayerChildren)._Div);
 
     return children;
   }

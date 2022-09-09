@@ -540,6 +540,7 @@ class App extends Component {
     if (DEBUG_MODE && GraphNode.isGraphNode(data)) {
       console.log(`----------------------------------------------------------`);
       console.log(`focus data is ${data.getSummary()}`);
+      console.log(`is synthetic? ${data.isSyntheticNode()}`);
       console.log(`\nTemplate is ${focusCard.template.id}`);
     }
 
