@@ -229,6 +229,9 @@ export default class GraphNode {
   }
 
   isSyntheticNode() {
+    if (this.originalNode) {
+      return this.originalNode.isSyntheticNode();
+    }
     return this.isSynthetic;
   }
 
