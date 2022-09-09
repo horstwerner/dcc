@@ -227,13 +227,14 @@ class GraphViz extends Component {
     viewName: P.string,
     edgeColor: P.string,
     edgeAnnotations: P.arrayOf(P.shape({pointsRight: P.bool, helpTemplate: P.string, toolTip: P.string})),
-    swimLanes: P.string
+    swimLanes: P.string,
+    removeDisconnected: P.bool
   }
 
   createChildDescriptors(props) {
 
     const {startNodes, scope, w, h, nodeAspectRatio, path, viewName, onNodeClick, highlightCondition,
-      edgeColor, edgeAnnotations, swimLanes} = props;
+      edgeColor, edgeAnnotations, swimLanes, removeDisconnected} = props;
 
     if (!startNodes) return null;
 
@@ -251,7 +252,9 @@ class GraphViz extends Component {
     for (let i = 0; i <= depth; i++) {
       lanes[i] = [];
     }
-    const vizNodes = Object.values(vizNodesByKey);
+    const vizNodes = removeDisconnected
+      ?  Object.values(vizNodesByKey).filter(vN => vN.inEdges.length + vN.outEdges.length)
+      : Object.values(vizNodesByKey);
     vizNodes.forEach(vizNode => lanes[vizNode.depth].push(vizNode));
     lanes = lanes.filter(lane => lane && lane.length > 0);
 
