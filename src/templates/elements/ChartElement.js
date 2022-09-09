@@ -41,7 +41,9 @@ const graphPropTypes = {
   viewName: P.string,
   nodeAspectRatio: P.number,
   bounded: P.bool,
-  muteColor: P.string
+  edgeColor: P.string,
+  edgeAnnotations: P.arrayOf(P.shape({pointsRight: P.bool, helpTemplate: P.string, toolTip: P.string})),
+  removeDisconnected: P.bool
 }
 
 const commonPropTypes = {
