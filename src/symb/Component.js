@@ -18,7 +18,7 @@ export function setStyle(dom, style) {
 
 }
 
-const DEFAULT_SPATIAL = {x: 0, y: 0, scale: 1};
+export const DEFAULT_SPATIAL = {x: 0, y: 0, scale: 1};
 
 export default class Component {
 
@@ -63,6 +63,10 @@ export default class Component {
     this.dom.setAttribute('data-key', props.key);
     this.alpha = 1;
     this.renderStateChange = this.renderStateChange.bind(this);
+  }
+
+  hasClickHandler() {
+    return this.parent && this.parent.hasClickHandler() || false;
   }
 
   checkProps(props) {

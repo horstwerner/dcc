@@ -23,6 +23,7 @@ import {BLANK_NODE_URI} from "@/components/Constants";
 import GraphNode from "@/graph/GraphNode";
 import Filter from "@/graph/Filter";
 import {TYPE_CONTEXT, TYPE_NODE_COUNT} from "@/graph/BaseTypes";
+import {Clickable_} from "@/components/Clickable";
 
 export const iconSize = 24;
 export const iconMargin = 6;
@@ -149,7 +150,9 @@ export const Link = function Link(props) {
       style: calcStyle({'font-size': h, ...style})}, text)._Div :
     Image_({key: 'icon', className, source: image, title, width: w, height: h, cornerRadius: style && style.cornerRadius})._Image
 
-  return Link_({key, className, spatial: {x, y, scale: 1, rotate}, url, modal: !!modal, templateId, modalWidth, modalHeight}, child)._Link
+  return url ?
+    Link_({key, className, spatial: {x, y, scale: 1, rotate}, url, modal: !!modal, templateId, modalWidth, modalHeight}, child)._Link :
+    Clickable_({key, className, spatial: {x, y, scale: 1, rotate}, templateId, modalWidth, modalHeight}, child)._Clickable
 }
 
 

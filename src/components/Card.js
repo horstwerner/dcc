@@ -45,8 +45,12 @@ class Card extends Component {
 
     this.dom.className =  hover ? css.hovering : (isClickable && onClick ? css.clickable : css.background);
     if (isClickable) {
-      this.dom.onclick = this.handleCardClick;
-      this.dom.oncontextmenu = this.handleCardClick;
+      if (this.parent && this.parent.hasClickHandler()) {
+        this.dom.whenClicked = this.handleCardClick;
+      } else {
+        this.dom.onclick = this.handleCardClick;
+        this.dom.oncontextmenu = this.handleCardClick;
+      }
     } else if (this.dom.onclick) {
       this.dom.onclick = null;
       this.dom.oncontextmenu = null;
