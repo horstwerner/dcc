@@ -93,7 +93,7 @@ export const getDictionary = function (onError) {
 }
 
 export const getDictionaryFromDb = function (onError) {
-  return fetch('/api/dictionary')
+  return fetch(getParameterizedUrl('/api/dictionary', 'dictionary-'))
       .then(handleResponse)
       .then(result => {
         Cache.importTypes(result.data)})
@@ -127,7 +127,7 @@ export const getCardDescriptors = function (onError) {
 }
 
 export const getCardDescriptorsFromDb = function (onError) {
-  return fetch(getParameterizedTemplateUrl('/api/templates'))
+  return fetch(getParameterizedUrl('/api/templates', 'templates-'))
       .then(handleResponse)
       .then(result => {
         const {constants, cards} = result.data;
@@ -142,12 +142,12 @@ export const getCardDescriptorsFromDb = function (onError) {
       });
 };
 
-export const getParameterizedTemplateUrl = function getParameterizedUrl(baseUrl) {
+export const getParameterizedUrl = function getParameterizedUrl(baseUrl, prefix) {
   const urlParams = new URLSearchParams(window.location.search);
   const templateParams = {};
   urlParams.forEach((value, key) => {
-    if (key.startsWith('templates-')) {
-      templateParams[key.substr('templates-'.length)] = value;
+    if (key.startsWith(prefix)) {
+      templateParams[key.substr(prefix.length)] = value;
     }
   });
 
@@ -165,7 +165,7 @@ export const getToolDescriptors = function (onError) {
 }
 
 export const getToolDescriptorsFromDb = function (onError) {
-  return fetch('/api/tools')
+  return fetch(getParameterizedUrl('/api/tools', 'tools-'))
       .then(handleResponse)
       .then(result => {
         const {tools} = result.data;
