@@ -6,7 +6,7 @@ import StackedBarChart from "@/generators/StackedBarChart";
 import {GraphViz_} from "@/components/GraphViz";
 import {DEBUG_MODE} from "@/Config";
 import {PolarChart_} from "@/components/PolarChart";
-import {getNodeArray, getUnfilteredNodeArray} from "@symb/util";
+import {fit, getNodeArray, getUnfilteredNodeArray} from "@symb/util";
 import GraphNode from "@/graph/GraphNode";
 import {TYPE_NODES} from "@/graph/BaseTypes";
 import {Map_} from "@/components/Map";
@@ -85,11 +85,17 @@ const Chart = function Chart({data, descriptor, onClick, highlightCondition}) {
     case 'graph': {
       const {viewName, nodeAspectRatio} = descriptor;
       const scope = descriptor['bounded'] ? getUnfilteredNodeArray(source, data) : null;
-      const {w, h} = chartProps;
-      return Map_({spatial, size: {width: w, height: h}}, [GraphViz_({
+      const {w, h, canvasW, canvasH, minScale, maxScale} = chartProps;
+      const innerSpatial = fit(w, h, canvasW || w, canvasH || h);
+      return Map_({spatial,
+        innerSpatial,
+        size: {width: w, height: h}, minScale, maxScale},
+        [GraphViz_({
         spatial: DEFAULT_SPATIAL,
         startNodes: chartData,
         scope, ...chartProps,
+        w: canvasW || w,
+        h: canvasH || h,
         viewName,
         nodeAspectRatio,
         highlightCondition,

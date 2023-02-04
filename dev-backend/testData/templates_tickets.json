@@ -443,6 +443,7 @@
           "bounded": false,
           "chartType": "graph",
           "x": 20, "y": 60, "w": 660, "h": 440,
+          "minScale": 0.1, "maxScale": 2,
           "swimLanes": "jira:team",
           "path": "jira:is-prerequisite-for[jira:ticket]*",
           "edgeAnnotations": [{"pointsRight":  true, "helpTemplate":  "relDependsOn",

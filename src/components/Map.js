@@ -19,8 +19,9 @@ class Map extends Component {
 
     constructor(props, parent, domNode) {
       super(props, parent, domNode);
+
       this.state = {
-        transformation: props.startSpatial || DEFAULT_SPATIAL,
+        transformation: props.innerSpatial || DEFAULT_SPATIAL,
         mouseIsDown: false,
         isDragging: false,
         mouseDownPos: {x: 0, y: 0},

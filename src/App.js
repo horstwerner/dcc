@@ -722,16 +722,19 @@ class App extends Component {
       if (value == null) {
         this.setState({highlightInfo: null, highlightMenu: null,  currentViewOptions: newViewOptions, focusCard: originalFocus });
       } else {
+        let nodes = getNodeArray(null, TYPE_NODES, focusCard.data);
         const { reference } = option;
-        const refElement = template.elements.find(el => el.key === reference);
-        if (!refElement) {
-          throw new Error(`Can't find reference element ${reference} in template ${template.id}`);
-        }
-        const {source, path, inputSelector} = refElement;
-        const rootNodes = getNodeArray(inputSelector, source, focusCard.data);
-        const nodes = path ?
+        if (reference) {
+          const refElement = template.elements.find(el => el.key === reference);
+          if (!refElement) {
+            throw new Error(`Can't find reference element ${reference} in template ${template.id}`);
+          }
+          const {source, path, inputSelector} = refElement;
+          const rootNodes = getNodeArray(inputSelector, source, focusCard.data);
+          nodes = path ?
             [...rootNodes, ...traverseWithRecursion(rootNodes, path, LOG_LEVEL_PATHS, '')] :
             rootNodes;
+        }
 
         let newHighlightInfo;
         let newFocusCard;

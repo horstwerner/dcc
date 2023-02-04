@@ -188,6 +188,9 @@ For chart type `graph`:
     are rendered in the graph
   * `nodeAspectRatio` width to height ration of the graph nodes
   * `viewName` name of the template view to be selected for each graph node
+  * `canvasW` and `canvasH` are the width and height of the zoomable canvas on which the graph will be drawn, if omitted, they will be set to the w and h of the chart itself
+  * `minScale` and `maxScale` are the boundaries for the scaling of the graph canvas when the user zooms
+  * `swimLanes` is the name of a property that will be used to group the graph nodes into swim lanes
 
 For chart type `polar`:
   * `dimensions` an array of attribute names
