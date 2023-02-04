@@ -44,17 +44,7 @@ class Card extends Component {
     const isClickable = onClick && (clickMode === CLICK_OPAQUE || (clickMode === CLICK_NORMAL && template.isClickable()));
 
     this.dom.className =  hover ? css.hovering : (isClickable && onClick ? css.clickable : css.background);
-    if (isClickable) {
-      if (this.parent && this.parent.hasClickHandler()) {
-        this.dom.whenClicked = this.handleCardClick;
-      } else {
-        this.dom.onclick = this.handleCardClick;
-        this.dom.oncontextmenu = this.handleCardClick;
-      }
-    } else if (this.dom.onclick) {
-      this.dom.onclick = null;
-      this.dom.oncontextmenu = null;
-    }
+    this.setClickable(isClickable, this.handleCardClick);
 
     if (onMouseEnter) {
       this.dom.onmouseenter = onMouseEnter;

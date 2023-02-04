@@ -302,6 +302,23 @@ export default class Component {
     return props.children || [];
   }
 
+  setClickable(clickable, onClick) {
+    if (clickable) {
+      if (this.parent && this.parent.hasClickHandler()) {
+        this.dom.whenClicked = onClick;
+        // this.dom.onClick = (e) => {e.preventDefault();}
+      } else {
+        this.dom.onclick = onClick;
+        this.dom.oncontextmenu = onClick;
+      }
+    } else if (this.dom.onclick) {
+      this.dom.onclick = null;
+      this.dom.oncontextmenu = null;
+    } else if (this.dom.whenClicked) {
+      this.dom.whenClicked = null;
+    }
+  }
+
   updateStyle(style) {
     if (!this.forceUpdate && isEqual(style, this.style)) return;
     const writeStyle =  (this.style) ? mapValues(this.style, () => '') : {};

@@ -23,7 +23,7 @@ import {BLANK_NODE_URI} from "@/components/Constants";
 import GraphNode from "@/graph/GraphNode";
 import Filter from "@/graph/Filter";
 import {TYPE_CONTEXT, TYPE_NODE_COUNT} from "@/graph/BaseTypes";
-import {Clickable_} from "@/components/Clickable";
+import {InternalLink_} from "@/components/Clickable";
 
 export const iconSize = 24;
 export const iconMargin = 6;
@@ -152,7 +152,7 @@ export const Link = function Link(props) {
 
   return url ?
     Link_({key, className, spatial: {x, y, scale: 1, rotate}, url, modal: !!modal, templateId, modalWidth, modalHeight}, child)._Link :
-    Clickable_({key, className, spatial: {x, y, scale: 1, rotate}, templateId, modalWidth, modalHeight}, child)._Clickable
+    InternalLink_({key, className, spatial: {x, y, scale: 1, rotate}, templateId, modalWidth, modalHeight}, child)._Clickable
 }
 
 

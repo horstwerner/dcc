@@ -4,10 +4,10 @@ import ComponentFactory from "@symb/ComponentFactory"
 import css from "./Link.css";
 import {LINK_EVENT} from "@/components/Link";
 
-const CLICKABLE = 'clickable';
+const INTERNAL_LINK = 'internalLink';
 
-export class Link extends Component {
-  static type = CLICKABLE;
+export class InternalLink extends Component {
+  static type = INTERNAL_LINK;
   static baseTag = 'DIV'
   static className = css.link;
   static propTypes = {
@@ -40,20 +40,14 @@ export class Link extends Component {
     }
     this.dom.target = "_blank";
     this.dom.setAttribute('draggable', 'false');
-    const useWhenClicked = this.parent && this.parent.hasClickHandler();
-    if (useWhenClicked) {
-      this.dom.whenClicked = this.onInternalClick;
-      this.dom.onClick = (e) => {e.preventDefault();}
-    } else {
-      this.dom.onclick = this.onInternalClick;
-    }
-}
+    this.setClickable(true, this.onInternalClick);
+  }
 
   createChildDescriptors(props) {
     return super.createChildDescriptors(props);
   }
 }
 
-ComponentFactory.registerType(Link);
+ComponentFactory.registerType(InternalLink);
 
-export const Clickable_ = (props, children) => ({_Clickable: {type: CLICKABLE, children, ...props}});
+export const InternalLink_ = (props, children) => ({_Clickable: {type: INTERNAL_LINK, children, ...props}});
