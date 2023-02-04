@@ -188,7 +188,12 @@ For chart type `graph`:
     are rendered in the graph
   * `nodeAspectRatio` width to height ration of the graph nodes
   * `viewName` name of the template view to be selected for each graph node
-  * `canvasW` and `canvasH` are the width and height of the zoomable canvas on which the graph will be drawn, if omitted, they will be set to the w and h of the chart itself
+  * `edgeAnnotations` an array with the same length as the number of segments in the traversal path.
+     Each element in this array has a boolean `pointsRight` to indicate the direction of the annotation arrow, a
+     `toolTip` string that is shown when the cursor hovers over the annotation and an optional `helpTemplate` name
+     that indicates the name of the static template shown when the user clicks on the edge annotation
+  * `canvasW` and `canvasH` are the width and height of the zoomable canvas on which the graph will be drawn, if omitted,
+    they will be set to the `w` and `h` of the chart itself
   * `minScale` and `maxScale` are the boundaries for the scaling of the graph canvas when the user zooms
   * `swimLanes` is the name of a property that will be used to group the graph nodes into swim lanes
 
