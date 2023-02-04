@@ -44,10 +44,8 @@ export class Image extends Component {
 
     this.dom.style.width = `${width}px`;
     this.dom.style.height = `${height}px`;
-    if (onClick) {
-      this.dom.onclick = onClick;
-      this.dom.oncontextmenu = onClick;
-    }
+    this.setClickable(!!onClick, onClick);
+
     this.innerProps = {...props};
   }
 

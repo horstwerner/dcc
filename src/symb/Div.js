@@ -14,10 +14,8 @@ export class Div extends Component {
 
   updateDom(props) {
     const { onClick, contentEditable, onFocus, onBlur, onKeyDown, onKeyUp, tabIndex, onMouseEnter, onMouseLeave, title } = props;
-    if (onClick) {
-      this.dom.onclick = onClick;
-      this.dom.oncontextmenu = onClick;
-    }
+    this.setClickable(!!onClick, onClick);
+
     if (contentEditable) {
       this.dom.contentEditable = contentEditable;
     }

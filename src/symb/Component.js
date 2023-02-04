@@ -18,7 +18,7 @@ export function setStyle(dom, style) {
 
 }
 
-const DEFAULT_SPATIAL = {x: 0, y: 0, scale: 1};
+export const DEFAULT_SPATIAL = {x: 0, y: 0, scale: 1};
 
 export default class Component {
 
@@ -63,6 +63,10 @@ export default class Component {
     this.dom.setAttribute('data-key', props.key);
     this.alpha = 1;
     this.renderStateChange = this.renderStateChange.bind(this);
+  }
+
+  hasClickHandler() {
+    return this.parent && this.parent.hasClickHandler() || false;
   }
 
   checkProps(props) {
@@ -296,6 +300,23 @@ export default class Component {
 
   createChildDescriptors(props) {
     return props.children || [];
+  }
+
+  setClickable(clickable, onClick) {
+    if (clickable) {
+      if (this.parent && this.parent.hasClickHandler()) {
+        this.dom.whenClicked = onClick;
+        // this.dom.onClick = (e) => {e.preventDefault();}
+      } else {
+        this.dom.onclick = onClick;
+        this.dom.oncontextmenu = onClick;
+      }
+    } else if (this.dom.onclick) {
+      this.dom.onclick = null;
+      this.dom.oncontextmenu = null;
+    } else if (this.dom.whenClicked) {
+      this.dom.whenClicked = null;
+    }
   }
 
   updateStyle(style) {
