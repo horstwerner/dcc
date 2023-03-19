@@ -84,7 +84,10 @@ const Chart = function Chart({data, descriptor, onClick, highlightCondition}) {
       return StackedBarChart({data: chartData, spatial, totalWidthVal: fillInNumber(data, totalWidthValue), ...chartProps, onRectClick: onClick})
     case 'graph': {
       const {viewName, nodeAspectRatio} = descriptor;
-      const scope = descriptor['bounded'] ? getUnfilteredNodeArray(source, data) : null;
+      let scope = null;
+      if (descriptor['bounded']) {
+        scope = descriptor['bounded'] === 'strict' ? chartData : getUnfilteredNodeArray(source, data);
+      }
       const {w, h, canvasW, canvasH, minScale, maxScale} = chartProps;
       const innerSpatial = fit(w, h, canvasW || w, canvasH || h);
       return Map_({spatial,
