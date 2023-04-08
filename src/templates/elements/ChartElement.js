@@ -44,7 +44,7 @@ const graphPropTypes = {
   minScale: P.number,
   maxScale: P.number,
   nodeAspectRatio: P.number,
-  bounded: P.bool,
+  bounded: P.oneOfType(P.bool, P.string),
   edgeColor: P.string,
   edgeAnnotations: P.arrayOf(P.shape({pointsRight: P.bool, helpTemplate: P.string, toolTip: P.string})),
   removeDisconnected: P.bool
