@@ -443,20 +443,24 @@ export default class Component {
     }
   }
 
-  clearChildren() {
+  clearChildren(willDelete) {
     if (this.childByKey) {
       Object.keys(this.childByKey).forEach(key => {
         if (this.childByKey[key].destroy) {
-          this.childByKey[key].destroy();
+          this.childByKey[key].destroy(willDelete);
         }
       })
     }
     this.childByKey = {};
   }
 
-  destroy() {
-    this.clearChildren();
-    this.dom.remove();
+  destroy(parentDeletes) {
+
+    this.clearChildren(true);
+    if (!parentDeletes) {
+      console.log(`removing ${this.key}`);
+      this.dom.remove();
+    }
     this.dom = null;
   }
 
