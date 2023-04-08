@@ -458,7 +458,6 @@ export default class Component {
 
     this.clearChildren(true);
     if (!parentDeletes) {
-      console.log(`removing ${this.key}`);
       this.dom.remove();
     }
     this.dom = null;
