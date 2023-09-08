@@ -257,6 +257,72 @@
       ]
     },
     {
+      "id": "ticket-dependencies",
+      "name": "Dependencies",
+      "appliesTo": "jira:ticket",
+      "aggregate": false,
+      "size": { "w": 220, "h": 120},
+      "background": { "type": "rect", "w": 220, "h": 120, "cornerRadius": 6},
+      "clickable": true,
+      "colorcoding": {
+        "type": "selection",
+        "attribute": "jira:status",
+        "cases": {
+          "$": "COLOR_BY_STATUS"
+        },
+        "default": {
+          "$": "DEFAULT_TICKET_COLOR"
+        }
+      },
+      "elements": [
+        {
+          "key": "heading",
+          "type": "textfield",
+          "x": 10,
+          "y": 10,
+          "w": 200,
+          "h": 24,
+          "attribute": "core:uri",
+          "style": {
+            "font-weight": "bold",
+            "color": "white",
+            "font-size": "20px",
+            "h-align": "center"
+          }
+        },
+        {
+          "key": "name",
+          "type": "textfield",
+          "x": 8,
+          "y": 44,
+          "w": 200,
+          "h": 32,
+          "attribute": "core:name",
+          "style": {
+            "font-size": "12px",
+            "color": {
+              "$": "TEXT_COLOR"
+            }
+          }
+        },
+        {
+          "key": "depends_on",
+          "type": "textfield",
+          "x": 8,
+          "y": 74,
+          "w": 200,
+          "h": 32,
+          "attribute": "jira:depends-on",
+          "style": {
+            "font-size": "12px",
+            "color": {
+              "$": "TEXT_COLOR"
+            }
+          }
+        }
+      ]
+    },
+    {
       "id": "stories-by-feature",
       "name": "Story Points by...",
       "appliesTo": "jira:ticket",

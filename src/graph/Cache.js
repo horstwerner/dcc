@@ -330,6 +330,10 @@ export const resolve = function (node, path, logLevel, indent) {
 export const resolveAttribute = function (node, path) {
   const result = resolveProperty(node, path, null, null);
 
+  if (Array.isArray(result)) {
+    return result.map(g => GraphNode.isGraphNode(g) ? g.getDisplayName() : String(g)).join(', ');
+  }
+
   // noinspection JSUnresolvedFunction
   return (GraphNode.isGraphNode(result)) ?
       result.getDisplayName() :
