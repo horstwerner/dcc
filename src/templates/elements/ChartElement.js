@@ -40,6 +40,9 @@ const lineChartPropTypes = {
   h: P.number.isRequired,
   series: P.string.isRequired,
   colors: P.arrayOf(P.string),
+  xLabel: P.string,
+  yLabel: P.string,
+  strokeWidth: P.number,
   maxValue: P.number,
   attributes: P.arrayOf(P.string).isRequired,
 }
@@ -62,7 +65,7 @@ const graphPropTypes = {
 
 const commonPropTypes = {
   ...TemplateElement.propTypes,
-  chartType: P.oneOf(['rect','stackedBar','polar','graph','lineChart']).isRequired,
+  chartType: P.oneOf(['rect','stackedBar','polar','graph','line', 'area', 'stackedArea']).isRequired,
   inputSelector: P.objectOf(P.string),
   overlay: P.string
 }
