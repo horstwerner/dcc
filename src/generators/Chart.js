@@ -11,6 +11,7 @@ import GraphNode from "@/graph/GraphNode";
 import {TYPE_NODES} from "@/graph/BaseTypes";
 import {Map_} from "@/components/Map";
 import {DEFAULT_SPATIAL} from "@symb/Component";
+import {LineChart_} from "@/components/LineChart";
 
 const fillInNumber = function fillInNumber(data, valueString) {
   if (isNaN(valueString)) {
@@ -82,6 +83,13 @@ const Chart = function Chart({data, descriptor, onClick, highlightCondition}) {
     case 'stackedBar':
       const {totalWidthValue} = chartProps;
       return StackedBarChart({data: chartData, spatial, totalWidthVal: fillInNumber(data, totalWidthValue), ...chartProps, onRectClick: onClick})
+    case 'area':
+    case 'stackedArea':
+    case 'line':
+      const { w, h, series, xAxis, xLabel, yLabel, attributes, colors, maxValue, strokeWidth } = descriptor;
+      return LineChart_({display: chartType, width: w, height: h, series: chartData[0].get(series), colors, xAxis,
+        spatial, strokeWidth,
+        xLabel, yLabel,         attributes, maxValue })._LineChart;
     case 'graph': {
       const {viewName, nodeAspectRatio} = descriptor;
       let scope = null;

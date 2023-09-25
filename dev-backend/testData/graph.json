@@ -1,0 +1,50 @@
+{
+  "graph": [{
+    "id": "Analytics",
+    "type": "jira:team",
+    "core:series": {
+      "core:time": [
+        0,
+        10,
+        20,
+        30,
+        40
+      ],
+      "jira:tickets_open": [
+        30,
+        28,
+        24,
+        16,
+        10
+      ],
+      "jira:tickets_in_progress": [
+        0,
+        2,
+        4,
+        8,
+        6
+      ],
+      "jira:tickets_in_review": [
+        0,
+        0,
+        2,
+        4,
+        6
+      ],
+      "jira:tickets_in_validation": [
+        0,
+        0,
+        0,
+        2,
+        6
+      ],
+      "jira:tickets_closed": [
+        0,
+        0,
+        0,
+        0,
+        2
+      ]
+    }
+  }]
+}

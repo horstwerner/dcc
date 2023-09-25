@@ -4,7 +4,14 @@ import GraphNode from './GraphNode';
 import {LOG_LEVEL_PATHS, LOG_LEVEL_RESULTS} from "@/components/Constants";
 import {describeSource, inspectPathSegment} from "@symb/util";
 import {getConfig, PATH_SEPARATOR} from "@/Config";
-import {DATATYPE_BOOLEAN, DATATYPE_ENTITY, DATATYPE_FLOAT, DATATYPE_INTEGER, TYPE_THING} from "@/graph/BaseTypes";
+import {
+  DATATYPE_BOOLEAN,
+  DATATYPE_ENTITY,
+  DATATYPE_FLOAT,
+  DATATYPE_INTEGER,
+  DATATYPE_SERIES,
+  TYPE_THING
+} from "@/graph/BaseTypes";
 
 class Cache {
 
@@ -116,6 +123,31 @@ class Cache {
           break;
         case DATATYPE_BOOLEAN:
           node.set(propUri, Boolean(rawNode[propUri]));
+          break;
+        case DATATYPE_SERIES:
+          const rawSeries = rawNode[propUri];
+          const series = {};
+          for (let key of Object.keys(rawSeries)) {
+            console.log(`importing series part ${key}`);
+            const type = TypeDictionary.getType(key);
+            if (!type) throw new Error(`${rawNode.id} has invalid prop ${propUri}: unknown property type ${key}`);
+            if (!Array.isArray(rawSeries[key])) throw new Error(`${rawNode.id} has invalid prop ${propUri}: ${key} is not an array`);
+            switch (type.dataType){
+              case DATATYPE_ENTITY:
+                  console.warn(`ignoring association ${key} in series`);
+                break;
+              case DATATYPE_INTEGER:
+              case DATATYPE_FLOAT:
+                  series[key] = rawSeries[key].map(value => Number(value));
+                break;
+              case DATATYPE_BOOLEAN:
+                series[key] = rawSeries[key].map(value => Boolean(value));
+                break;
+              default:
+                series[key] = rawSeries[key].map(value => String(value));
+            }
+          }
+          node.set(propUri, series);
           break;
         default:
           node.set(propUri, String(rawNode[propUri]));

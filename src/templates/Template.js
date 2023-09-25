@@ -45,7 +45,8 @@ const fillPlaceholders = function fillPlaceholders(element, options, defaultValu
 const elementClassByType = {};
 const elementTypes = [];
 //["caption", "box", "image", "textfield", "card", "cards", "chart", "trellis", "link"]
-[CaptionElement, TextFieldElement, BoxElement, ImageElement, LinkElement, InfoElement, CardElement, CardsElement, TrellisElement, ChartElement].forEach(elClass => {
+[CaptionElement, TextFieldElement, BoxElement, ImageElement, LinkElement, InfoElement, CardElement, CardsElement,
+  TrellisElement, ChartElement].forEach(elClass => {
   // noinspection JSUnresolvedVariable
   elementClassByType[elClass.key] = elClass;
   // noinspection JSUnresolvedVariable

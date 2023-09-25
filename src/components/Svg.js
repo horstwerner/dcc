@@ -65,14 +65,17 @@ class Svg extends Component {
   static propTypes = {
     width: P.number.isRequired,
     height: P.number.isRequired,
+    overflow: P.string,
     defs: P.arrayOf(P.shape({type: P.string.isRequired, id: P.string.isRequired}))
   };
 
   updateDom(props, tween){
-    const { width, height } = props;
-
+    const { width, height, overflow } = props;
     this.dom.setAttribute('width', width);
     this.dom.setAttribute('height', height);
+    if (overflow != null) {
+      this.dom.setAttribute('overflow', overflow);
+    }
   }
 
   createChildDescriptors(props) {
