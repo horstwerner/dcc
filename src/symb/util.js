@@ -130,6 +130,16 @@ export const relSpatial = function(spatial, dx, dy) {
   return {x: spatial.x + dx, y: spatial.y + dy, scale: spatial.scale};
 }
 
+const direction = function direction (p1, p2) {
+  const abs = dist(p1, p2);
+  return {x: (p2.x - p1.x) / abs, y: (p2.y - p1.y) / abs};
+}
+
+const orthogonal = function orthogonal (v) {
+  // noinspection JSSuspiciousNameCombination: orthogonal
+  return {x: v.y, y: -v.x}
+}
+
 export const roundCorners = function roundCorners(polygon, dist, closed) {
   const startP = closed ? interpolate(polygon[0], polygon[1], dist) : polygon[0];
   const segments = [`M${startP.x} ${startP.y}`];
@@ -146,6 +156,26 @@ export const roundCorners = function roundCorners(polygon, dist, closed) {
     segments.push(`L${last.x} ${last.y}`);
   }
   return segments.join('');
+}
+
+const M = (p) => `M${p.x} ${p.y}`;
+
+
+const L = (p) => `L${p.x} ${p.y}`;
+
+
+export const arrowPaths = function arrowPaths(id, startP, endP, tipLength, color, strokeWidth) {
+  const tipW = tipLength * Math.tan(30 / 180 * Math.PI) * 0.5;
+  const f = interpolate(endP, startP, tipLength);
+  const o = orthogonal(direction(startP, endP));
+  const p1 = {x: f.x + o.x * tipW, y: f.y + o.y * tipW};
+  const p2 = {x: f.x - o.x * tipW, y: f.y - o.y * tipW};
+  return [
+    { id: `${id}-line`, d: `${M(startP)}${L(endP)}`, fill: 'none',
+      strokeWidth, stroke: color },
+    { id: `${id}-tip`, d: `${M(endP)}${L(p1)}${L(p2)}z`, fill: color}
+  ];
+
 }
 
 /**

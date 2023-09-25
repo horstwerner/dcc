@@ -34,6 +34,19 @@ const polarPropTypes = {
   colorStops: P.arrayOf(P.shape(Stop.propTypes)).isRequired,
 }
 
+const lineChartPropTypes = {
+  display: P.oneOf(['line', 'area', 'stackedArea']),
+  w: P.number.isRequired,
+  h: P.number.isRequired,
+  series: P.string.isRequired,
+  colors: P.arrayOf(P.string),
+  xLabel: P.string,
+  yLabel: P.string,
+  strokeWidth: P.number,
+  maxValue: P.number,
+  attributes: P.arrayOf(P.string).isRequired,
+}
+
 const graphPropTypes = {
   source: P.string.isRequired,
   path: P.string.isRequired,
@@ -44,7 +57,7 @@ const graphPropTypes = {
   minScale: P.number,
   maxScale: P.number,
   nodeAspectRatio: P.number,
-  bounded: P.oneOfType(P.bool, P.string),
+  bounded: P.oneOfType([P.bool, P.string]),
   edgeColor: P.string,
   edgeAnnotations: P.arrayOf(P.shape({pointsRight: P.bool, helpTemplate: P.string, toolTip: P.string})),
   removeDisconnected: P.bool
@@ -52,7 +65,7 @@ const graphPropTypes = {
 
 const commonPropTypes = {
   ...TemplateElement.propTypes,
-  chartType: P.oneOf(['rect','stackedBar','polar','graph']).isRequired,
+  chartType: P.oneOf(['rect','stackedBar','polar','graph','line', 'area', 'stackedArea']).isRequired,
   inputSelector: P.objectOf(P.string),
   overlay: P.string
 }
@@ -78,6 +91,9 @@ export default class ChartElement extends TemplateElement {
         break;
       case 'graph':
         Object.assign(propTypes, graphPropTypes);
+        break;
+      case 'lineChart':
+        Object.assign(propTypes, lineChartPropTypes);
         break;
     }
 

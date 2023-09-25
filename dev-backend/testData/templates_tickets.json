@@ -257,6 +257,72 @@
       ]
     },
     {
+      "id": "ticket-dependencies",
+      "name": "Dependencies",
+      "appliesTo": "jira:ticket",
+      "aggregate": false,
+      "size": { "w": 220, "h": 120},
+      "background": { "type": "rect", "w": 220, "h": 120, "cornerRadius": 6},
+      "clickable": true,
+      "colorcoding": {
+        "type": "selection",
+        "attribute": "jira:status",
+        "cases": {
+          "$": "COLOR_BY_STATUS"
+        },
+        "default": {
+          "$": "DEFAULT_TICKET_COLOR"
+        }
+      },
+      "elements": [
+        {
+          "key": "heading",
+          "type": "textfield",
+          "x": 10,
+          "y": 10,
+          "w": 200,
+          "h": 24,
+          "attribute": "core:uri",
+          "style": {
+            "font-weight": "bold",
+            "color": "white",
+            "font-size": "20px",
+            "h-align": "center"
+          }
+        },
+        {
+          "key": "name",
+          "type": "textfield",
+          "x": 8,
+          "y": 44,
+          "w": 200,
+          "h": 32,
+          "attribute": "core:name",
+          "style": {
+            "font-size": "12px",
+            "color": {
+              "$": "TEXT_COLOR"
+            }
+          }
+        },
+        {
+          "key": "depends_on",
+          "type": "textfield",
+          "x": 8,
+          "y": 74,
+          "w": 200,
+          "h": 32,
+          "attribute": "jira:depends-on",
+          "style": {
+            "font-size": "12px",
+            "color": {
+              "$": "TEXT_COLOR"
+            }
+          }
+        }
+      ]
+    },
+    {
       "id": "stories-by-feature",
       "name": "Story Points by...",
       "appliesTo": "jira:ticket",
@@ -339,11 +405,59 @@
           "x": 460, "y": 20, "w": 700, "h": 500
         },
         {
+          "key": "burndown",
+          "type": "card",
+          "source": "#Analytics",
+          "template": "burndown",
+          "x": 460, "y": 540, "w": 700, "h": 300
+        },
+        {
           "key": "teams",
           "type": "card",
           "source": "~jira:team",
           "template": "team-overview",
           "x": 1180, "y":20, "w": 420, "h": 900
+        }
+      ]
+    },
+    {
+      "id": "burndown",
+      "name": "Burndown Chart",
+      "appliesTo": "jira:team",
+      "background": {
+        "type": "rect",
+        "w": 700,
+        "h": 300,
+        "color": {"$": "AREA_BACKGROUND_COLOR"},
+        "cornerRadius": 6
+      },
+      "elements": [
+        {
+          "key": "label_title",
+          "type": "caption",
+          "style": {"$": "GROUP_HEADING_STYLE"},
+          "x": {"$": "MARGIN"}, "y": {"$": "MARGIN"}, "w": 400, "h": 32,
+          "text": "Burndown Chart"
+        },
+        {
+          "key": "chart",
+          "type": "chart",
+          "chartType": "stackedArea",
+          "xLabel": "Day",
+          "strokeWidth": 2,
+          "w": 660,
+          "h": 220,
+          "x": 20,
+          "y": 60,
+          "series": "core:series",
+          "xAxis": "core:time",
+          "attributes": [
+             "jira:tickets_open", "jira:tickets_in_progress",
+             "jira:tickets_in_review",
+             "jira:tickets_in_validation",
+             "jira:tickets_closed"
+          ],
+          "colors": ["#c0c0c0", "#cfc726", "#a3b630", "#7ea550", "#548546"]
         }
       ]
     },
