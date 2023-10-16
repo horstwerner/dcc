@@ -345,7 +345,7 @@ class GraphViz extends Component {
           ];
           centerIdx = 1;
         } else { // backward edge
-          const dySrc = (Math.sign(targetNode.pos.y - vizNode.pos.y) || -4) * 0.28 * childH
+          const dySrc = (Math.sign(targetNode.pos.y - vizNode.pos.y) || - 1.75) * 0.28 * childH
           const dyTrg = Math.abs(targetNode.pos.y - vizNode.pos.y) < 0.6 * childH ? dySrc : -dySrc;
           points = [vizNode.pos,
             {x: vizNode.terminals[1], y: vizNode.pos.y},

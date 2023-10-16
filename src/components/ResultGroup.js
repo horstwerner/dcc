@@ -24,7 +24,7 @@ class ResultGroup extends Component {
     return [
         Div_({key: 'header', className: css.header}, `${nodeType.getName()} (${results.length})`)._Div,
         Div_({key: 'results', className: css.list}, results.map(node =>
-            Div_({key: node.getDisplayName(), className: css.listItem,
+            Div_({key: node.getUniqueKey(), className: css.listItem,
                   tabIndex: tabIndex++,
                   onClick: () => onSearchResultClick(node),
                   onKeyUp: (event) => {if (event.key === 'Enter') onSearchResultClick(node)}},
