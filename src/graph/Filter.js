@@ -18,10 +18,10 @@ export const COMPARISON_OF_TYPE = (testValue, value) => value.constructor === Ty
 export const COMPARISON_NOT_OF_TYPE = (testValue, value) => value.constructor === Type && !value.isOfType(testValue);
 // noinspection EqualityComparisonWithCoercionJS
 export const COMPARISON_EQUAL =  (testValue, value) => (testValue == value);
-export const COMPARISON_CONTAINS = (testValue, value) => value.toLowerCase().includes(testValue.toLowerCase());
+export const COMPARISON_CONTAINS = (testValue, value) => value && value.toLowerCase().includes(testValue.toLowerCase());
 // noinspection EqualityComparisonWithCoercionJS
 export const COMPARISON_NOT_EQUAL = (testValue, value) => testValue != value;
-export const COMPARISON_NOT_CONTAINS = (testValue, value) => !(value.toLowerCase().includes(testValue.toLowerCase()));
+export const COMPARISON_NOT_CONTAINS = (testValue, value) => !(value && value.toLowerCase().includes(testValue.toLowerCase()));
 export const COMPARISON_LESS_OR_EQUAL = (testValue, value) => value <= testValue;
 export const COMPARISON_GREATER_OR_EQUAL = (testValue, value) =>  value >= testValue;
 export const COMPARISON_LESS = (testValue, value) => value < testValue;
