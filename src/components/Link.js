@@ -18,8 +18,8 @@ export class Link extends Component {
     onClick: P.func
   };
 
-  constructor(props) {
-    super(props);
+  constructor(descriptor, parent, domNode) {
+    super(descriptor, parent, domNode);
     this.onInternalClick = this.onInternalClick.bind(this);
   }
 
@@ -41,11 +41,22 @@ export class Link extends Component {
       this.dom.innerText = text;
     }
     this.dom.target = "_blank";
+    this.dom.setAttribute('draggable', false);
     this.dom.href = url;
+    const useWhenClicked = this.parent && this.parent.hasClickHandler();
     if (modal) {
-      this.dom.onclick = this.onInternalClick;
+      if (useWhenClicked) {
+        this.dom.whenClicked = this.onInternalClick;
+        this.dom.onClick = (e) => {e.preventDefault();}
+      } else {
+        this.dom.onclick = this.onInternalClick;
+      }
     } else if (onClick) {
-      this.dom.onclick = onClick;
+      if (useWhenClicked) {
+        this.dom.whenClicked = onClick;
+      } else {
+        this.dom.onclick = onClick;
+      }
     }
   }
 

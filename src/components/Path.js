@@ -12,12 +12,15 @@ class Path extends Component {
 
   static propTypes = {
     id: P.string,
-    d: P.string.isRequired
+    d: P.string.isRequired,
+    fill: P.string,
+    stroke: P.string,
+    strokeWidth: P.string
   };
 
   updateDom(props, tween) {
 
-    const { id, d, fill, stroke } = props;
+    const { id, d, fill, stroke, strokeWidth } = props;
 
     if (id) {
       this.dom.setAttribute('id', id);
@@ -27,6 +30,9 @@ class Path extends Component {
     }
     if (stroke) {
       this.dom.setAttribute('stroke', stroke);
+    }
+    if (strokeWidth) {
+      this.dom.setAttribute('stroke-width', strokeWidth);
     }
     this.dom.setAttribute('d', d);
   }

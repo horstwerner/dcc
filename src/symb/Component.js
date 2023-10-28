@@ -18,7 +18,7 @@ export function setStyle(dom, style) {
 
 }
 
-const DEFAULT_SPATIAL = {x: 0, y: 0, scale: 1};
+export const DEFAULT_SPATIAL = {x: 0, y: 0, scale: 1};
 
 export default class Component {
 
@@ -63,6 +63,10 @@ export default class Component {
     this.dom.setAttribute('data-key', props.key);
     this.alpha = 1;
     this.renderStateChange = this.renderStateChange.bind(this);
+  }
+
+  hasClickHandler() {
+    return this.parent && this.parent.hasClickHandler() || false;
   }
 
   checkProps(props) {
@@ -298,6 +302,23 @@ export default class Component {
     return props.children || [];
   }
 
+  setClickable(clickable, onClick) {
+    if (clickable) {
+      if (this.parent && this.parent.hasClickHandler()) {
+        this.dom.whenClicked = onClick;
+        // this.dom.onClick = (e) => {e.preventDefault();}
+      } else {
+        this.dom.onclick = onClick;
+        this.dom.oncontextmenu = onClick;
+      }
+    } else if (this.dom.onclick) {
+      this.dom.onclick = null;
+      this.dom.oncontextmenu = null;
+    } else if (this.dom.whenClicked) {
+      this.dom.whenClicked = null;
+    }
+  }
+
   updateStyle(style) {
     if (!this.forceUpdate && isEqual(style, this.style)) return;
     const writeStyle =  (this.style) ? mapValues(this.style, () => '') : {};
@@ -422,20 +443,23 @@ export default class Component {
     }
   }
 
-  clearChildren() {
+  clearChildren(willDelete) {
     if (this.childByKey) {
       Object.keys(this.childByKey).forEach(key => {
         if (this.childByKey[key].destroy) {
-          this.childByKey[key].destroy();
+          this.childByKey[key].destroy(willDelete);
         }
       })
     }
     this.childByKey = {};
   }
 
-  destroy() {
-    this.clearChildren();
-    this.dom.remove();
+  destroy(parentDeletes) {
+
+    this.clearChildren(true);
+    if (!parentDeletes) {
+      this.dom.remove();
+    }
     this.dom = null;
   }
 

@@ -6,9 +6,12 @@ import StackedBarChart from "@/generators/StackedBarChart";
 import {GraphViz_} from "@/components/GraphViz";
 import {DEBUG_MODE} from "@/Config";
 import {PolarChart_} from "@/components/PolarChart";
-import {getNodeArray, getUnfilteredNodeArray} from "@symb/util";
+import {fit, getNodeArray, getUnfilteredNodeArray} from "@symb/util";
 import GraphNode from "@/graph/GraphNode";
 import {TYPE_NODES} from "@/graph/BaseTypes";
+import {Map_} from "@/components/Map";
+import {DEFAULT_SPATIAL} from "@symb/Component";
+import {LineChart_} from "@/components/LineChart";
 
 const fillInNumber = function fillInNumber(data, valueString) {
   if (isNaN(valueString)) {
@@ -55,7 +58,7 @@ const Chart = function Chart({data, descriptor, onClick, highlightCondition}) {
   }
 
   switch (chartType) {
-    case 'rect':
+    case 'rect': {
       const {maxValue, maxW, h, color, attribute} = chartProps;
       const value = resolveAttribute(data, attribute);
       if (value == null || isNaN(value) || maxValue == null || isNaN(maxValue)) {
@@ -76,13 +79,40 @@ const Chart = function Chart({data, descriptor, onClick, highlightCondition}) {
           style: {fill: color}
         })._Rect]
       })._Svg
+    }
     case 'stackedBar':
       const {totalWidthValue} = chartProps;
       return StackedBarChart({data: chartData, spatial, totalWidthVal: fillInNumber(data, totalWidthValue), ...chartProps, onRectClick: onClick})
-    case 'graph':
+    case 'area':
+    case 'stackedArea':
+    case 'line':
+      const { w, h, series, xAxis, xLabel, yLabel, attributes, colors, maxValue, strokeWidth } = descriptor;
+      return LineChart_({display: chartType, width: w, height: h, series: chartData[0].get(series), colors, xAxis,
+        spatial, strokeWidth,
+        xLabel, yLabel,         attributes, maxValue })._LineChart;
+    case 'graph': {
       const {viewName, nodeAspectRatio} = descriptor;
-      const scope = descriptor['bounded'] ? getUnfilteredNodeArray(source, data) : null;
-      return GraphViz_({spatial, startNodes: chartData, scope, ...chartProps, viewName, nodeAspectRatio, highlightCondition, onNodeClick: onClick})._GraphViz;
+      let scope = null;
+      if (descriptor['bounded']) {
+        scope = descriptor['bounded'] === 'strict' ? chartData : getUnfilteredNodeArray(source, data);
+      }
+      const {w, h, canvasW, canvasH, minScale, maxScale} = chartProps;
+      const innerSpatial = fit(w, h, canvasW || w, canvasH || h);
+      return Map_({spatial,
+        innerSpatial,
+        size: {width: w, height: h}, minScale, maxScale},
+        [GraphViz_({
+        spatial: DEFAULT_SPATIAL,
+        startNodes: chartData,
+        scope, ...chartProps,
+        w: canvasW || w,
+        h: canvasH || h,
+        viewName,
+        nodeAspectRatio,
+        highlightCondition,
+        onNodeClick: onClick
+      })._GraphViz])._Map;
+    }
     case 'polar':
       return PolarChart_({data, ...chartProps, spatial:{x, y, scale:1}})._PolarChart
     default:

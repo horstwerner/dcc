@@ -19,7 +19,7 @@
 // "result": "dependencies"
 
 import Aggregator from "@/Aggregator";
-import Cache, {resolve} from "@/graph/Cache";
+import {resolve} from "@/graph/Cache";
 import Filter from "@/graph/Filter";
 import {deriveAssociations, mapNode, pathAnalysis} from "@/graph/Analysis";
 import {intersectLists, subtractLists, unifyLists} from "@/graph/SetOperations";
@@ -122,7 +122,7 @@ export const preprocess = function preprocess(data, context, preprocessors, logL
         if (!reference) return;
 
         if (Array.isArray(reference)) {
-          result = reference.map(node => mapNode(node, type, Cache.createUri(), mapping, logLevel));
+          result = reference.map(node => mapNode(node, type, `${node.getUniqueKey()}-synth`, mapping, logLevel));
         } else {
           result = mapNode(reference, type, null, mapping, logLevel);
         }

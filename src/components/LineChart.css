@@ -1,0 +1,9 @@
+.lineChart {
+    overflow: visible;
+    position: absolute;
+}
+
+.label {
+    position: absolute;
+    transform-origin: 0 0;
+}

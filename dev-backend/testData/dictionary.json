@@ -43,6 +43,42 @@
       "isAssociation": false
     },
     {
+      "uri": "jira:tickets_open",
+      "dataType": "INTEGER",
+      "name": "# open tickets",
+      "isAssociation": false
+    },
+    {
+      "uri": "jira:tickets_open",
+      "dataType": "INTEGER",
+      "name": "# open tickets",
+      "isAssociation": false
+    },
+    {
+      "uri": "jira:tickets_in_progress",
+      "dataType": "INTEGER",
+      "name": "# tickets in progress",
+      "isAssociation": false
+    },
+    {
+      "uri": "jira:tickets_in_review",
+      "dataType": "INTEGER",
+      "name": "# tickets in review",
+      "isAssociation": false
+    },
+    {
+      "uri": "jira:tickets_in_validation",
+      "dataType": "INTEGER",
+      "name": "# tickets in validation",
+      "isAssociation": false
+    },
+    {
+      "uri": "jira:tickets_closed",
+      "dataType": "INTEGER",
+      "name": "# tickets closed",
+      "isAssociation": false
+    },
+    {
       "uri": "jira:bug",
       "dataType": "ENTITY",
       "name": "Bug",

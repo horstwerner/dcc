@@ -1,0 +1,11 @@
+.map {
+    position: absolute;
+    transform-origin: 0 0;
+    overflow: hidden;
+    user-select: none;
+}
+
+.innerPlane {
+    position: absolute;
+    transform-origin: 0 0;
+}
