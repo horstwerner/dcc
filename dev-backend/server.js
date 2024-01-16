@@ -195,8 +195,9 @@ app.ws('/updates', (ws, req) => {
     "jira:sprint": "2020-07",
     "jira:release": "1.3",
     "core:url": "http://jira.com/TQC-10363"}
+  const removed = ['BUG-689']
 
-  setTimeout(() => ws.send(JSON.stringify({update: [updated]})), 5000);
+  setTimeout(() => ws.send(JSON.stringify({update: [updated], remove: removed})), 5000);
 });
 
 setInterval(() => {

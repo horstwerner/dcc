@@ -6,5 +6,5 @@
   "clientConfig": {"getGraph": true, "getTables":  ["jira:ticket", "jira:team", "jira:bug"],
     "startTemplate":  "root", "displayNameAttribute":  "core:name", "theme":  "default", "logoAlign":  "right",
     "logoLink":  "http://github.com/horstwerner/dcc",
-    "/*updateWebSocket*/": "ws://localhost:3001/updates"}
+    "updateWebSocket": "ws://localhost:3001/updates"}
 }

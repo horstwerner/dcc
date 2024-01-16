@@ -52,7 +52,7 @@ class Cache {
 
 
   getNode (typeUri, uri) {
-    if (typeUri && !this.rootNode.get(typeUri)) {
+    if (typeUri && !this.rootNode.properties[typeUri]) {
       this.rootNode.set(typeUri, []);
     }
     let node = this.lookUpGlobal[uri];
@@ -60,11 +60,11 @@ class Cache {
       node = new GraphNode(typeUri, uri);
       this.lookUpGlobal[uri] = node;
       if (typeUri) {
-        this.rootNode.get(typeUri).push(node);
+        this.rootNode.properties[typeUri].push(node);
       }
     } else if (!node.type && typeUri) { // node definition after importing reference
       node.setType(typeUri);
-      this.rootNode.get(typeUri).push(node);
+      this.rootNode.properties[typeUri].push(node);
     }
     return node;
   };
@@ -183,21 +183,21 @@ class Cache {
     });
   }
 
-  // removeNodes(idArray) {
-  //   idArray.forEach(id => {
-  //         const node = this.getNodeByUri(id);
-  //         if (node) {
-  //           node.destroy();
-  //           this.lookUpGlobal[id] = null;
-  //           const listByType = this.rootNode.get(node.getTypeUri());
-  //           const index = listByType.indexOf(node);
-  //           if (index !== -1) {
-  //             listByType.splice(index, 1);
-  //           }
-  //         }
-  //       }
-  //   )
-  // }
+  removeNodes(idArray) {
+    idArray.forEach(id => {
+          const node = this.getNodeByUri(id);
+          if (node) {
+            node.destroy();
+            this.lookUpGlobal[id] = null;
+            const listByType = this.rootNode.get(node.getTypeUri());
+            const index = listByType.indexOf(node);
+            if (index !== -1) {
+              listByType.splice(index, 1);
+            }
+          }
+        }
+    )
+  }
 
   importNodeTable(typeUri, headerRow, valueRows) {
     const idIndex = Math.max(headerRow.indexOf('id'), 0);

@@ -38,6 +38,11 @@ class TypeDictionary {
     return this.typeMap[typeUri];
   };
 
+  isAssociation(typeUri) {
+    if (!this.typeMap[typeUri]) return false;
+    return this.typeMap[typeUri].dataType === DATATYPE_ENTITY;
+  }
+
   getTypeList() {
     return Object.values(this.typeMap);
   };

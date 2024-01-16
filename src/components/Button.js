@@ -16,8 +16,8 @@ class Button extends Component {
   };
 
   createChildDescriptors(props) {
-    const {text, onClick} = props;
-    return Div_({className: css.button, onClick}, text)._Div;
+    const {text, onClick, ...rest} = props;
+    return Div_({className: css.button, onClick, ...rest}, text)._Div;
   }
 }
 

@@ -1,3 +1,5 @@
+// noinspection DuplicatedCode
+
 import P from 'prop-types';
 import get from 'lodash/get';
 import isEmpty from 'lodash/isEmpty';
@@ -37,6 +39,7 @@ import {LoadingAnimation_} from "@/components/LoadingAnimation";
 import {LINK_EVENT} from "@/components/Link";
 import {ModalLayer_} from "@/components/ModalLayer";
 import {TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/BaseTypes";
+import {Button_} from "@/components/Button";
 
 const APP = 'app';
 const BREADCRUMBS = 'breadcrumbs';
@@ -111,39 +114,21 @@ class App extends Component {
           if (updateSocket) {
               this.connectToUpdateSocket(updateSocket);
           }
-          const { mainWidth, breadCrumbHeight } = this.state;
           if (!this.state.error) {
-            const startData = Cache.getNode(TYPE_AGGREGATOR, 'symb:rootNode');
-            Cache.getEntityTypes().forEach(entityType => {
-              startData.setBulkAssociation(entityType, Cache.rootNode.get(entityType));
-            });
-            let startTemplate;
-            let startNode;
-            startTemplate = TemplateRegistry.getTemplate(getConfig('startTemplate'));
-            startNode = createPreprocessedCardNode(startData, null, startTemplate, null);
-            const startCard = this.createFocusCard(startNode, startTemplate, null);
-            const { pinned, pinnedWidth } = this.calcPinnedCardPositions([this.toPinnedCard(startCard, PINNED_ROOT_CARD)], mainWidth, breadCrumbHeight);
-
             let focusCard;
             if (window.location.href.includes('#')) {
               const decoded = atob(decodeURI(window.location.href.split('#')[1]));
               const {data, template} = JSON.parse(decoded);
               const dataNode = Array.isArray(data) ? data.map(el => Cache.getNodeByUri(el)) : Cache.getNodeByUri(data);
               const nodeTemplate = TemplateRegistry.getTemplate(template);
-              const node = createPreprocessedCardNode(dataNode, null, startTemplate, null);
-              focusCard = this.createFocusCard(node, nodeTemplate, null)
-            } else {
-              focusCard = startCard;
+              const node = createPreprocessedCardNode(dataNode, null, nodeTemplate, null);
+              focusCard = this.createFocusCard(node, nodeTemplate, null);
             }
-
-            this.setState({
-              focusData: null,
-              waiting: false,
-              pinned,
-              pinnedWidth,
-              dataLoaded: true
+            const startData = Cache.getNode(TYPE_AGGREGATOR, 'symb:rootNode');
+            Cache.getEntityTypes().forEach(entityType => {
+              startData.setBulkAssociation(entityType, Cache.rootNode.get(entityType));
             });
-            this.setFocusCard(focusCard, startNode);
+            this.initializeView(focusCard);
           }
         });
 
@@ -181,6 +166,35 @@ class App extends Component {
     this.onResize(window.innerWidth, window.innerHeight);
   }
 
+  initializeView(focusCard) {
+    {
+      const { mainWidth, breadCrumbHeight } = this.state;
+
+      let startTemplate;
+      let startNode;
+
+      const startData = Cache.getNode(TYPE_AGGREGATOR, 'symb:rootNode');
+      startTemplate = TemplateRegistry.getTemplate(getConfig('startTemplate'));
+      startNode = createPreprocessedCardNode(startData, null, startTemplate, null);
+      const startCard = this.createFocusCard(startNode, startTemplate, null);
+
+      const {
+        pinned,
+        pinnedWidth
+      } = this.calcPinnedCardPositions([this.toPinnedCard(startCard, PINNED_ROOT_CARD)], mainWidth, breadCrumbHeight);
+
+      this.setState({
+        focusData: null,
+        waiting: false,
+        pinned,
+        pinnedWidth,
+        dataLoaded: true,
+        handleNodeRemoval: undefined
+      });
+      this.setFocusCard(focusCard || startCard, startNode);
+    }
+  }
+
   connectToUpdateSocket(url) {
     if (!url.startsWith('wss:') && !url.startsWith('ws:')) {
       const {protocol, host} = window.location;
@@ -205,18 +219,39 @@ class App extends Component {
 
   onWSMessage(event) {
     const data = JSON.parse(event.data);
-    const { update } = data;
+    const { update, remove } = data;
     if (update) {
       Cache.updateNodes(update);
-      const main = this.getChild(MAIN);
-      if (main) {
-        main.clearChildren();
-        this.childByKey[MAIN] = null;
-        this.refresh();
-        this.renderStateChange();
+      this.rerenderAll();
+    }
+    if (remove) {
+      const handleNodeRemoval = () => {
+        const { template, data } = this.state.focusCard;
+
+        Cache.removeNodes(remove);
+        let focusCard;
+        if (!remove.includes(data.uri) && !data.isSyntheticNode()) {
+          const node = createPreprocessedCardNode(data, null, template, null);
+          focusCard = this.createFocusCard(node, template, null);
+        }
+        this.state.breadCrumbCards = this.state.breadCrumbCards.filter(({data}) => data.isValid() && !data.isSyntheticNode());
+        this.initializeView(focusCard);
+        this.rerenderAll();
       }
+      this.setState({handleNodeRemoval});
     }
   };
+
+  rerenderAll() {
+    const main = this.getChild(MAIN);
+
+    if (main) {
+      main.clearChildren();
+      this.childByKey[MAIN] = null;
+      this.refresh();
+      this.renderStateChange();
+    }
+  }
 
   updateDom(props, tween) {
     if (this.state.dataLoaded) {
@@ -591,7 +626,7 @@ class App extends Component {
 
 
   setFocusCard(focusCard, data) {
-    this.transitionToState(this.createStateForFocus(focusCard, data));
+    this.setState(this.createStateForFocus(focusCard, data));
   }
 
 
@@ -847,7 +882,7 @@ class App extends Component {
   createChildDescriptors(props) {
 
     const { dataLoaded, focusCard, nodeTypeUri, reference, tools, activeTools, views, error, mainWidth, focusHeight,
-      sideBarWidth, breadCrumbCards, pinned, modalIframe, pinnedWidth, highlightMenu,
+      sideBarWidth, breadCrumbCards, pinned, modalIframe, pinnedWidth, highlightMenu, handleNodeRemoval,
       hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions}
         = this.state;
 
@@ -890,6 +925,16 @@ class App extends Component {
       const x = (window.innerWidth - renderW) / 2;
       const y = (window.innerHeight - renderH) / 2;
       modal = ModalLayer_({key: 'modal', x, y, size: {width: renderW, height: renderH}, url, onClose: this.handleModalClose})._ModalLayer;
+    }
+
+    let removeNodesButton;
+    if (handleNodeRemoval) {
+      debugger
+      const buttonW = 140;
+      const buttonH = 42;
+      removeNodesButton = Button_({text: "Nodes Removed - Click to update", onClick: handleNodeRemoval,
+        style: {fontWeight: 'bold', zIndex: 2000},
+        size: {width: buttonW, height: buttonH}, spatial: {x: 16, y: 16, scale: 1}})._Button
     }
 
     return [
@@ -941,7 +986,8 @@ class App extends Component {
             onHighlightSelect: this.setHighlightCondition
           })._Sidebar]
         )._Div,
-      modal
+      modal,
+      removeNodesButton
     ]
   }
 }

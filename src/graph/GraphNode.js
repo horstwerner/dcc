@@ -22,6 +22,7 @@ export default class GraphNode {
   uniqueKey;
   originalNode;
   isSynthetic;
+  valid;
 
   static isGraphNode(o) {
     return o && typeof o === 'object' && o.constructor === GraphNode;
@@ -39,6 +40,7 @@ export default class GraphNode {
     }
     this.uri = uri;
     this.isSynthetic = false;
+    this.valid = true;
     this.properties = {};
     // these associations are pointing back - and belong - to another graph node, which points to this
     this.inverseAssociations = {};
@@ -156,12 +158,28 @@ export default class GraphNode {
     if (result === undefined && this.originalNode) {
       result = this.originalNode.get(propName);
     }
+    if (TypeDictionary.isAssociation(propertyUri)) {
+      if (Array.isArray(result)) {
+        result = result.filter(node => node.isValid());
+      } else if (GraphNode.isGraphNode(result) && !result.isValid()) {
+        result = undefined;
+      }
+    }
     if (filter !== null && result) {
       if (Array.isArray(result)) return result.filter(filter);
       if (GraphNode.isGraphNode(result) && filter(result)) return result;
       return null;
     }
+    // suppress destroyed node
+
     return result;
+  }
+
+  isValid() {
+    if (this.originalNode) {
+      return this.originalNode.isValid();
+    }
+    return this.valid;
   }
 
   setAttribute(propType, value) {
@@ -377,6 +395,7 @@ export default class GraphNode {
     // remove direct associations other nodes have to this
     this.removeRemoteAssociations();
     // TODO: handle contextual nodes pointing to this
+    this.valid = false;
   }
 
 
