@@ -7,7 +7,7 @@ import {TYPE_CONTEXT} from "@/graph/BaseTypes";
 
 const Trellis = function Trellis(data, descriptor, onClick, clickMode) {
 
-  const {key, source, template, inputSelector, groupAttribute, align, arrangement, x, y, w, h} = descriptor;
+  const {key, source, template, inputSelector, groupAttribute, includeRestGroup, align, arrangement, x, y, w, h} = descriptor;
 
   let nodes = getNodeArray(inputSelector, source, data);
   if (!nodes) return null;
@@ -16,7 +16,7 @@ const Trellis = function Trellis(data, descriptor, onClick, clickMode) {
 
   const groups = groupedSet
       .getKeys()
-      .filter(groupKey => groupKey !== EMPTY)
+      .filter(groupKey => includeRestGroup ? true : groupKey !== EMPTY)
       .sort()
       .map(groupKey =>  groupedSet.getGroup(groupKey));
 
@@ -33,6 +33,5 @@ const Trellis = function Trellis(data, descriptor, onClick, clickMode) {
       onClick,
       clickMode);
 }
-
 
 export default Trellis;
