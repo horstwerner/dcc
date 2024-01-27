@@ -119,7 +119,9 @@ export default class GraphNode {
   };
 
   getDisplayName() {
-    const result = this.properties[getConfig('displayNameAttribute')];
+    let result = this.properties[getConfig('displayNameAttribute')];
+    if (result) return result;
+    result = this.properties[TYPE_NAME];
     if (result) return result;
     return this.originalNode ? this.originalNode.getDisplayName() : this.uri;
   }

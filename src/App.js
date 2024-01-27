@@ -51,6 +51,15 @@ const BREADCRUMB_LANE_HEIGHT = 104;
 const PINNED_ROOT_CARD = 'rootcard';
 const MAIN = 'main';
 
+function logDebugInfo(focusCard, data) {
+  if (DEBUG_MODE && GraphNode.isGraphNode(data)) {
+    console.log(`----------------------------------------------------------`);
+    console.log(`focus data is ${data.getSummary()}`);
+    console.log(`is synthetic? ${data.isSyntheticNode()}`);
+    console.log(`\nTemplate is ${focusCard.template.id}`);
+  }
+}
+
 class App extends Component {
 
   static type = APP;
@@ -572,12 +581,7 @@ class App extends Component {
 
 
   createStateForFocus(focusCard, data) {
-    if (DEBUG_MODE && GraphNode.isGraphNode(data)) {
-      console.log(`----------------------------------------------------------`);
-      console.log(`focus data is ${data.getSummary()}`);
-      console.log(`is synthetic? ${data.isSyntheticNode()}`);
-      console.log(`\nTemplate is ${focusCard.template.id}`);
-    }
+    logDebugInfo(focusCard, data);
 
     const { template } = focusCard;
     const { aggregate } = template;
@@ -730,6 +734,8 @@ class App extends Component {
     const currentViewOptions = template.getDefaultOptions();
 
     const focusCard = this.createFocusCard(data, template, currentViewOptions);
+    logDebugInfo(focusCard, data);
+
     focusCard.spatial = this.calcFocusCardSpatial({focusCard, breadCrumbHeight, mainWidth, focusHeight});
     this.transitionToState({ focusCard, currentViewOptions: template.getDefaultOptions(), highlightMenu: null, highlightInfo: null });
   }
