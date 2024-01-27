@@ -21,7 +21,7 @@ export const sliceBy = function sliceBy(nodes, dimension) {
 
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
-    const key = resolveAttribute(node,dimension) || EMPTY;
+    const key = resolveAttribute(node, dimension) || EMPTY;
     let group;
     if (!subsets.hasOwnProperty(key)) {
       group = [];
@@ -35,8 +35,9 @@ export const sliceBy = function sliceBy(nodes, dimension) {
   return new GroupedSet(dimension, keyArray,
       mapValues(subsets,(nodes, key) => {
         const cardNode = createCardNode(nodes, `group-${key}`, (key === EMPTY ? 'unspecified' : key));
-        cardNode.set(dimension, key);
-        return cardNode;})
+        cardNode.set(dimension, (key === EMPTY ? 'unspecified' : key));
+        return cardNode;
+      })
   );
 };
 
