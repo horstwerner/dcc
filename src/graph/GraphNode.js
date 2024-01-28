@@ -160,19 +160,11 @@ export default class GraphNode {
     if (result === undefined && this.originalNode) {
       result = this.originalNode.get(propName);
     }
-    if (TypeDictionary.isAssociation(propertyUri)) {
-      if (Array.isArray(result)) {
-        result = result.filter(node => node.isValid());
-      } else if (GraphNode.isGraphNode(result) && !result.isValid()) {
-        result = undefined;
-      }
-    }
     if (filter !== null && result) {
       if (Array.isArray(result)) return result.filter(filter);
       if (GraphNode.isGraphNode(result) && filter(result)) return result;
       return null;
     }
-    // suppress destroyed node
 
     return result;
   }

@@ -175,7 +175,7 @@ class App extends Component {
     this.onResize(window.innerWidth, window.innerHeight);
   }
 
-  initializeView(focusCard) {
+  initializeView(focusCard, breadCrumbCards) {
     {
       const { mainWidth, breadCrumbHeight } = this.state;
 
@@ -198,7 +198,8 @@ class App extends Component {
         pinned,
         pinnedWidth,
         dataLoaded: true,
-        handleNodeRemoval: undefined
+        handleNodeRemoval: undefined,
+        breadCrumbCards: breadCrumbCards || this.state.breadCrumbCards
       });
       this.setFocusCard(focusCard || startCard, startNode);
     }
@@ -229,26 +230,40 @@ class App extends Component {
   onWSMessage(event) {
     const data = JSON.parse(event.data);
     const { update, remove } = data;
-    if (update) {
-      Cache.updateNodes(update);
-      this.rerenderAll();
-    }
     if (remove) {
       const handleNodeRemoval = () => {
         const { template, data } = this.state.focusCard;
 
         Cache.removeNodes(remove);
+        if (update) {
+          Cache.updateNodes(update);
+        }
         let focusCard;
         if (!remove.includes(data.uri) && !data.isSyntheticNode()) {
           const node = createPreprocessedCardNode(data, null, template, null);
           focusCard = this.createFocusCard(node, template, null);
         }
-        this.state.breadCrumbCards = this.state.breadCrumbCards.filter(({data}) => data.isValid() && !data.isSyntheticNode());
-        this.initializeView(focusCard);
+
+        const {breadCrumbHeight, mainWidth, pinnedWidth} = this.state;
+        const newBreadCrumbCards = this.state.breadCrumbCards.map(breadCrumbCard => {
+          const {data, template} = breadCrumbCard;
+          const ref = data.getReference();
+          const dataNode = Array.isArray(ref) ? ref.map(el => Cache.getNodeByUri(el)).filter(Boolean)
+            : Cache.getNodeByUri(ref);
+          if (dataNode === null || dataNode === []) return null;
+
+          const newData = createPreprocessedCardNode(dataNode, null, template, null);
+          return {...breadCrumbCard, data: newData}
+        } ).filter(Boolean);
+        this.initializeView(focusCard, this.calcBreadCrumbChildren(newBreadCrumbCards, breadCrumbHeight, mainWidth, pinnedWidth));
         this.rerenderAll();
       }
       this.setState({handleNodeRemoval});
+    } else if (update) {
+      Cache.updateNodes(update);
+      this.rerenderAll();
     }
+
   };
 
   rerenderAll() {
