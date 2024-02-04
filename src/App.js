@@ -19,6 +19,7 @@ import {createContext, fillIn, fit, getCommonType, getNodeArray, isDataEqual} fr
 import {createPreprocessedCardNode, focusCardMenu, hoverCardMenu} from "@/components/Generators";
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 import {calcMaxChildren, ToolPanel_} from "@/components/ToolPanel";
+import {TYPE_CONTEXT} from "@/graph/BaseTypes";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 
 import {CLICK_OPAQUE, CLICK_TRANSPARENT, LOG_LEVEL_PATHS, OPTION_HIGHLIGHT} from "@/components/Constants";
@@ -58,6 +59,16 @@ function logDebugInfo(focusCard, data) {
     console.log(`is synthetic? ${data.isSyntheticNode()}`);
     console.log(`\nTemplate is ${focusCard.template.id}`);
   }
+}
+
+function recreateCardNodeFromRef(data, template) {
+  const ref = data.getReference();
+  debugger;
+  const dataNode = Array.isArray(ref) ? ref.map(el => Cache.getNodeByUri(el)).filter(Boolean)
+    : Cache.getNodeByUri(ref);
+  if (dataNode === null || dataNode === []) return null;
+
+  return createPreprocessedCardNode(dataNode, data.get(TYPE_CONTEXT), template, data.name);
 }
 
 class App extends Component {
@@ -201,7 +212,7 @@ class App extends Component {
         handleNodeRemoval: undefined,
         breadCrumbCards: breadCrumbCards || this.state.breadCrumbCards
       });
-      this.setFocusCard(focusCard || startCard, startNode);
+      this.setFocusCard(focusCard || startCard, focusCard ? focusCard.data : startNode);
     }
   }
 
@@ -228,10 +239,9 @@ class App extends Component {
   };
 
   onWSMessage(event) {
-    const data = JSON.parse(event.data);
-    const { update, remove } = data;
+    const messageData = JSON.parse(event.data);
+    const { update, remove } = messageData;
     if (remove) {
-      const handleNodeRemoval = () => {
         const { template, data } = this.state.focusCard;
 
         Cache.removeNodes(remove);
@@ -240,30 +250,22 @@ class App extends Component {
         }
         let focusCard;
         if (!remove.includes(data.uri) && !data.isSyntheticNode()) {
-          const node = createPreprocessedCardNode(data, null, template, null);
-          focusCard = this.createFocusCard(node, template, null);
+          const newData = recreateCardNodeFromRef(data, template);
+          focusCard = this.createFocusCard(newData, template, null);
         }
 
         const {breadCrumbHeight, mainWidth, pinnedWidth} = this.state;
         const newBreadCrumbCards = this.state.breadCrumbCards.map(breadCrumbCard => {
           const {data, template} = breadCrumbCard;
-          const ref = data.getReference();
-          const dataNode = Array.isArray(ref) ? ref.map(el => Cache.getNodeByUri(el)).filter(Boolean)
-            : Cache.getNodeByUri(ref);
-          if (dataNode === null || dataNode === []) return null;
-
-          const newData = createPreprocessedCardNode(dataNode, null, template, null);
+          const newData = recreateCardNodeFromRef(data, template);
           return {...breadCrumbCard, data: newData}
         } ).filter(Boolean);
         this.initializeView(focusCard, this.calcBreadCrumbChildren(newBreadCrumbCards, breadCrumbHeight, mainWidth, pinnedWidth));
         this.rerenderAll();
-      }
-      this.setState({handleNodeRemoval});
     } else if (update) {
       Cache.updateNodes(update);
       this.rerenderAll();
     }
-
   };
 
   rerenderAll() {
