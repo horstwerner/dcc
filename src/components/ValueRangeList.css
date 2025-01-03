@@ -55,7 +55,7 @@
 }
 
 .entryInactive:hover {
-  background-color: #e0e0dc;
+  background-color: #e0e0e0;
 }
 
 .icon {
@@ -74,6 +74,6 @@
 
 .entryActive {
   background-color: #73736f;
-  color: #EEEEEA;
+  color: #F5F8FC;
   box-shadow: 1px 1px 2px 0 rgba(0,0,0,0.15);
 }

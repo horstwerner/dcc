@@ -14,7 +14,7 @@ import {TYPE_NAME} from "@/graph/BaseTypes";
 const urlParams = new URLSearchParams(window.location.search);
 
 export const DEBUG_MODE = urlParams.has('debug') ? !!urlParams.get(`debug`) : false;
-export const OFFLINE_MODE = false;
+export const OFFLINE_MODE = true;
 export const THEME_DEFAULT = 'default';
 export const THEME_GRAY = 'gray';
 
@@ -42,7 +42,7 @@ export const COLOR2_MEDIUM = '#acbcbf';
 export const COLOR2_MEDIUM_DARK = '#83a3a3'
 export const COLOR2_DARK = '#567373';
 
-export const SIDEBAR_BACK_COLOR = '#EEEEEA';
+export const SIDEBAR_BACK_COLOR = '#E5E6E7';
 
 export const SIDEBAR_BACK_COLOR2 = '#bcbdb7';
 

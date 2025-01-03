@@ -6,7 +6,7 @@
 }
 
 .radioPanel {
-  background-color: #e0e0dc;
+  background-color: #e0e1e3;
   border-radius: 6px;
   padding: 4px 8px;
   box-shadow: inset 1px 1px 2px 0 rgba(0,0,0,0.15);
@@ -58,13 +58,13 @@
 
 .buttonInactive {
   box-shadow: inset 1px 1px 2px 0 rgba(0,0,0,0.15);
-  background-color: #e0e0dc;
+  background-color: #e0e1e3;
 }
 
 .buttonActive,
 .panelButtonActive {
   background-color: #73736f;
-  color: #EEEEEA;
+  color: #F5F8FC;
   box-shadow: 1px 1px 2px 0 rgba(0,0,0,0.15);
 }
 

@@ -20,15 +20,7 @@ import {calcMaxChildren, ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
 
 import {CLICK_OPAQUE, CLICK_TRANSPARENT, LOG_LEVEL_PATHS, OPTION_HIGHLIGHT} from "@/components/Constants";
-import {
-  fetchSubGraph,
-  getCardDescriptors,
-  getClientConfig,
-  getData,
-  getDictionary,
-  getParameterizedDataUrl,
-  getToolDescriptors
-} from "@/Data";
+import {fetchSubGraph, getCardDescriptors, getClientConfig, getData, getDictionary, getToolDescriptors} from "@/Data";
 import {createFilterControl, updatedToolControl} from "@/Tools";
 import TypeDictionary from "@/graph/TypeDictionary";
 import {SYNTH_NODE_MAP, SYNTH_NODE_RETRIEVE} from "@/templates/Template";
@@ -118,6 +110,7 @@ class App extends Component {
           }
           const updateSocket = getConfig('updateWebSocket');
           if (updateSocket) {
+            debugger
               this.connectToUpdateSocket(updateSocket);
           }
           const { mainWidth, breadCrumbHeight } = this.state;
@@ -191,16 +184,16 @@ class App extends Component {
   }
 
   connectToUpdateSocket(url) {
-    if (!url.startsWith('wss:') && !url.startsWith('ws:')) {
-      const {protocol, host} = window.location;
-      url = `${(protocol === 'https:' ? 'wss' : 'ws')}://${host}${url}`;
-    }
-    this.ws = new WebSocket(getParameterizedDataUrl(url));
-    this.ws.onopen = this.onWSOpen;
-    this.ws.onclose = this.onWSClose;
-    this.ws.onmessage = this.onWSMessage;
-    this.ws.onerror = ( ) => {
-      this.onError(`Couldn't establish connection with websocket ${url}`) };
+    // if (!url.startsWith('wss:') && !url.startsWith('ws:')) {
+    //   const {protocol, host} = window.location;
+    //   url = `${(protocol === 'https:' ? 'wss' : 'ws')}://${host}${url}`;
+    // }
+    // this.ws = new WebSocket(getParameterizedDataUrl(url));
+    // this.ws.onopen = this.onWSOpen;
+    // this.ws.onclose = this.onWSClose;
+    // this.ws.onmessage = this.onWSMessage;
+    // this.ws.onerror = ( ) => {
+    //   this.onError(`Couldn't establish connection with websocket ${url}`) };
   }
 
   onWSOpen() {
@@ -414,7 +407,6 @@ class App extends Component {
       this.moveCardToFocus(cloneCard, breadCrumbCards)
     });
   }
-
 
   cloneNodeToHover(component) {
     const { mainWidth, focusHeight, breadCrumbHeight } = this.state;

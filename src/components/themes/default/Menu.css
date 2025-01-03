@@ -5,7 +5,7 @@
   border-radius: 6px;
   padding: 8px;
   margin-bottom: 8px;
-  background-color: #7f9ea3;
+  background-color: #98aeb3;
   box-shadow: inset 1px 1px 2px 0 rgba(0,0,0,0.2);
 }
 
@@ -14,7 +14,7 @@
   font-family: 'Arial',sans-serif;
   /*text-shadow: 1px 1px  rgba(0,0,0,0.2);*/
   font-weight: bold;
-  color: #99babf;
+  color: #c5dbdb    ;
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 5px;
@@ -40,16 +40,17 @@
 }
 
 .entry {
-  background-color: #7f9ea3;
-  color: #EEEEEA;
+  background-color: #98aeb3;
+  color: #ebf3f5;
 }
 
 .entry:hover {
-  background-color: #a4bcbf;
+  background-color: #b1c3c7;
+    color: white;
 }
 
 .entrySelected {
-  background-color: #EEEEEA;
-  color: #536e73;
-  box-shadow: 2px 2px 2px 0 rgba(0,0,0,0.2);
+  background-color: #F5F8FC;
+  color: #6e9399;
+  box-shadow: 2px 2px 2px 0 rgba(0,0,0,0.17);
 }

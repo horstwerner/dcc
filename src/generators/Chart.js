@@ -62,7 +62,7 @@ const Chart = function Chart({data, descriptor, onClick, highlightCondition}) {
       const {maxValue, maxW, h, color, attribute} = chartProps;
       const value = resolveAttribute(data, attribute);
       if (value == null || isNaN(value) || maxValue == null || isNaN(maxValue)) {
-        console.log(`Warning: invalid numbers (value=${value}, maxVal=${maxValue}) for rect chart`);
+        // console.log(`Warning: invalid numbers (value=${value}, maxVal=${maxValue}) for rect chart`);
         return null;
       }
       return Svg_({

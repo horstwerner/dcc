@@ -5,7 +5,7 @@
   border-radius: 6px;
   padding: 8px;
   margin-bottom: 8px;
-  background-color: #e0e0dc;
+  background-color: #e0e1e3;
   box-shadow: inset 1px 1px 2px 0 rgba(0,0,0,0.15);
 }
 
@@ -40,15 +40,15 @@
 }
 
 .entry {
-  color: #696966;
+  color: #696969;
 }
 
 .entry:hover {
-  background-color: #d1d1d0;
+  background-color: #d1d1d2;
 }
 
 .entrySelected {
-  background-color: #73736f;
-  color: #EEEEEA;
+  background-color: #737373;
+  color: #EEEEEB;
   box-shadow: 2px 2px 2px 0 rgba(0,0,0,0.2);
 }

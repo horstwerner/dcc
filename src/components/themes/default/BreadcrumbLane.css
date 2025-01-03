@@ -2,8 +2,8 @@
     position: absolute;
     overflow-y: hidden;
     overflow-x: hidden;
-    background-color: #5e7b80;
-    border-top: solid 1px #536e73;
+    background-color: #98aeb3;
+    border-top: solid 1px #6e9399;
     box-sizing: border-box;
     user-select: none;
     /*noinspection CssUnknownProperty*/
@@ -36,5 +36,5 @@
 .pinnedBackground {
     position: absolute;
     transform-origin: 0 0;
-    background-color: #6c8e94   ;
+    background-color: #85a0a6;
 }

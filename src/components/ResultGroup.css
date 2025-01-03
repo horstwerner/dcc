@@ -9,7 +9,7 @@
   padding-bottom: 4px;
   color: #404040;
   font-size: 14px;
-  background-color: #EEEEEA;
+  background-color: #F5F8FC;
   border-bottom: solid 1px #bfbfbb;
   border-top: solid 1px #bfbfbb;
 }
@@ -29,7 +29,7 @@
 }
 
 .listItem:hover, .listItem:focus {
-  background-color: #EEEEEA;
+  background-color: #F5F8FC;
   outline: none;
 }
 

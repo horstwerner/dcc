@@ -17,7 +17,7 @@
 .listBody {
   position: absolute;
   border-radius: 4px;
-  background-color: #e0e0dc;
+  background-color: #e0e1e3;
 }
 .entryActive,
 .entryInactive {
@@ -47,17 +47,17 @@
   text-overflow: ellipsis;
   font-size: 14px;
   text-align: right;
-  color: #696966;
+  color: #696971;
 }
 
 .entryInactive {
-  color: #696966;
-  background-color: #e0e0dc;
+  color: #696971;
+  background-color: #e0e1e3;
   cursor: pointer;
 }
 
 .entryActive {
-  background-color: #73736f;
-  color: #EEEEEA;
+  background-color: #737374;
+  color: #F5F8FC;
   box-shadow: 1px 1px 2px 0 rgba(0,0,0,0.15);
 }
