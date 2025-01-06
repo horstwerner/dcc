@@ -18,18 +18,18 @@
   cursor: pointer;
 }
 .icon {
-  opacity: 0.3;
+  opacity: 0.5;
   margin-right: 6px;
   cursor: pointer;
   overflow: visible;
 }
 .icon:hover,
 .iconAbsolute:hover {
-  opacity: 0.7!important;
+  opacity: 0.8!important;
 }
 .icon:active,
 .iconAbsolute:active{
-  opacity: 0.8!important;
+  opacity: 0.9!important;
 }
 
 .iconDisabled {
@@ -37,4 +37,31 @@
     margin-left: 6px;
     cursor: not-allowed;
     overflow: visible;
+}
+
+.iconEmphasized {
+    position: absolute;
+    opacity: 0.7;
+    margin-right: 6px;
+    cursor: pointer;
+    overflow: visible;
+    z-index: 4;
+}
+
+.iconEmphasized:hover {
+    opacity: 1!important;
+}
+
+.hoverText {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    box-sizing: border-box;
+    border: solid 1px rgba(0,0,0,0.3);
+    font-size: 24px;
+    padding: 16px;
+    border-radius: 6px;
+    box-shadow: 8px 8px 10px 0 rgba(0,0,0,0.12), 4px 4px 8px 0 rgba(0,0,0,0.15);
+    position: absolute;
+    z-index: 4;
 }

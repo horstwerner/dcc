@@ -59,6 +59,8 @@ export default class Template {
     name: P.string,
     aggregate: P.bool,
     size: P.shape(sizeType),
+    story: P.arrayOf(P.shape({child: P.string.isRequired, text: P.string.isRequired, fontSize: P.number,
+      centered: P.boolean, template: P.string})),
     background: P.shape({
       type: P.string.isRequired,
       source: P.string,
@@ -138,6 +140,10 @@ export default class Template {
         {};
   }
 
+  getElementByKey(key) {
+    return this.descriptor.elements.find(e => e.key === key);
+  }
+
   getElementsForOptions(options) {
     if (this.descriptor.options) {
       const defaultValues = mapValues(this.descriptor.options, option => option.defaultValue);
@@ -148,6 +154,18 @@ export default class Template {
 
   getType() {
     return this.descriptor.type;
+  }
+
+  hasStory() {
+    return this.descriptor.story !== undefined;
+  }
+
+  getStoryElement(i) {
+    return this.descriptor.story[i];
+  }
+
+  getStoryLength() {
+    return this.descriptor.story?.length ?? 0;
   }
 
   createElementInstance(descriptor, data, highlightCondition, onClick) {

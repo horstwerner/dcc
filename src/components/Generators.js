@@ -278,7 +278,7 @@ export const ChildSet = function ChildSet(data, context, descriptor, singleCard,
     options})._CardSet
 };
 
-export const hoverCardMenu = function hoverCardMenu(key, top, right, onClose, onStash) {
+export const hoverCardMenu = function hoverCardMenu({key, top, right, onClose, onStash}) {
 
   const width = iconSize;
   const height = iconSize;
@@ -288,15 +288,35 @@ export const hoverCardMenu = function hoverCardMenu(key, top, right, onClose, on
   ].filter(Boolean);
   const totalWidth = children.length * iconSize + (children.length - 1) * iconMargin;
 
-  return Div_({key, className: hoverMenuCss.menu, children, style: {width: totalWidth, height}, spatial: {x: right - totalWidth - iconMargin, y: top -0.7 * iconSize, scale: 1}})._Div
+  return Div_({key, className: hoverMenuCss.menu, children, style: {width: totalWidth, height},
+    spatial: {x: right - totalWidth - iconMargin, y: top -0.7 * iconSize, scale: 1}})._Div
 }
 
-export const focusCardMenu = function focusCardMenu(key, top, right, onPin) {
+export const focusCardMenu = function focusCardMenu({key, left, top, width, height, onPin, onPlay}) {
 
-  const width = iconSize;
-  const height = iconSize;
-  const children =
-    Image_({key: 'stashbutton', className: hoverMenuCss.icon, width, height, source: 'public/PinButton.svg', title: 'Pin', onClick: onPin})._Image;
 
-  return Div_({key, className: hoverMenuCss.menu, children, style: {width: iconSize, height}, spatial: {x: right - iconSize - iconMargin, y: top -0.7 * iconSize, scale: 1}})._Div
+  const children = [];
+  if (onPin) {
+    const pinW = iconSize;
+   children.push(Image_({
+      key: 'stashbutton',
+      spatial: {x: width - iconSize - iconMargin, y:  -0.7 * iconSize, scale: 1},
+      className: hoverMenuCss.icon,
+      width: pinW,
+      height: pinW,
+      source: 'public/PinButton.svg',
+      title: 'Pin',
+      onClick: onPin
+    })._Image);
+  }
+
+  if (onPlay) {
+    children.push(Image_({key: 'playButton',
+      spatial: {x:  width- 70, y: 0.5 * height - 32, scale: 1},
+      source: 'public/PlayButton.svg', title: 'Play Story',
+      onClick: onPlay,
+      className: hoverMenuCss.iconEmphasized, width: 64, height: 64})._Image);
+  }
+
+  return Div_({key, className: hoverMenuCss.menu, children, style: {width: iconSize, height}, spatial: {x: left , y: top, scale: 1}})._Div
 }

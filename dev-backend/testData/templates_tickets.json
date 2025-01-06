@@ -382,6 +382,18 @@
         "borderColor": "#E0E0E0",
         "cornerRadius": 6
       },
+      "story": [
+        {"child":  "map-feature", "text":  "Lorem ipsum dolor sit amet"},
+        {"child":  "map-feature", "text":  "consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
+          "options": {"grouping":  "jira:feature"}, "centered": true
+        },
+        {"child":  "map-feature", "text":  "incididunt ut labore et dolore magna aliqua", "template": "storiesByStatus", "centered": true
+        },
+        {"child":  "dependencies", "text":  "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"},
+        {"child":  "bugs", "text":  "There are bugs!",
+          "fontSize": 48, "centered": true
+        }
+      ],
       "elements": [
         {
           "key": "map-feature",
@@ -400,7 +412,7 @@
         {
           "key": "dependencies",
           "type": "card",
-          "source": "jira:ticket",
+          "source": "~jira:ticket",
           "template": "dependency-graph",
           "x": 460, "y": 20, "w": 700, "h": 500
         },
@@ -598,7 +610,7 @@
              "attribute": "jira:storypoints",
              "calculate": "sum"
           }}
-      }
+        }
       ],
       "options": {
         "highlight": {
