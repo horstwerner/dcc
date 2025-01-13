@@ -59,8 +59,11 @@ export default class Template {
     name: P.string,
     aggregate: P.bool,
     size: P.shape(sizeType),
-    story: P.arrayOf(P.shape({child: P.string.isRequired, text: P.string.isRequired, fontSize: P.number,
-      centered: P.boolean, template: P.string})),
+    story: P.shape(
+      {
+        startbutton: P.shape({size: P.number, x: P.number, y: P.number}),
+        steps: P.arrayOf(P.shape({child: P.string.isRequired, text: P.string.isRequired, fontSize: P.number,
+        centered: P.boolean, template: P.string})).isRequired}),
     background: P.shape({
       type: P.string.isRequired,
       source: P.string,
@@ -160,12 +163,16 @@ export default class Template {
     return this.descriptor.story !== undefined;
   }
 
+  getStartButtonDef() {
+    return this.descriptor.story?.startbutton;
+  }
+
   getStoryElement(i) {
-    return this.descriptor.story[i];
+    return this.descriptor.story.steps[i];
   }
 
   getStoryLength() {
-    return this.descriptor.story?.length ?? 0;
+    return this.descriptor.story?.steps.length ?? 0;
   }
 
   createElementInstance(descriptor, data, highlightCondition, onClick) {

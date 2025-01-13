@@ -953,7 +953,7 @@ class App extends Component {
                 y: hoverCard.spatial.y - maxH, scale: 1},
                 size: {width: hovCardWidth, height: maxH - 24},
                 className: hoverMenuCss.hoverText,
-                children: text,
+                children: fillIn(text, hoverCard.data),
                 style,
                  onClick: this.handleStoryNext})._Div);
             }
@@ -977,13 +977,29 @@ class App extends Component {
       }
     } else if (focusCard && allowInteractions) {
       const onPin =  !pinned.find(card => isDataEqual(card.data, focusCard.data)) ? this.handleFocusCardPin : undefined;
-      const onPlay = focusCard.template.hasStory() && !hoverCard ? this.handleStoryStart : undefined;
-      const {width, height} = focusCard.template.getSize();
+      let onPlay;
+      let playButtonDef;
+
       const {x: left, y: top, scale = 1} = focusCard.spatial;
+      if (focusCard.template.hasStory() && !hoverCard) {
+        onPlay = this.handleStoryStart;
+        const startButtonDef = focusCard.template.getStartButtonDef();
+        playButtonDef = startButtonDef &&
+          {
+            spatial: {
+              x: (startButtonDef.x || 0) * scale,
+              y: (startButtonDef.y || 0) * scale,
+              scale: scale
+            },
+            size: startButtonDef.size || 64
+          };
+      }
+      const {width, height} = focusCard.template.getSize();
+
       // const menuRight = focusCard.template.getSize().width * focusCard.spatial.scale + focusCard.spatial.x;
       hoverChildren.push(focusCardMenu({key: `
       ${focusCard.key}`, left,
-        top, width: width * scale, height: height * scale, onPin, onPlay}));
+        top, width: width * scale, height: height * scale, onPin, onPlay, playButtonDef}));
     }
 
     const pinButtons = pinned.slice(1).map(card =>

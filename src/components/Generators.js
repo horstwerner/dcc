@@ -292,8 +292,9 @@ export const hoverCardMenu = function hoverCardMenu({key, top, right, onClose, o
     spatial: {x: right - totalWidth - iconMargin, y: top -0.7 * iconSize, scale: 1}})._Div
 }
 
-export const focusCardMenu = function focusCardMenu({key, left, top, width, height, onPin, onPlay}) {
 
+
+export const focusCardMenu = function focusCardMenu({key, left, top, width, height, onPin, onPlay, playButtonDef}) {
 
   const children = [];
   if (onPin) {
@@ -310,12 +311,14 @@ export const focusCardMenu = function focusCardMenu({key, left, top, width, heig
     })._Image);
   }
 
+  const size = playButtonDef?.size || 64;
+
   if (onPlay) {
     children.push(Image_({key: 'playButton',
-      spatial: {x:  width- 70, y: 0.5 * height - 32, scale: 1},
+      spatial: playButtonDef?.spatial ?? {x:  width - 70, y: 0.5 * height - 32, scale: 1},
       source: 'public/PlayButton.svg', title: 'Play Story',
       onClick: onPlay,
-      className: hoverMenuCss.iconEmphasized, width: 64, height: 64})._Image);
+      className: hoverMenuCss.iconEmphasized, width: size, height: size})._Image);
   }
 
   return Div_({key, className: hoverMenuCss.menu, children, style: {width: iconSize, height}, spatial: {x: left , y: top, scale: 1}})._Div
