@@ -1,6 +1,6 @@
 .sideBar {
     position: absolute;
-    background-color: #F5F8FC;
+    background-color: #f6f6f8;
     box-shadow: -4px 0 8px 0 rgba(0,0,0,0.17);
     user-select: none;
     z-index: 5;
@@ -53,7 +53,7 @@
     opacity: 0.5;
     position: absolute;
     box-sizing: border-box;
-    background-color: #F5F8FC;
+    background-color: #f6f6f8;
     border: solid 1px #cccccc;
     width: 28px;
     height: 28px;

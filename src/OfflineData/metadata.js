@@ -163,7 +163,7 @@ export const templates = {
   "constants": [
     {"MARGIN":  20},
     {"CARD_BACKGROUND_COLOR":  "#FAFAFA"},
-    {"AREA_BACKGROUND_COLOR":  "#F5F8FC"},
+    {"AREA_BACKGROUND_COLOR":  "#F6F8F8"},
     {"TEXT_COLOR": "rgba(0,0,0,0.7)"},
     {"HEADING_COLOR": "rgba(0,0,0,0.83)"},
     {"TEXT_STYLE": {
@@ -721,9 +721,6 @@ export const templates = {
           "minScale": 0.1, "maxScale": 2,
           "swimLanes": "jira:team",
           "path": "jira:is-prerequisite-for[jira:ticket]*",
-          "edgeAnnotations": [{"pointsRight":  true, "helpTemplate":  "relDependsOn",
-            "toolTip": "depends on"
-          }],
           "viewName": "$view"
         },
         {
