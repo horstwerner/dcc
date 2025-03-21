@@ -26,7 +26,7 @@
 
 .pin {
   position: absolute;
-  background-image: url("public/Pin.svg");
+  background-image: url("/public/Pin.svg");
   background-size: cover;
   width: 24px;
   height: 24px;
@@ -36,7 +36,7 @@
 }
 
 .pin:hover {
-  background-image: url("public/CloseButton.svg");
+  background-image: url("/public/CloseButton.svg");
   opacity: 0.6;
 }
 

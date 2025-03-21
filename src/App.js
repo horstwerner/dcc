@@ -18,6 +18,7 @@ import {createPreprocessedCardNode, focusCardMenu, hoverCardMenu} from "@/compon
 import {BreadcrumbLane_} from "@/components/BreadcrumbLane";
 import {calcMaxChildren, ToolPanel_} from "@/components/ToolPanel";
 import Filter, {applyFilters, COMPARISON_EQUAL, COMPARISON_HAS_ASSOCIATED} from "@/graph/Filter";
+import hoverMenuCss from '@/components/HoverCardMenu.css';
 
 import {CLICK_OPAQUE, CLICK_TRANSPARENT, LOG_LEVEL_PATHS, OPTION_HIGHLIGHT} from "@/components/Constants";
 import {
@@ -37,6 +38,7 @@ import {LoadingAnimation_} from "@/components/LoadingAnimation";
 import {LINK_EVENT} from "@/components/Link";
 import {ModalLayer_} from "@/components/ModalLayer";
 import {TYPE_AGGREGATOR, TYPE_NAME, TYPE_NODE_COUNT, TYPE_NODES} from "@/graph/BaseTypes";
+import {Image_} from "@symb/Image";
 
 const APP = 'app';
 const BREADCRUMBS = 'breadcrumbs';
@@ -87,6 +89,7 @@ class App extends Component {
       breadCrumbCards: [],
       pinnedCards: [],
       pinnedWidth: 0,
+      currentStoryCardIndex: null,
       focusData: null,
       focusCard: null,
       hoverCard: null,
@@ -162,6 +165,9 @@ class App extends Component {
     this.handleHoverCardToFocus = this.handleHoverCardToFocus.bind(this);
     this.handleHoverCardClose = this.handleHoverCardClose.bind(this);
     this.handleFocusCardPin = this.handleFocusCardPin.bind(this);
+    this.handleStoryStart = this.handleStoryStart.bind(this);
+    this.handleStoryNext = this.handleStoryNext.bind(this);
+    this.handleStoryPrev = this.handleStoryPrev.bind(this);
     this.handleToolToggle = this.handleToolToggle.bind(this);
     this.handleHighlightListClose = this.handleHighlightListClose.bind(this);
     this.handleViewSelect = this.handleViewSelect.bind(this);
@@ -315,6 +321,51 @@ class App extends Component {
     this.moveCardToPinned({...hoverCard, onClick: this.handleNodeClick, clickMode: CLICK_OPAQUE}, {});
   }
 
+  handleStoryStart() {
+    const { focusCard } = this.state;
+    const firstChild = focusCard.template.getStoryElement(0);
+    const component = this.getChild(MAIN)?.getChild(focusCard.key)?.getChild(firstChild.child);
+    if (focusCard.template.getStoryLength() > 1) {
+      this.setState({currentStoryCardIndex: 0});
+    }
+    this.cloneNodeToHover(component);
+  }
+
+  handleStoryNext(){
+    this.handleStoryStep(1);
+  }
+
+  handleStoryPrev() {
+    this.handleStoryStep(-1);
+  }
+
+  handleStoryStep(delta) {
+    const { focusCard, currentStoryCardIndex, hoverCard } = this.state;
+    const nextIndex = currentStoryCardIndex + delta;
+    if ( nextIndex < focusCard.template.getStoryLength() && nextIndex >= 0) {
+      this.setState({currentStoryCardIndex: nextIndex});
+      const currentStep = focusCard.template.getStoryElement(currentStoryCardIndex);
+      const nextStep = focusCard.template.getStoryElement(nextIndex);
+
+      const component = this.getChild(MAIN)?.getChild(focusCard.key)?.getChild(nextStep.child);
+      let {data, template, options} = component.innerProps;
+      if (nextStep.template) { template = TemplateRegistry.getTemplate(nextStep.template); }
+      if (nextStep.options) {options = nextStep.options; }
+
+      if (currentStep.child !== nextStep.child && !nextStep.template && !nextStep.options) {
+        this.cloneNodeToHover(component);
+      }
+      else if (data === hoverCard.data && template === hoverCard.template) {
+        hoverCard.options = options;
+      } else {
+        const cardNode = createPreprocessedCardNode(data, createContext(), template);
+       this.createHoverCard(template, cardNode, options);
+      }
+    } else {
+      this.setState({hoverCard: undefined, currentStoryCardIndex: undefined});
+    }
+  }
+
   moveCardToPinned(card) {
     const { mainWidth, breadCrumbHeight, breadCrumbCards } = this.state;
     const newPinned = [...this.state.pinned, card];
@@ -336,7 +387,7 @@ class App extends Component {
   }
 
   handleHoverCardClose() {
-    this.setState({hoverCard: null});
+    this.setState({hoverCard: null, currentStoryCardIndex: undefined});
   }
 
   handleHoverCardToFocus() {
@@ -785,12 +836,22 @@ class App extends Component {
     }
 
     const template = TemplateRegistry.getTemplateForSingleCard(node.getTypeUri(), DEFAULT_VIEW_NAME);
-    const { mainWidth, focusHeight, breadCrumbHeight } = this.state;
+    this.createHoverCard(template, node);
+  }
+
+  createHoverCard(template, node, options) {
+    const {mainWidth, focusHeight, breadCrumbHeight} = this.state;
 
     const spatial = this.calcHoverCardSpatial({template, mainWidth, focusHeight, breadCrumbHeight});
-    const newHoverCard = Card_({key: this.createChildKey(), data:node, hover: true, template, spatial, clickMode: CLICK_OPAQUE,
+    const newHoverCard = Card_({
+      key: this.createChildKey(),
+      data: node, hover: true,
+      template,
+      options,
+      spatial, clickMode: CLICK_OPAQUE,
       onClick: this.handleHoverCardToFocus,
-      style: {zIndex: 2}})._Card
+      style: {zIndex: 2}
+    })._Card
 
     this.setState({hoverCard: newHoverCard, allowInteractions: true});
   }
@@ -851,9 +912,8 @@ class App extends Component {
   }
 
   createChildDescriptors(props) {
-
     const { dataLoaded, focusCard, nodeTypeUri, reference, tools, activeTools, views, error, mainWidth, focusHeight,
-      sideBarWidth, breadCrumbCards, pinned, modalIframe, pinnedWidth, highlightMenu,
+      sideBarWidth, breadCrumbCards, pinned, modalIframe, pinnedWidth, highlightMenu, currentStoryCardIndex,
       hoverCard, breadCrumbHeight, toolbarHeight, windowHeight, toolControls, allowInteractions, currentViewOptions}
         = this.state;
 
@@ -868,23 +928,84 @@ class App extends Component {
 
     const hoverChildren = [];
     if (hoverCard) {
-      const menuRight = hoverCard.template.getSize().width * hoverCard.spatial.scale + hoverCard.spatial.x;
+      const hoverCardSize = hoverCard.template.getSize();
+      const hovCardWidth = hoverCardSize.width * hoverCard.spatial.scale;
+      const menuRight = hovCardWidth + hoverCard.spatial.x;
       hoverChildren.push(hoverCard);
 
       if (allowInteractions) {
-        hoverChildren.push(hoverCardMenu(HOVER_MENU, hoverCard.spatial.y, menuRight, this.handleHoverCardClose,
-            this.handleHoverCardPin));
+        hoverChildren.push(hoverCardMenu({key: HOVER_MENU, top: hoverCard.spatial.y,
+          right: menuRight,
+          onClose: this.handleHoverCardClose,
+          onStash: currentStoryCardIndex == null && this.handleHoverCardPin}));
+        if (currentStoryCardIndex != null) {
+          const isFirst = currentStoryCardIndex === 0;
+          const isLast = currentStoryCardIndex === focusCard.template.getStoryLength() - 1;
+          const {text, fontSize, centered} = focusCard.template.getStoryElement(currentStoryCardIndex);
+          let style = {};
+          if (fontSize) {style.fontSize = `${fontSize}px`;}
+          if (centered) {style.justifyContent = 'center'; style.textAlign = 'center'}
+
+          if (text) {
+            const maxH = Math.min(hoverCard.spatial.y - 12, 240);
+            hoverChildren.push(
+              Div_({key: 'storyText', spatial: {x: hoverCard.spatial.x,
+                y: hoverCard.spatial.y - maxH, scale: 1},
+                size: {width: hovCardWidth, height: maxH - 24},
+                className: hoverMenuCss.hoverText,
+                children: fillIn(text, hoverCard.data),
+                style,
+                 onClick: this.handleStoryNext})._Div);
+            }
+          hoverChildren.push(
+             Image_({key: 'nextButton', spatial: {x: menuRight - 32,
+                 y: hoverCard.spatial.y + 0.5 * hoverCardSize.height * hoverCard.spatial.scale - 32, scale: 1},
+               className: hoverMenuCss.iconEmphasized, width: 64, height: 64,
+               title: isLast ? 'Close' : 'Next' ,
+               source: isLast ? 'public/CloseButton.svg': 'public/PlayButton.svg',
+               onClick: this.handleStoryNext})._Image);
+          if (!isFirst) {
+            hoverChildren.push(
+              Image_({key: 'prevButton', spatial: {x: hoverCard.spatial.x - 32,
+                  y: hoverCard.spatial.y + 0.5 * hoverCardSize.height * hoverCard.spatial.scale - 32, scale: 1},
+                className: hoverMenuCss.iconEmphasized, width: 64, height: 64,
+                title: 'Previous',
+                source: 'public/BackButton.svg',
+                onClick: this.handleStoryPrev})._Image);
+          }
+        }
       }
-    } else if (focusCard && allowInteractions && !pinned.find(card => isDataEqual(card.data, focusCard.data))) {
-      const menuRight = focusCard.template.getSize().width * focusCard.spatial.scale + focusCard.spatial.x;
-      hoverChildren.push(focusCardMenu(`pin${focusCard.key}`, focusCard.spatial.y, menuRight, this.handleFocusCardPin));
+    } else if (focusCard && allowInteractions) {
+      const onPin =  !pinned.find(card => isDataEqual(card.data, focusCard.data)) ? this.handleFocusCardPin : undefined;
+      let onPlay;
+      let playButtonDef;
+
+      const {x: left, y: top, scale = 1} = focusCard.spatial;
+      if (focusCard.template.hasStory() && !hoverCard) {
+        onPlay = this.handleStoryStart;
+        const startButtonDef = focusCard.template.getStartButtonDef();
+        playButtonDef = startButtonDef &&
+          {
+            spatial: {
+              x: (startButtonDef.x || 0) * scale,
+              y: (startButtonDef.y || 0) * scale,
+              scale: scale
+            },
+            size: startButtonDef.size || 64
+          };
+      }
+      const {width, height} = focusCard.template.getSize();
+
+      // const menuRight = focusCard.template.getSize().width * focusCard.spatial.scale + focusCard.spatial.x;
+      hoverChildren.push(focusCardMenu({key: `
+      ${focusCard.key}`, left,
+        top, width: width * scale, height: height * scale, onPin, onPlay, playButtonDef}));
     }
 
     const pinButtons = pinned.slice(1).map(card =>
         Div_({key: `${card.key}-pin`, className: css.pin,
           onClick: () => {this.removePin(card)},
           spatial: {x: card.spatial.x + card.spatial.scale * card.template.getSize().width - 20, y: card.spatial.y - 11, scale: 1}})._Div);
-
 
     const focusInfo = nodeTypeUri && `${TypeDictionary.getType(nodeTypeUri).name} ${focusCard.data.type.uri === TYPE_AGGREGATOR ? `(${focusCard.data.get(TYPE_NODE_COUNT)})` : ''}`;
 
