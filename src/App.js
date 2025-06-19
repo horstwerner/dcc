@@ -177,6 +177,7 @@ class App extends Component {
     this.handleKeyUp = this.handleKeyUp.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleSearchResultClick = this.handleSearchResultClick.bind(this);
+    this.handleExternalMessage = this.handleExternalMessage.bind(this);
     this.onError = this.onError.bind(this);
     this.moveCardToFocus = this.moveCardToFocus.bind(this);
     this.removeModals = this.removeModals.bind(this);
@@ -188,10 +189,13 @@ class App extends Component {
     this.handleModalClose = this.handleModalClose.bind(this);
 
     this.dom.addEventListener(LINK_EVENT, this.onModalLinkClick);
+    window.addEventListener('message', this.handleExternalMessage);
 
     this.startUrl = window.location.href.split('#')[0];
 
-    document.body.onkeyup = this.handleKeyUp;
+
+
+      document.body.onkeyup = this.handleKeyUp;
     document.body.onkeydown = this.handleKeyDown;
     this.onResize(window.innerWidth, window.innerHeight);
   }
@@ -825,6 +829,15 @@ class App extends Component {
   calcHoverCardSpatial({template, mainWidth, focusHeight, breadCrumbHeight, maxScale}) {
     const { width, height } = template.getSize();
     return fit(mainWidth - 2 * MARGIN, focusHeight - 2 * MARGIN, width, height, MARGIN,MARGIN + breadCrumbHeight + 6,maxScale || 2);
+  }
+
+  handleExternalMessage(event) {
+    if (event.data.type === 'setFocus') {
+      const {uri} = event.data.originalData;
+      const node = Cache.getNodeByUri(uri);
+      const template = TemplateRegistry.getTemplateForSingleCard(node.getTypeUri(), DEFAULT_VIEW_NAME);
+      this.createHoverCard(template, node);
+    }
   }
 
   handleSearchResultClick(node) {
