@@ -833,10 +833,14 @@ class App extends Component {
 
   handleExternalMessage(event) {
     if (event.data.type === 'setFocus') {
-      const {uri} = event.data.originalData;
+      const {uri, view, fullFocus} = event.data.originalData;
       const node = Cache.getNodeByUri(uri);
-      const template = TemplateRegistry.getTemplateForSingleCard(node.getTypeUri(), DEFAULT_VIEW_NAME);
+      if (!node) {alert(`Node ${uri} not found.`); return;}
+      const template = TemplateRegistry.getTemplateForSingleCard(node.getTypeUri(), view || DEFAULT_VIEW_NAME);
       this.createHoverCard(template, node);
+      if (fullFocus) {
+        this.handleHoverCardToFocus();
+      }
     }
   }
 
