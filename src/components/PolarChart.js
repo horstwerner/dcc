@@ -62,7 +62,7 @@ class PolarChart extends Component {
       const cos = Math.cos(angle);
       const sin = Math.sin(angle);
       const value = data.get(dimension);
-      const scaled = Math.min(value / (maxValues[dimension] || 1), 1) * radius;
+      const scaled = Math.min((value || 0) / (maxValues[dimension] || 1), 1) * radius;
       const lineEnd = {x: center.x + lineRadius * cos, y: center.y + lineRadius * sin};
       lines.push(polygonPath([center, lineEnd], false));
       arrows.push(polygonPath(translate(rotate(arrowTip, angle), lineEnd), true));

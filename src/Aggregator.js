@@ -31,7 +31,9 @@ export const sum = function sum(nodes, attribute) {
 const mapToObject = function mapToObject(array,  value) {
   const result = {};
   array.forEach(element => {
-    result[element.sourceField] = clone(value);
+    if (element.sourceField) {
+      result[element.sourceField] = clone(value);
+    }
   });
   return result;
 };
@@ -58,7 +60,7 @@ export const aggregateNodes = function aggregateNodes(subset, aggregations, node
       aggregator.min = Math.min(aggregator.min, value);
       aggregator.max = Math.max(aggregator.max, value);
       aggregator.sum += value;
-      if ( subset[i][sourceField] != null) {
+      if ( subset[i].get(sourceField) != null) {
         aggregator.count++;
       }
     });
@@ -71,8 +73,14 @@ export const aggregateNodes = function aggregateNodes(subset, aggregations, node
       case AGG_SUM:
       case AGG_MIN:
       case AGG_MAX:
-      case AGG_COUNT:
         result[aggregation.targetField] = sourceFieldAggregates[aggregation.sourceField][aggregation.method];
+        break;
+      case AGG_COUNT:
+        if (aggregation.sourceField) {
+          result[aggregation.targetField] = sourceFieldAggregates[aggregation.sourceField][aggregation.method];
+        } else {
+          result[aggregation.targetField] = subset.length;
+        }
         break;
       case AGG_AVG:
         result[aggregation.targetField] = sourceFieldAggregates[aggregation.sourceField].sum / (sourceFieldAggregates[aggregation.sourceField].count || 1);

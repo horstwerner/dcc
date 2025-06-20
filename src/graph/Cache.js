@@ -69,15 +69,12 @@ class Cache {
     return node;
   };
 
-  // getNodeByUniqueKey(key) {
-  //   //separate first segment of path from rest
-  //   const parts = key.split(/\/(.+)/);
-  //
-  //   return this.getNode(parts[0], parts[1]);
-  // }
-
   getAllNodesOf (nodeType) {
     let type = TypeDictionary.getType(nodeType);
+    if (!type) {
+      console.error(`getAllNodesOf called with invalid type ${nodeType}`);
+      return [];
+    }
     let result = [...this.rootNode.get(nodeType)] || [];
     type.subTypes.forEach(subType => result.push(...this.getAllNodesOf(subType.uri)));
     return result;
